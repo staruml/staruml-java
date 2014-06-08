@@ -1,0 +1,17 @@
+{
+    "name": "staruml.java",
+    "title": "Java",
+    "description": "Java code generation and reverse engineering.",
+    "homepage": "https://github.com/staruml/JavaCodeEng",
+    "keywords": ["java"],
+    "version": "0.9.0",
+    "author": {
+        "name": "Minkyu Lee",
+        "email": "niklaus.lee@gmail.com",
+        "url": "https://github.com/niklauslee"
+    },
+    "license": "MIT",
+    "engines": {
+        "staruml": ">=2.0.0"
+    }
+}
