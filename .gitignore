@@ -1,0 +1,11 @@
+Thumbs.db
+
+# ignore node_modules created by grunt, but not more deeply-nested node_modules
+/node_modules
+/npm-debug.log
+
+#OSX .DS_Store files
+.DS_Store
+
+#Java Test Sources
+/java-testset
