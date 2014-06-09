@@ -43,12 +43,52 @@
 %%
 compilationUnit
     :	packageDeclaration EOF
-    |   packageDeclaration importDeclarationl EOF
-    |   packageDeclaration importDeclarationl typeDeclarations EOF
-        { $$ = "package decl is ok."; }
+        {
+            return {
+                "type": "CompilationUnit",
+                "packageDeclaration": $1
+            };
+        }
+    |   packageDeclaration importDeclarations EOF
+        {
+            return {
+                "type": "CompilationUnit",
+                "packageDeclaration": $1,
+                "importDeclarations": $2
+            };
+        }
+    |   packageDeclaration importDeclarations typeDeclarations EOF
+        {
+            return {
+                "type": "CompilationUnit",
+                "packageDeclaration": $1,
+                "importDeclarations": $2,
+                "typeDeclarations": $3
+            };
+        }
     |	packageDeclaration typeDeclarations EOF
-    |	importDeclarationl typeDeclarations EOF
+        {
+            return {
+                "type": "CompilationUnit",
+                "packageDeclaration": $1,
+                "typeDeclarations": $2
+            };
+        }
+    |	importDeclarations typeDeclarations EOF
+        {
+            return {
+                "type": "CompilationUnit",
+                "importDeclarations": $1,
+                "typeDeclarations": $2
+            };
+        }
     |	typeDeclarations EOF
+        {
+            return {
+                "type": "CompilationUnit",
+                "typeDeclarations": $1
+            };
+        }
     |   SEMI
     ;
 
@@ -59,67 +99,135 @@ packageDeclaration
     ;
 
 packageDeclaration
-    :    PACKAGE qualifiedName SEMI
-        
+    :   PACKAGE qualifiedName SEMI
+        {
+            $$ = {
+                "type": "PackageDeclaration",
+                "name": $2
+            };
+        }
     ;
 
 importDeclarations
-    :   %empty /* empty */
-    |	importDeclarationl
-    ;
-
-importDeclarationl
     :   importDeclaration
-    |   importDeclarationl importDeclaration
+        {
+            $$ = [ $1 ];
+        }
+    |   importDeclarations importDeclaration
+        {
+            $1.push($2);
+            $$ = $1;
+        }
     ;
 
 importDeclaration
     :   IMPORT STATIC qualifiedName DOT MUL SEMI
+        {
+            $$ = {
+                "type": "ImportDeclaration",
+                "name": $3 + "." + "*"
+            };
+        }
     |   IMPORT STATIC qualifiedName SEMI
+        {
+            $$ = {
+                "type": "ImportDeclaration",
+                "name": $3
+            };
+        }
     |	IMPORT qualifiedName DOT MUL SEMI
+        {
+            $$ = {
+                "type": "ImportDeclaration",
+                "name": $2 + "." + "*"
+            };
+        }
     |   IMPORT qualifiedName SEMI
+        {
+            $$ = {
+                "type": "ImportDeclaration",
+                "name": $2 
+            };
+        }
     ;
 
 typeDeclarations
     :   typeDeclarationWithPrefixes
+        {
+            $$ = [ $1 ];
+        }
     |   typeDeclarations typeDeclarationWithPrefixes
+        {
+            $1.push($2);
+            $$ = $1;
+        }
     ;
 
 typeDeclarationWithPrefixes
     :   annotationl modifierL typeDeclaration
+        {
+            $$ = $3;
+        }
     |   modifierL annotationl typeDeclaration
+        {
+            $$ = $3;
+        }
     |   modifierL typeDeclaration
+        {
+            $$ = $2;
+        }
     |   annotationl typeDeclaration
+        {
+            $$ = $2;
+        }
     |   typeDeclaration
+        {
+            $$ = $1;
+        }
     ;
 
 typeDeclaration
-    :   classDeclaration %{ console.log('found classDeclaration');%}
-    |   interfaceDeclaration %{ console.log('found interfaceDeclaration');%}
-    |   enumDeclaration %{ console.log('found enumDeclaration');%}
-    |   annotationTypeDeclaration %{ console.log('found annotationTypeDeclaration');%}
+    :   classDeclaration
+    |   interfaceDeclaration
+    |   enumDeclaration
+    |   annotationTypeDeclaration
     |   SEMI
     ;
 
 classDeclaration
-    :   CLASS Identifier
-        classInheritance
-        interfaceImplentation
-        classBody
-    |   CLASS Identifier typeParameters
-        classInheritance
-        interfaceImplentation
-        classBody
+    :   CLASS Identifier classInheritance interfaceImplentation classBody
+        {
+            $$ = {
+                "type": "ClassDeclaration",
+                "name": $2,
+                "extends": $3,
+                "implements": $4,
+                "body": ""
+            };
+        }
+    |   CLASS Identifier typeParameters classInheritance interfaceImplentation classBody
     ;
 
 classInheritance
     :   %empty /* empty */
+        {
+            $$ = null;
+        }
     |   EXTENDS type
+        {
+            $$ = $2;
+        }
     ;
 
 interfaceImplentation
     :   %empty /* empty */
+        {
+            $$ = [];
+        }
     |   IMPLEMENTS typeList
+        {
+            $$ = $2;
+        }
     ;
 
 typeParameters
@@ -182,7 +290,14 @@ interfaceDeclaration
 
 typeList
     :   type
+        {
+            $$ = [ $1 ];
+        }
     |   typeList COMMA type
+        {
+            $1.push($3);
+            $$ = $1;
+        }
     ;
 
 optionalTypeParameters
@@ -282,9 +397,9 @@ classMemberDeclaration
     |   type Identifier formalParameters arrayDimensionBracks SEMI
     |   type Identifier formalParameters SEMI
     |   typeParameters VOID Identifier formalParameters arrayDimensionBracks throwsList block
-    |   typeParameters  VOID Identifier formalParameters arrayDimensionBracks block
-    |   typeParameters  VOID Identifier formalParameters block
-    |   typeParameters  type Identifier formalParameters arrayDimensionBracks throwsList block
+    |   typeParameters VOID Identifier formalParameters arrayDimensionBracks block
+    |   typeParameters VOID Identifier formalParameters block
+    |   typeParameters type Identifier formalParameters arrayDimensionBracks throwsList block
     |   typeParameters type Identifier formalParameters arrayDimensionBracks block
     |   typeParameters type Identifier formalParameters block
     |   typeParameters VOID Identifier formalParameters arrayDimensionBracks throwsList SEMI
@@ -564,9 +679,13 @@ constructorBody
 
 qualifiedName
     :   Identifier
+        { $$ = $1; }
     |   Identifier typeParameters
+        { $$ = $1; }
     |   qualifiedName DOT Identifier
+        { $$ = $1 + "." + $3; }
     |   qualifiedName DOT Identifier typeParameters
+        { $$ = $1 + "." + $3; }
     ;
 
 literal

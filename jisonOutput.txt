@@ -5,273 +5,272 @@ error(2)
 compilationUnit(3)
 packageDeclaration(4)
 EOF(5)
-importDeclarationl(6)
+importDeclarations(6)
 typeDeclarations(7)
 SEMI(8)
 annotationl(9)
 PACKAGE(10)
 qualifiedName(11)
-importDeclarations(12)
-importDeclaration(13)
-IMPORT(14)
-STATIC(15)
-DOT(16)
-MUL(17)
-typeDeclarationWithPrefixes(18)
-modifierL(19)
-typeDeclaration(20)
-classDeclaration(21)
-interfaceDeclaration(22)
-enumDeclaration(23)
-annotationTypeDeclaration(24)
-CLASS(25)
-Identifier(26)
-classInheritance(27)
-interfaceImplentation(28)
-classBody(29)
-typeParameters(30)
-EXTENDS(31)
-type(32)
-IMPLEMENTS(33)
-typeList(34)
-TEMPLATE(35)
-ENUM(36)
-enumBody(37)
-LBRACE(38)
-RBRACE(39)
-enumBodyDeclaration(40)
-enumConstants(41)
-COMMA(42)
-classBodyDeclarationl(43)
-enumOptionalConstantDeclaration(44)
-enumOptionalClassBody(45)
-annotations(46)
-enumConstantArguments(47)
-enumConstantClassBody(48)
-enumConstant(49)
-arguments(50)
-INTERFACE(51)
-optionalTypeParameters(52)
-interfaceBody(53)
-classBodyDeclarations(54)
-classBodyDeclaration(55)
-classStaticBlock(56)
-block(57)
-interfaceBodyDeclarationl(58)
-interfaceBodyDeclarations(59)
-interfaceBodyDeclaration(60)
-classMemberDeclaration(61)
-staticBlock(62)
-modifier(63)
-FINAL(64)
-ABSTRACT(65)
-STRICTFP(66)
-TRANSIENT(67)
-VOLATILE(68)
-PUBLIC(69)
-PRIVATE(70)
-PROTECTED(71)
-NATIVE(72)
-SYNCHRONIZED(73)
-modifiers(74)
-VOID(75)
-formalParameters(76)
-arrayDimensionBracks(77)
-throwsList(78)
-variableDeclarators(79)
-THROWS(80)
-qualifiedNameList(81)
-interfaceMemberDeclaration(82)
-constDelarators(83)
-constDeclaration(84)
-constantDeclarator(85)
-ASSIGN(86)
-variableInitializer(87)
-arrayDimensionBrackl(88)
-variableDeclarator(89)
-variableDeclaratorId(90)
-arrayInitializer(91)
-expression(92)
-variableInitializerL(93)
-enumConstantName(94)
-primitiveType(95)
-arrayDimensionBrack(96)
-LBRACK(97)
-RBRACK(98)
-classOrInterfaceType(99)
-BOOLEAN(100)
-CHAR(101)
-BYTE(102)
-SHORT(103)
-INT(104)
-LONG(105)
-FLOAT(106)
-DOUBLE(107)
-typeArguments(108)
-LT(109)
-typeArgumentList(110)
-GT(111)
-typeArgument(112)
-QUESTION(113)
-SUPER(114)
-typeArgument_(115)
-LPAREN(116)
-RPAREN(117)
-formalParameterList(118)
-usualParameterList(119)
-lastFormalParameter(120)
-usualParameter(121)
-variableModifiers(122)
-variableModifierL(123)
-variableModifier(124)
-ELLIPSIS(125)
-methodBody(126)
-constructorBody(127)
-literal(128)
-IntegerLiteral(129)
-FloatingPointLiteral(130)
-CharacterLiteral(131)
-StringLiteral(132)
-BooleanLiteral(133)
-NullLiteral(134)
-annotation(135)
-AT(136)
-elementValueList(137)
-elementValuePairs(138)
-annotationOptValues(139)
-annotationElement(140)
-elementValue(141)
-annotationName(142)
-elementValuePair(143)
-elementValueArrayInitializer(144)
-elementValueListOpt(145)
-annotationTypeBody(146)
-annotationTypeElementDeclarations(147)
-annotationTypeElementDeclaration(148)
-annotationTypeElementRest(149)
-annotationConstantRest(150)
-annotationMethodRest(151)
-semiOpt(152)
-defaultValue(153)
-defaultValueOpt(154)
-DEFAULT(155)
-blockStatementList(156)
-blockStatements(157)
-blockStatement(158)
-statement(159)
-localVariableDeclarationStatement(160)
-localVariableDeclaration(161)
-assertExpression(162)
-COLON(163)
-optionalElseStatement(164)
-ELSE(165)
-ASSERT(166)
-IF(167)
-FOR(168)
-forControl(169)
-WHILE(170)
-DO(171)
-TRY(172)
-catchFinallyOrOnlyFinally(173)
-resourceSpecification(174)
-catchClauses(175)
-optionalFinallyBlock(176)
-SWITCH(177)
-switchBlockStatementGroups(178)
-emptySwitchLabels(179)
-RETURN(180)
-THROW(181)
-BREAK(182)
-optionalIdentifier(183)
-CONTINUE(184)
-variableDeclaratorsWithPrefixes(185)
-simpleExpressionStatement(186)
-finallyBlock(187)
-catchClause(188)
-CATCH(189)
-catchType(190)
-BITOR(191)
-FINALLY(192)
-resources(193)
-resource(194)
-switchBlockStatementGroupL(195)
-switchBlockStatementGroup(196)
-switchLabelL(197)
-switchLabel(198)
-CASE(199)
-enhancedForControl(200)
-forInit(201)
-optionalExpression(202)
-optionalForUpdate(203)
-optionalForInit(204)
-forUpdate(205)
-expressionList(206)
-parExpression(207)
-optionalExpressionList(208)
-statementExpression(209)
-constantExpression(210)
-optionalNonWildcardTypeArguments(211)
-nonWildcardTypeArguments(212)
-incrementOrDecrement(213)
-INC(214)
-DEC(215)
-plusMinusIncOrDec(216)
-ADD(217)
-SUB(218)
-prefixTildeOrBang(219)
-TILDE(220)
-BANG(221)
-mulDivOrMod(222)
-DIV(223)
-MOD(224)
-addOrSub(225)
-bitShiftOperator(226)
-lE_GE_LT_GT(227)
-LE(228)
-GE(229)
-equals_NotEqual(230)
-EQUAL(231)
-NOTEQUAL(232)
-assignmentToken(233)
-ADD_ASSIGN(234)
-SUB_ASSIGN(235)
-MUL_ASSIGN(236)
-DIV_ASSIGN(237)
-AND_ASSIGN(238)
-OR_ASSIGN(239)
-XOR_ASSIGN(240)
-RSHIFT_ASSIGN(241)
-URSHIFT_ASSIGN(242)
-LSHIFT_ASSIGN(243)
-MOD_ASSIGN(244)
-newCreator(245)
-NEW(246)
-creator(247)
-THIS(248)
-innerCreator(249)
-explicitGenericInvocation(250)
-LSHIFT(251)
-INSTANCEOF(252)
-BITAND(253)
-CARET(254)
-AND(255)
-OR(256)
-explicitGenericInvocationSuffixOrThisArgs(257)
-explicitGenericInvocationSuffix(258)
-createdName(259)
-classCreatorRest(260)
-arrayOrClassCreator(261)
-arrayCreatorRest(262)
-optionalTypeArgumentsOrDiamonds(263)
-typeArgumentsOrDiamondList(264)
-typeArgumentsOrDiamond(265)
-optionalNonWildcardTypeArgumentsOrDiamond(266)
-nonWildcardTypeArgumentsOrDiamond(267)
-bracketedExpressions(268)
-optionalClassBody(269)
-superSuffix(270)
-optionalArguments(271)
-optionalCOMMA(272)
+importDeclaration(12)
+IMPORT(13)
+STATIC(14)
+DOT(15)
+MUL(16)
+typeDeclarationWithPrefixes(17)
+modifierL(18)
+typeDeclaration(19)
+classDeclaration(20)
+interfaceDeclaration(21)
+enumDeclaration(22)
+annotationTypeDeclaration(23)
+CLASS(24)
+Identifier(25)
+classInheritance(26)
+interfaceImplentation(27)
+classBody(28)
+typeParameters(29)
+EXTENDS(30)
+type(31)
+IMPLEMENTS(32)
+typeList(33)
+TEMPLATE(34)
+ENUM(35)
+enumBody(36)
+LBRACE(37)
+RBRACE(38)
+enumBodyDeclaration(39)
+enumConstants(40)
+COMMA(41)
+classBodyDeclarationl(42)
+enumOptionalConstantDeclaration(43)
+enumOptionalClassBody(44)
+annotations(45)
+enumConstantArguments(46)
+enumConstantClassBody(47)
+enumConstant(48)
+arguments(49)
+INTERFACE(50)
+optionalTypeParameters(51)
+interfaceBody(52)
+classBodyDeclarations(53)
+classBodyDeclaration(54)
+classStaticBlock(55)
+block(56)
+interfaceBodyDeclarationl(57)
+interfaceBodyDeclarations(58)
+interfaceBodyDeclaration(59)
+classMemberDeclaration(60)
+staticBlock(61)
+modifier(62)
+FINAL(63)
+ABSTRACT(64)
+STRICTFP(65)
+TRANSIENT(66)
+VOLATILE(67)
+PUBLIC(68)
+PRIVATE(69)
+PROTECTED(70)
+NATIVE(71)
+SYNCHRONIZED(72)
+modifiers(73)
+VOID(74)
+formalParameters(75)
+arrayDimensionBracks(76)
+throwsList(77)
+variableDeclarators(78)
+THROWS(79)
+qualifiedNameList(80)
+interfaceMemberDeclaration(81)
+constDelarators(82)
+constDeclaration(83)
+constantDeclarator(84)
+ASSIGN(85)
+variableInitializer(86)
+arrayDimensionBrackl(87)
+variableDeclarator(88)
+variableDeclaratorId(89)
+arrayInitializer(90)
+expression(91)
+variableInitializerL(92)
+enumConstantName(93)
+primitiveType(94)
+arrayDimensionBrack(95)
+LBRACK(96)
+RBRACK(97)
+classOrInterfaceType(98)
+BOOLEAN(99)
+CHAR(100)
+BYTE(101)
+SHORT(102)
+INT(103)
+LONG(104)
+FLOAT(105)
+DOUBLE(106)
+typeArguments(107)
+LT(108)
+typeArgumentList(109)
+GT(110)
+typeArgument(111)
+QUESTION(112)
+SUPER(113)
+typeArgument_(114)
+LPAREN(115)
+RPAREN(116)
+formalParameterList(117)
+usualParameterList(118)
+lastFormalParameter(119)
+usualParameter(120)
+variableModifiers(121)
+variableModifierL(122)
+variableModifier(123)
+ELLIPSIS(124)
+methodBody(125)
+constructorBody(126)
+literal(127)
+IntegerLiteral(128)
+FloatingPointLiteral(129)
+CharacterLiteral(130)
+StringLiteral(131)
+BooleanLiteral(132)
+NullLiteral(133)
+annotation(134)
+AT(135)
+elementValueList(136)
+elementValuePairs(137)
+annotationOptValues(138)
+annotationElement(139)
+elementValue(140)
+annotationName(141)
+elementValuePair(142)
+elementValueArrayInitializer(143)
+elementValueListOpt(144)
+annotationTypeBody(145)
+annotationTypeElementDeclarations(146)
+annotationTypeElementDeclaration(147)
+annotationTypeElementRest(148)
+annotationConstantRest(149)
+annotationMethodRest(150)
+semiOpt(151)
+defaultValue(152)
+defaultValueOpt(153)
+DEFAULT(154)
+blockStatementList(155)
+blockStatements(156)
+blockStatement(157)
+statement(158)
+localVariableDeclarationStatement(159)
+localVariableDeclaration(160)
+assertExpression(161)
+COLON(162)
+optionalElseStatement(163)
+ELSE(164)
+ASSERT(165)
+IF(166)
+FOR(167)
+forControl(168)
+WHILE(169)
+DO(170)
+TRY(171)
+catchFinallyOrOnlyFinally(172)
+resourceSpecification(173)
+catchClauses(174)
+optionalFinallyBlock(175)
+SWITCH(176)
+switchBlockStatementGroups(177)
+emptySwitchLabels(178)
+RETURN(179)
+THROW(180)
+BREAK(181)
+optionalIdentifier(182)
+CONTINUE(183)
+variableDeclaratorsWithPrefixes(184)
+simpleExpressionStatement(185)
+finallyBlock(186)
+catchClause(187)
+CATCH(188)
+catchType(189)
+BITOR(190)
+FINALLY(191)
+resources(192)
+resource(193)
+switchBlockStatementGroupL(194)
+switchBlockStatementGroup(195)
+switchLabelL(196)
+switchLabel(197)
+CASE(198)
+enhancedForControl(199)
+forInit(200)
+optionalExpression(201)
+optionalForUpdate(202)
+optionalForInit(203)
+forUpdate(204)
+expressionList(205)
+parExpression(206)
+optionalExpressionList(207)
+statementExpression(208)
+constantExpression(209)
+optionalNonWildcardTypeArguments(210)
+nonWildcardTypeArguments(211)
+incrementOrDecrement(212)
+INC(213)
+DEC(214)
+plusMinusIncOrDec(215)
+ADD(216)
+SUB(217)
+prefixTildeOrBang(218)
+TILDE(219)
+BANG(220)
+mulDivOrMod(221)
+DIV(222)
+MOD(223)
+addOrSub(224)
+bitShiftOperator(225)
+lE_GE_LT_GT(226)
+LE(227)
+GE(228)
+equals_NotEqual(229)
+EQUAL(230)
+NOTEQUAL(231)
+assignmentToken(232)
+ADD_ASSIGN(233)
+SUB_ASSIGN(234)
+MUL_ASSIGN(235)
+DIV_ASSIGN(236)
+AND_ASSIGN(237)
+OR_ASSIGN(238)
+XOR_ASSIGN(239)
+RSHIFT_ASSIGN(240)
+URSHIFT_ASSIGN(241)
+LSHIFT_ASSIGN(242)
+MOD_ASSIGN(243)
+newCreator(244)
+NEW(245)
+creator(246)
+THIS(247)
+innerCreator(248)
+explicitGenericInvocation(249)
+LSHIFT(250)
+INSTANCEOF(251)
+BITAND(252)
+CARET(253)
+AND(254)
+OR(255)
+explicitGenericInvocationSuffixOrThisArgs(256)
+explicitGenericInvocationSuffix(257)
+createdName(258)
+classCreatorRest(259)
+arrayOrClassCreator(260)
+arrayCreatorRest(261)
+optionalTypeArgumentsOrDiamonds(262)
+typeArgumentsOrDiamondList(263)
+typeArgumentsOrDiamond(264)
+optionalNonWildcardTypeArgumentsOrDiamond(265)
+nonWildcardTypeArgumentsOrDiamond(266)
+bracketedExpressions(267)
+optionalClassBody(268)
+superSuffix(269)
+optionalArguments(270)
+optionalCOMMA(271)
 
 Item sets
 ------
@@ -279,17 +278,17 @@ Item sets
 item set 0 
 $accept -> .compilationUnit $end #lookaheads= $end
 compilationUnit -> .packageDeclaration EOF
-compilationUnit -> .packageDeclaration importDeclarationl EOF
-compilationUnit -> .packageDeclaration importDeclarationl typeDeclarations EOF
+compilationUnit -> .packageDeclaration importDeclarations EOF
+compilationUnit -> .packageDeclaration importDeclarations typeDeclarations EOF
 compilationUnit -> .packageDeclaration typeDeclarations EOF
-compilationUnit -> .importDeclarationl typeDeclarations EOF
+compilationUnit -> .importDeclarations typeDeclarations EOF
 compilationUnit -> .typeDeclarations EOF
 compilationUnit -> .SEMI
 packageDeclaration -> .annotationl packageDeclaration
 packageDeclaration -> .packageDeclaration
 packageDeclaration -> .PACKAGE qualifiedName SEMI
-importDeclarationl -> .importDeclaration
-importDeclarationl -> .importDeclarationl importDeclaration
+importDeclarations -> .importDeclaration
+importDeclarations -> .importDeclarations importDeclaration
 typeDeclarations -> .typeDeclarationWithPrefixes
 typeDeclarations -> .typeDeclarations typeDeclarationWithPrefixes
 annotationl -> .annotation
@@ -331,7 +330,7 @@ interfaceDeclaration -> .INTERFACE Identifier optionalTypeParameters EXTENDS typ
 enumDeclaration -> .ENUM Identifier interfaceImplentation enumBody
 annotationTypeDeclaration -> .AT INTERFACE Identifier annotationTypeBody
 annotationTypeDeclaration -> .AT INTERFACE Identifier EXTENDS typeList annotationTypeBody 
-transitions ->  {"compilationUnit":1,"packageDeclaration":2,"importDeclarationl":3,"typeDeclarations":4,"SEMI":5,"annotationl":6,"PACKAGE":7,"importDeclaration":8,"typeDeclarationWithPrefixes":9,"annotation":10,"IMPORT":11,"modifierL":12,"typeDeclaration":13,"AT":14,"modifier":15,"classDeclaration":16,"interfaceDeclaration":17,"enumDeclaration":18,"annotationTypeDeclaration":19,"STATIC":20,"FINAL":21,"ABSTRACT":22,"STRICTFP":23,"TRANSIENT":24,"VOLATILE":25,"PUBLIC":26,"PRIVATE":27,"PROTECTED":28,"NATIVE":29,"SYNCHRONIZED":30,"CLASS":31,"INTERFACE":32,"ENUM":33}
+transitions ->  {"compilationUnit":1,"packageDeclaration":2,"importDeclarations":3,"typeDeclarations":4,"SEMI":5,"annotationl":6,"PACKAGE":7,"importDeclaration":8,"typeDeclarationWithPrefixes":9,"annotation":10,"IMPORT":11,"modifierL":12,"typeDeclaration":13,"AT":14,"modifier":15,"classDeclaration":16,"interfaceDeclaration":17,"enumDeclaration":18,"annotationTypeDeclaration":19,"STATIC":20,"FINAL":21,"ABSTRACT":22,"STRICTFP":23,"TRANSIENT":24,"VOLATILE":25,"PUBLIC":26,"PRIVATE":27,"PROTECTED":28,"NATIVE":29,"SYNCHRONIZED":30,"CLASS":31,"INTERFACE":32,"ENUM":33}
 
 item set 1 
 $accept -> compilationUnit .$end #lookaheads= $end 
@@ -339,12 +338,12 @@ transitions ->  {}
 
 item set 2 
 compilationUnit -> packageDeclaration .EOF
-compilationUnit -> packageDeclaration .importDeclarationl EOF
-compilationUnit -> packageDeclaration .importDeclarationl typeDeclarations EOF
+compilationUnit -> packageDeclaration .importDeclarations EOF
+compilationUnit -> packageDeclaration .importDeclarations typeDeclarations EOF
 compilationUnit -> packageDeclaration .typeDeclarations EOF
 packageDeclaration -> packageDeclaration .
-importDeclarationl -> .importDeclaration
-importDeclarationl -> .importDeclarationl importDeclaration
+importDeclarations -> .importDeclaration
+importDeclarations -> .importDeclarations importDeclaration
 typeDeclarations -> .typeDeclarationWithPrefixes
 typeDeclarations -> .typeDeclarations typeDeclarationWithPrefixes
 importDeclaration -> .IMPORT STATIC qualifiedName DOT MUL SEMI
@@ -386,11 +385,11 @@ interfaceDeclaration -> .INTERFACE Identifier optionalTypeParameters EXTENDS typ
 enumDeclaration -> .ENUM Identifier interfaceImplentation enumBody
 annotationTypeDeclaration -> .AT INTERFACE Identifier annotationTypeBody
 annotationTypeDeclaration -> .AT INTERFACE Identifier EXTENDS typeList annotationTypeBody 
-transitions ->  {"EOF":34,"importDeclarationl":35,"typeDeclarations":36,"importDeclaration":8,"typeDeclarationWithPrefixes":9,"IMPORT":11,"annotationl":37,"modifierL":12,"typeDeclaration":13,"annotation":10,"modifier":15,"classDeclaration":16,"interfaceDeclaration":17,"enumDeclaration":18,"annotationTypeDeclaration":19,"SEMI":38,"AT":14,"STATIC":20,"FINAL":21,"ABSTRACT":22,"STRICTFP":23,"TRANSIENT":24,"VOLATILE":25,"PUBLIC":26,"PRIVATE":27,"PROTECTED":28,"NATIVE":29,"SYNCHRONIZED":30,"CLASS":31,"INTERFACE":32,"ENUM":33}
+transitions ->  {"EOF":34,"importDeclarations":35,"typeDeclarations":36,"importDeclaration":8,"typeDeclarationWithPrefixes":9,"IMPORT":11,"annotationl":37,"modifierL":12,"typeDeclaration":13,"annotation":10,"modifier":15,"classDeclaration":16,"interfaceDeclaration":17,"enumDeclaration":18,"annotationTypeDeclaration":19,"SEMI":38,"AT":14,"STATIC":20,"FINAL":21,"ABSTRACT":22,"STRICTFP":23,"TRANSIENT":24,"VOLATILE":25,"PUBLIC":26,"PRIVATE":27,"PROTECTED":28,"NATIVE":29,"SYNCHRONIZED":30,"CLASS":31,"INTERFACE":32,"ENUM":33}
 
 item set 3 
-compilationUnit -> importDeclarationl .typeDeclarations EOF
-importDeclarationl -> importDeclarationl .importDeclaration
+compilationUnit -> importDeclarations .typeDeclarations EOF
+importDeclarations -> importDeclarations .importDeclaration
 typeDeclarations -> .typeDeclarationWithPrefixes
 typeDeclarations -> .typeDeclarations typeDeclarationWithPrefixes
 importDeclaration -> .IMPORT STATIC qualifiedName DOT MUL SEMI
@@ -528,7 +527,7 @@ qualifiedName -> .qualifiedName DOT Identifier typeParameters
 transitions ->  {"qualifiedName":48,"Identifier":49}
 
 item set 8 
-importDeclarationl -> importDeclaration . 
+importDeclarations -> importDeclaration . 
 transitions ->  {}
 
 item set 9 
@@ -683,9 +682,9 @@ compilationUnit -> packageDeclaration EOF .
 transitions ->  {}
 
 item set 35 
-compilationUnit -> packageDeclaration importDeclarationl .EOF
-compilationUnit -> packageDeclaration importDeclarationl .typeDeclarations EOF
-importDeclarationl -> importDeclarationl .importDeclaration
+compilationUnit -> packageDeclaration importDeclarations .EOF
+compilationUnit -> packageDeclaration importDeclarations .typeDeclarations EOF
+importDeclarations -> importDeclarations .importDeclaration
 typeDeclarations -> .typeDeclarationWithPrefixes
 typeDeclarations -> .typeDeclarations typeDeclarationWithPrefixes
 importDeclaration -> .IMPORT STATIC qualifiedName DOT MUL SEMI
@@ -808,7 +807,7 @@ typeDeclaration -> SEMI .
 transitions ->  {}
 
 item set 39 
-compilationUnit -> importDeclarationl typeDeclarations .EOF
+compilationUnit -> importDeclarations typeDeclarations .EOF
 typeDeclarations -> typeDeclarations .typeDeclarationWithPrefixes
 typeDeclarationWithPrefixes -> .annotationl modifierL typeDeclaration
 typeDeclarationWithPrefixes -> .modifierL annotationl typeDeclaration
@@ -848,7 +847,7 @@ annotationTypeDeclaration -> .AT INTERFACE Identifier EXTENDS typeList annotatio
 transitions ->  {"EOF":64,"typeDeclarationWithPrefixes":42,"annotationl":37,"modifierL":12,"typeDeclaration":13,"annotation":10,"modifier":15,"classDeclaration":16,"interfaceDeclaration":17,"enumDeclaration":18,"annotationTypeDeclaration":19,"SEMI":38,"AT":14,"STATIC":20,"FINAL":21,"ABSTRACT":22,"STRICTFP":23,"TRANSIENT":24,"VOLATILE":25,"PUBLIC":26,"PRIVATE":27,"PROTECTED":28,"NATIVE":29,"SYNCHRONIZED":30,"CLASS":31,"INTERFACE":32,"ENUM":33}
 
 item set 40 
-importDeclarationl -> importDeclarationl importDeclaration . 
+importDeclarations -> importDeclarations importDeclaration . 
 transitions ->  {}
 
 item set 41 
@@ -1006,11 +1005,11 @@ interfaceImplentation -> .IMPLEMENTS typeList
 transitions ->  {"interfaceImplentation":83,"IMPLEMENTS":84}
 
 item set 60 
-compilationUnit -> packageDeclaration importDeclarationl EOF . 
+compilationUnit -> packageDeclaration importDeclarations EOF . 
 transitions ->  {}
 
 item set 61 
-compilationUnit -> packageDeclaration importDeclarationl typeDeclarations .EOF
+compilationUnit -> packageDeclaration importDeclarations typeDeclarations .EOF
 typeDeclarations -> typeDeclarations .typeDeclarationWithPrefixes
 typeDeclarationWithPrefixes -> .annotationl modifierL typeDeclaration
 typeDeclarationWithPrefixes -> .modifierL annotationl typeDeclaration
@@ -1058,7 +1057,7 @@ annotationl -> annotationl annotation .
 transitions ->  {}
 
 item set 64 
-compilationUnit -> importDeclarationl typeDeclarations EOF . 
+compilationUnit -> importDeclarations typeDeclarations EOF . 
 transitions ->  {}
 
 item set 65 
@@ -1297,7 +1296,7 @@ primitiveType -> .DOUBLE
 transitions ->  {"typeList":145,"type":146,"qualifiedName":138,"primitiveType":139,"Identifier":49,"BOOLEAN":116,"CHAR":117,"BYTE":118,"SHORT":119,"INT":120,"LONG":121,"FLOAT":122,"DOUBLE":123}
 
 item set 85 
-compilationUnit -> packageDeclaration importDeclarationl typeDeclarations EOF . 
+compilationUnit -> packageDeclaration importDeclarations typeDeclarations EOF . 
 transitions ->  {}
 
 item set 86 

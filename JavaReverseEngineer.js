@@ -33,7 +33,7 @@ define(function (require, exports, module) {
         console.log(err);
         console.log(data);
         var r = java7.parse(data);
-        console.log(r);
+        console.log(JSON.stringify(r, null, "\t"));
     });
 
 });
