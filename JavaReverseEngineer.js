@@ -27,9 +27,11 @@ define(function (require, exports, module) {
     var JavaParser = require("java7");
     var FileSystem = staruml.getModule("utils/FileSystem");
 
-    var p = "/Users/niklaus/Library/Application Support/StarUML/extensions/user/JavaCodeEng/java-testset/src-jdk/java/applet/Applet.java";
+    var p1 = "/Users/niklaus/Library/Application Support/StarUML/extensions/user/JavaCodeEng/java-testset/src-jdk/java/applet/Applet.java",
+        p2 = "/Users/niklaus/Library/Application Support/StarUML/extensions/user/JavaCodeEng/java-testset/src-jdk/java/awt/Canvas.java",
+        p3 = "/Users/niklaus/Library/Application Support/StarUML/extensions/user/JavaCodeEng/java-testset/src-jdk/java/util/Collection.java";
 
-    var x = FileSystem.readFile(p, "utf8", function (err, data) {
+    var x = FileSystem.readFile(p3, "utf8", function (err, data) {
         console.log(err);
         console.log(data);
         var r = java7.parse(data);

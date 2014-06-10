@@ -86,54 +86,63 @@ var $0 = $$.length - 1;
 switch (yystate) {
 case 1:
             return {
-                "type": "CompilationUnit",
-                "packageDeclaration": $$[$0-1]
+                "node": "CompilationUnit",
+                "package": $$[$0-1]
             };
         
 break;
 case 2:
             return {
-                "type": "CompilationUnit",
-                "packageDeclaration": $$[$0-2],
-                "importDeclarations": $$[$0-1]
+                "node": "CompilationUnit",
+                "package": $$[$0-2],
+                "imports": $$[$0-1]
             };
         
 break;
 case 3:
             return {
-                "type": "CompilationUnit",
-                "packageDeclaration": $$[$0-3],
-                "importDeclarations": $$[$0-2],
-                "typeDeclarations": $$[$0-1]
+                "node": "CompilationUnit",
+                "package": $$[$0-3],
+                "imports": $$[$0-2],
+                "types": $$[$0-1]
             };
         
 break;
 case 4:
             return {
-                "type": "CompilationUnit",
-                "packageDeclaration": $$[$0-2],
-                "typeDeclarations": $$[$0-1]
+                "node": "CompilationUnit",
+                "package": $$[$0-2],
+                "types": $$[$0-1]
             };
         
 break;
 case 5:
             return {
-                "type": "CompilationUnit",
-                "importDeclarations": $$[$0-2],
-                "typeDeclarations": $$[$0-1]
+                "node": "CompilationUnit",
+                "imports": $$[$0-2],
+                "types": $$[$0-1]
             };
         
 break;
 case 6:
             return {
-                "type": "CompilationUnit",
-                "typeDeclarations": $$[$0-1]
+                "node": "CompilationUnit",
+                "types": $$[$0-1]
             };
+        
+break;
+case 8:
+            $$[$0]["annotations"] = $$[$0-1];
+            this.$ = $$[$0];
+        
+break;
+case 9:
+            this.$ = $$[$0];
         
 break;
 case 10:
             this.$ = {
-                "type": "PackageDeclaration",
+                "node": "Package",
                 "name": $$[$0-1]
             };
         
@@ -148,31 +157,19 @@ case 12:
         
 break;
 case 13:
-            this.$ = {
-                "type": "ImportDeclaration",
-                "name": $$[$0-3] + "." + "*"
-            };
+            this.$ = $$[$0-3] + "." + "*";
         
 break;
 case 14:
-            this.$ = {
-                "type": "ImportDeclaration",
-                "name": $$[$0-1]
-            };
+            this.$ = $$[$0-1];
         
 break;
 case 15:
-            this.$ = {
-                "type": "ImportDeclaration",
-                "name": $$[$0-3] + "." + "*"
-            };
+            this.$ = $$[$0-3] + "." + "*";
         
 break;
 case 16:
-            this.$ = {
-                "type": "ImportDeclaration",
-                "name": $$[$0-1] 
-            };
+            this.$ = $$[$0-1];
         
 break;
 case 17:
@@ -185,18 +182,24 @@ case 18:
         
 break;
 case 19:
+            $$[$0]["annotations"] = $$[$0-2];
+            $$[$0]["modifiers"] = $$[$0-1];
             this.$ = $$[$0];
         
 break;
 case 20:
+            $$[$0]["annotations"] = $$[$0-1];
+            $$[$0]["modifiers"] = $$[$0-2];
             this.$ = $$[$0];
         
 break;
 case 21:
+            $$[$0]["modifiers"] = $$[$0-1];
             this.$ = $$[$0];
         
 break;
 case 22:
+            $$[$0]["annotations"] = $$[$0-1];
             this.$ = $$[$0];
         
 break;
@@ -206,11 +209,11 @@ case 23:
 break;
 case 29:
             this.$ = {
-                "type": "ClassDeclaration",
+                "node": "Class",
                 "name": $$[$0-3],
                 "extends": $$[$0-2],
                 "implements": $$[$0-1],
-                "body": ""
+                "body": $$[$0]
             };
         
 break;
@@ -219,7 +222,7 @@ case 31:
         
 break;
 case 32:
-            this.$ = $$[$0]
+            this.$ = $$[$0];
         
 break;
 case 33:
@@ -228,6 +231,23 @@ case 33:
 break;
 case 34:
             this.$ = $$[$0];
+        
+break;
+case 56:
+            this.$ = {
+                "node": "Interface",
+                "name": $$[$0-2],
+                "body": $$[$0]
+            };
+        
+break;
+case 57:
+            this.$ = {
+                "node": "Interface",
+                "name": $$[$0-4],
+                "extends": $$[$0-1],
+                "body": $$[$0]
+            };
         
 break;
 case 58:
@@ -239,6 +259,453 @@ case 59:
             this.$ = $$[$0-2];
         
 break;
+case 62:
+            this.$ = [];
+        
+break;
+case 63:
+            this.$ = $$[$0-1];
+        
+break;
+case 66:
+            this.$ = [ $$[$0] ];
+        
+break;
+case 67:
+            $$[$0-1].push($$[$0]);
+            this.$ = $$[$0-1];
+        
+break;
+case 71:
+            this.$ = $$[$0-1];
+        
+break;
+case 73:
+            this.$ = $$[$0];
+        
+break;
+case 74:
+            this.$ = [ $$[$0] ];
+        
+break;
+case 75:
+            $$[$0-1].push($$[$0]);
+            this.$ = $$[$0-1];
+        
+break;
+case 77:
+            $$[$0]["annotations"] = $$[$0-2];
+            $$[$0]["modifiers"] = $$[$0-1];
+            this.$ = $$[$0];
+        
+break;
+case 78:
+            $$[$0]["annotations"] = $$[$0-1];
+            $$[$0]["modifiers"] = $$[$0-2];
+            this.$ = $$[$0];
+        
+break;
+case 79:
+            $$[$0]["modifiers"] = $$[$0-1];
+            this.$ = $$[$0];
+        
+break;
+case 80:
+            $$[$0]["annotations"] = $$[$0-1];
+            this.$ = $$[$0];
+        
+break;
+case 96:
+            this.$ = [ $$[$0] ];
+        
+break;
+case 97:
+            $$[$0-1].push($$[$0]);
+            this.$ = $$[$0-1];
+        
+break;
+case 100:
+            this.$ = {
+                "node": "Method",
+                "name": $$[$0-4],
+                "type": "void",
+                "parameters": $$[$0-3],
+                "throws": $$[$0-1]
+            };
+        
+break;
+case 101:
+            this.$ = {
+                "node": "Method",
+                "name": $$[$0-3],
+                "type": "void",
+                "parameters": $$[$0-2]
+            };
+        
+break;
+case 102:
+            this.$ = {
+                "node": "Method",
+                "name": $$[$0-2],
+                "type": "void",
+                "parameters": $$[$0-1]
+            };
+        
+break;
+case 103:
+            this.$ = {
+                "node": "Method",
+                "name": $$[$0-4],
+                "type": $$[$0-5],
+                "parameters": $$[$0-3],
+                "throws": $$[$0-1]
+            };
+        
+break;
+case 104:
+            this.$ = {
+                "node": "Method",
+                "name": $$[$0-3],
+                "type": $$[$0-4],
+                "parameters": $$[$0-2]
+            };
+        
+break;
+case 105:
+            this.$ = {
+                "node": "Method",
+                "name": $$[$0-2],
+                "type": $$[$0-3],
+                "parameters": $$[$0-1]
+            };
+        
+break;
+case 106:
+            this.$ = {
+                "node": "Method",
+                "name": $$[$0-4],
+                "type": "void",
+                "parameters": $$[$0-3],
+                "throws": $$[$0-1]
+            };
+        
+break;
+case 107:
+            this.$ = {
+                "node": "Method",
+                "name": $$[$0-3],
+                "type": "void",
+                "parameters": $$[$0-2]
+            };
+        
+break;
+case 108:
+            this.$ = {
+                "node": "Method",
+                "name": $$[$0-2],
+                "type": "void",
+                "parameters": $$[$0-1]
+            };
+        
+break;
+case 109:
+            this.$ = {
+                "node": "Method",
+                "name": $$[$0-4],
+                "type": $$[$0-5],
+                "parameters": $$[$0-3],
+                "throws": $$[$0-1]
+            };
+        
+break;
+case 110:
+            this.$ = {
+                "node": "Method",
+                "name": $$[$0-3],
+                "type": $$[$0-4],
+                "parameters": $$[$0-2]
+            };
+        
+break;
+case 111:
+            this.$ = {
+                "node": "Method",
+                "name": $$[$0-2],
+                "type": $$[$0-3],
+                "parameters": $$[$0-1]
+            };
+        
+break;
+case 124:
+            this.$ = {
+                "node": "Field",
+                "type": $$[$0-2],
+                "variables": $$[$0-1]
+            };
+        
+break;
+case 125:
+            this.$ = {
+                "node": "Constructor",
+                "name": $$[$0-3],
+                "parameters": $$[$0-2],
+                "throws": $$[$0-1]
+            };
+        
+break;
+case 126:
+            this.$ = {
+                "node": "Constructor",
+                "name": $$[$0-3],
+                "parameters": $$[$0-2],
+                "throws": $$[$0-1]
+            };
+        
+break;
+case 132:
+            this.$ = $$[$0];
+        
+break;
+case 133:
+            $$[$0]["annotations"] = $$[$0-2];
+            $$[$0]["modifiers"] = $$[$0-1];
+            this.$ = $$[$0];
+        
+break;
+case 134:
+            $$[$0]["annotations"] = $$[$0-1];
+            $$[$0]["modifiers"] = $$[$0-2];
+            this.$ = $$[$0];
+        
+break;
+case 135:
+            $$[$0]["annotations"] = $$[$0-1];
+            this.$ = $$[$0];
+        
+break;
+case 136:
+            $$[$0]["modifiers"] = $$[$0-1];
+            this.$ = $$[$0];
+        
+break;
+case 137:
+            this.$ = $$[$0];
+        
+break;
+case 139:
+            this.$ = {
+                "node": "Field",
+                "type": $$[$0-2],
+                "variables": $$[$0-1]
+            };
+        
+break;
+case 140:
+            this.$ = {
+                "node": "Method",
+                "type": "void",
+                "name": $$[$0-4],
+                "parameters": $$[$0-3],
+                "throws": $$[$0-1]
+            };
+        
+break;
+case 141:
+            this.$ = {
+                "node": "Method",
+                "type": "void",
+                "name": $$[$0-3],
+                "parameters": $$[$0-2]
+            };
+        
+break;
+case 142:
+            this.$ = {
+                "node": "Method",
+                "type": "void",
+                "name": $$[$0-2],
+                "parameters": $$[$0-1]
+            };
+        
+break;
+case 143:
+            this.$ = {
+                "node": "Method",
+                "type": $$[$0-5],
+                "name": $$[$0-4],
+                "parameters": $$[$0-3],
+                "throws": $$[$0-1]
+            };
+        
+break;
+case 144:
+            this.$ = {
+                "node": "Method",
+                "type": $$[$0-4],
+                "name": $$[$0-3],
+                "parameters": $$[$0-2]
+            };
+        
+break;
+case 145:
+            this.$ = {
+                "node": "Method",
+                "type": $$[$0-3],
+                "name": $$[$0-2],
+                "parameters": $$[$0-1]
+            };
+        
+break;
+case 157:
+            this.$ = [ $$[$0] ];
+        
+break;
+case 158:
+            $$[$0-2].push($$[$0]);
+            this.$ = $$[$0-2];
+        
+break;
+case 159:
+            this.$ = {
+                "node": "Variable",
+                "name": $$[$0-2],
+                "initializer": $$[$0]
+            };
+        
+break;
+case 160:
+            this.$ = {
+                "node": "Variable",
+                "name": $$[$0-3],
+                "arrayDimension": $$[$0-2],
+                "initializer": $$[$0]
+            };
+        
+break;
+case 161:
+            this.$ = [ $$[$0] ];
+        
+break;
+case 162:
+            $$[$0-2].push($$[$0]);
+            this.$ = $$[$0-2];
+        
+break;
+case 163:
+            this.$ = $$[$0];
+        
+break;
+case 164:
+            $$[$0-2]["initializer"] = $$[$0];
+            this.$ = $$[$0-2];
+        
+break;
+case 165:
+            this.$ = {
+                "node": "Variable",
+                "name": $$[$0-1],
+                "arrayDimension": $$[$0]
+            };
+        
+break;
+case 202:
+            this.$ = [ $$[$0] ];
+        
+break;
+case 203:
+            $$[$0-2].push($$[$0]);
+            this.$ = $$[$0-2];
+        
+break;
+case 204:
+            this.$ = [];
+        
+break;
+case 205:
+            this.$ = $$[$0-1];
+        
+break;
+case 206:
+            this.$ = $$[$0];
+        
+break;
+case 207:
+            $$[$0-2].push($$[$0]);
+            this.$ = $$[$0-2];
+        
+break;
+case 208:
+            this.$ = [ $$[$0] ];
+        
+break;
+case 209:
+            this.$ = [ $$[$0] ];
+        
+break;
+case 210:
+            $$[$0-2].push($$[$0]);
+            this.$ = $$[$0-2];
+        
+break;
+case 211:
+            this.$ = [ $$[$0-1] ];
+        
+break;
+case 213:
+            this.$ = [ $$[$0] ];
+        
+break;
+case 214:
+            this.$ = [ $$[$0] ];
+        
+break;
+case 215:
+            this.$ = [ $$[$0] ];
+        
+break;
+case 216:
+            $$[$0-1].push($$[$0]);
+            this.$ = $$[$0-1];
+        
+break;
+case 217:
+            this.$ = $$[$0];
+        
+break;
+case 219:
+            this.$ = {
+                "node": "Parameter",
+                "type": $$[$0-1],
+                "variable": $$[$0],
+                "modifiers": $$[$0-2]
+            };
+        
+break;
+case 220:
+            this.$ = {
+                "node": "Parameter",
+                "type": $$[$0-1],
+                "variable": $$[$0]
+            };
+        
+break;
+case 221:
+            this.$ = {
+                "node": "Parameter",
+                "type": $$[$0-2],
+                "variable": $$[$0],
+                "modifiers": $$[$0-3]
+            };        
+        
+break;
+case 222:
+            this.$ = {
+                "node": "Parameter",
+                "type": $$[$0-2],
+                "variable": $$[$0]
+            };
+        
+break;
 case 225: this.$ = $$[$0]; 
 break;
 case 226: this.$ = $$[$0-1]; 
@@ -246,6 +713,42 @@ break;
 case 227: this.$ = $$[$0-2] + "." + $$[$0]; 
 break;
 case 228: this.$ = $$[$0-3] + "." + $$[$0-1]; 
+break;
+case 236:
+            this.$ = $$[$0];
+        
+break;
+case 237:
+            this.$ = [ $$[$0] ];
+        
+break;
+case 238:
+            $$[$0-1].push($$[$0]);
+            this.$ = $$[$0-1];
+        
+break;
+case 239:
+            this.$ = {
+                "node": "Annotation",
+                "name": $$[$0]
+            };
+        
+break;
+case 240:
+            this.$ = {
+                "node": "Annotation",
+                "name": $$[$0-3],
+                "values": $$[$0-1]
+            };
+        
+break;
+case 241:
+            this.$ = {
+                "node": "Annotation",
+                "name": $$[$0-3],
+                "values": $$[$0-1]
+            };
+        
 break;
 }
 },

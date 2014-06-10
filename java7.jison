@@ -45,48 +45,48 @@ compilationUnit
     :	packageDeclaration EOF
         {
             return {
-                "type": "CompilationUnit",
-                "packageDeclaration": $1
+                "node": "CompilationUnit",
+                "package": $1
             };
         }
     |   packageDeclaration importDeclarations EOF
         {
             return {
-                "type": "CompilationUnit",
-                "packageDeclaration": $1,
-                "importDeclarations": $2
+                "node": "CompilationUnit",
+                "package": $1,
+                "imports": $2
             };
         }
     |   packageDeclaration importDeclarations typeDeclarations EOF
         {
             return {
-                "type": "CompilationUnit",
-                "packageDeclaration": $1,
-                "importDeclarations": $2,
-                "typeDeclarations": $3
+                "node": "CompilationUnit",
+                "package": $1,
+                "imports": $2,
+                "types": $3
             };
         }
     |	packageDeclaration typeDeclarations EOF
         {
             return {
-                "type": "CompilationUnit",
-                "packageDeclaration": $1,
-                "typeDeclarations": $2
+                "node": "CompilationUnit",
+                "package": $1,
+                "types": $2
             };
         }
     |	importDeclarations typeDeclarations EOF
         {
             return {
-                "type": "CompilationUnit",
-                "importDeclarations": $1,
-                "typeDeclarations": $2
+                "node": "CompilationUnit",
+                "imports": $1,
+                "types": $2
             };
         }
     |	typeDeclarations EOF
         {
             return {
-                "type": "CompilationUnit",
-                "typeDeclarations": $1
+                "node": "CompilationUnit",
+                "types": $1
             };
         }
     |   SEMI
@@ -94,15 +94,21 @@ compilationUnit
 
 packageDeclaration
     :	annotationl packageDeclaration
+        {
+            $2["annotations"] = $1;
+            $$ = $2;
+        }
     |   packageDeclaration
-        
+        {
+            $$ = $1;
+        }
     ;
 
 packageDeclaration
     :   PACKAGE qualifiedName SEMI
         {
             $$ = {
-                "type": "PackageDeclaration",
+                "node": "Package",
                 "name": $2
             };
         }
@@ -123,31 +129,19 @@ importDeclarations
 importDeclaration
     :   IMPORT STATIC qualifiedName DOT MUL SEMI
         {
-            $$ = {
-                "type": "ImportDeclaration",
-                "name": $3 + "." + "*"
-            };
+            $$ = $3 + "." + "*";
         }
     |   IMPORT STATIC qualifiedName SEMI
         {
-            $$ = {
-                "type": "ImportDeclaration",
-                "name": $3
-            };
+            $$ = $3;
         }
     |	IMPORT qualifiedName DOT MUL SEMI
         {
-            $$ = {
-                "type": "ImportDeclaration",
-                "name": $2 + "." + "*"
-            };
+            $$ = $2 + "." + "*";
         }
     |   IMPORT qualifiedName SEMI
         {
-            $$ = {
-                "type": "ImportDeclaration",
-                "name": $2 
-            };
+            $$ = $2;
         }
     ;
 
@@ -166,18 +160,24 @@ typeDeclarations
 typeDeclarationWithPrefixes
     :   annotationl modifierL typeDeclaration
         {
+            $3["annotations"] = $1;
+            $3["modifiers"] = $2;
             $$ = $3;
         }
     |   modifierL annotationl typeDeclaration
         {
+            $3["annotations"] = $2;
+            $3["modifiers"] = $1;
             $$ = $3;
         }
     |   modifierL typeDeclaration
         {
+            $2["modifiers"] = $1;
             $$ = $2;
         }
     |   annotationl typeDeclaration
         {
+            $2["annotations"] = $1;
             $$ = $2;
         }
     |   typeDeclaration
@@ -198,11 +198,11 @@ classDeclaration
     :   CLASS Identifier classInheritance interfaceImplentation classBody
         {
             $$ = {
-                "type": "ClassDeclaration",
+                "node": "Class",
                 "name": $2,
                 "extends": $3,
                 "implements": $4,
-                "body": ""
+                "body": $5
             };
         }
     |   CLASS Identifier typeParameters classInheritance interfaceImplentation classBody
@@ -285,7 +285,22 @@ enumConstantClassBody
 
 interfaceDeclaration
     :   INTERFACE Identifier optionalTypeParameters interfaceBody
+        {
+            $$ = {
+                "node": "Interface",
+                "name": $2,
+                "body": $4
+            };
+        }
     |   INTERFACE Identifier optionalTypeParameters EXTENDS typeList interfaceBody
+        {
+            $$ = {
+                "node": "Interface",
+                "name": $2,
+                "extends": $5,
+                "body": $6
+            };
+        }
     ;
 
 typeList
@@ -306,7 +321,13 @@ optionalTypeParameters
     ;
 classBody
     :   LBRACE  RBRACE
+        {
+            $$ = [];
+        }
     |   LBRACE classBodyDeclarationl RBRACE
+        {
+            $$ = $2;
+        }
     ;
 
 /*Can be zero or more*/
@@ -317,7 +338,14 @@ classBodyDeclarations
 
 classBodyDeclarationl
     :   classBodyDeclaration
+        {
+            $$ = [ $1 ];
+        }
     |   classBodyDeclarationl classBodyDeclaration
+        {
+            $1.push($2);
+            $$ = $1;
+        }
     ;
 
 classStaticBlock
@@ -328,27 +356,55 @@ classStaticBlock
 interfaceBody
     :   LBRACE RBRACE
     |   LBRACE interfaceBodyDeclarationl RBRACE
-        
+        {
+            $$ = $2;
+        }
     ;
 
 interfaceBodyDeclarations
     :   %empty /* empty */
     |   interfaceBodyDeclarationl
+        {
+            $$ = $1;
+        }
     ;
 
 interfaceBodyDeclarationl
     :   interfaceBodyDeclaration
+        {
+            $$ = [ $1 ];
+        }
     |   interfaceBodyDeclarationl interfaceBodyDeclaration
+        {
+            $1.push($2);
+            $$ = $1;
+        }
     ;
 
 classBodyDeclaration
     :   SEMI
-
     |   annotationl modifierL classMemberDeclaration
+        {
+            $3["annotations"] = $1;
+            $3["modifiers"] = $2;
+            $$ = $3;
+        }
     |   modifierL annotationl classMemberDeclaration
+        {
+            $3["annotations"] = $2;
+            $3["modifiers"] = $1;
+            $$ = $3;
+        }
     |   modifierL classMemberDeclaration
-
+        {
+            $2["modifiers"] = $1;
+            $$ = $2;
+        }
     |   annotationl classMemberDeclaration
+        {
+            $2["annotations"] = $1;
+            $$ = $2;
+        }
     |   classMemberDeclaration
     |   classStaticBlock
     ;
@@ -374,7 +430,14 @@ modifier
 
 modifierL
     :   modifier
+        {
+            $$ = [ $1 ];
+        }
     |   modifierL modifier
+        {
+            $1.push($2);
+            $$ = $1;
+        }
     ;
 
 modifiers
@@ -383,19 +446,119 @@ modifiers
     ;
 
 classMemberDeclaration
-    : /* Methods */
+    :   /* Methods */
         VOID Identifier formalParameters arrayDimensionBracks throwsList block
+        {
+            $$ = {
+                "node": "Method",
+                "name": $2,
+                "type": "void",
+                "parameters": $3,
+                "throws": $5
+            };
+        }
     |   VOID Identifier formalParameters arrayDimensionBracks block
+        {
+            $$ = {
+                "node": "Method",
+                "name": $2,
+                "type": "void",
+                "parameters": $3
+            };
+        }
     |   VOID Identifier formalParameters block
+        {
+            $$ = {
+                "node": "Method",
+                "name": $2,
+                "type": "void",
+                "parameters": $3
+            };
+        }
     |   type Identifier formalParameters arrayDimensionBracks throwsList block
+        {
+            $$ = {
+                "node": "Method",
+                "name": $2,
+                "type": $1,
+                "parameters": $3,
+                "throws": $5
+            };
+        }
     |   type Identifier formalParameters arrayDimensionBracks block
+        {
+            $$ = {
+                "node": "Method",
+                "name": $2,
+                "type": $1,
+                "parameters": $3
+            };
+        }
     |   type Identifier formalParameters block
+        {
+            $$ = {
+                "node": "Method",
+                "name": $2,
+                "type": $1,
+                "parameters": $3
+            };
+        }
     |   VOID Identifier formalParameters arrayDimensionBracks throwsList SEMI
+        {
+            $$ = {
+                "node": "Method",
+                "name": $2,
+                "type": "void",
+                "parameters": $3,
+                "throws": $5
+            };
+        }
     |   VOID Identifier formalParameters arrayDimensionBracks SEMI
+        {
+            $$ = {
+                "node": "Method",
+                "name": $2,
+                "type": "void",
+                "parameters": $3
+            };
+        }
     |   VOID Identifier formalParameters SEMI
+        {
+            $$ = {
+                "node": "Method",
+                "name": $2,
+                "type": "void",
+                "parameters": $3
+            };
+        }
     |   type Identifier formalParameters arrayDimensionBracks throwsList SEMI
+        {
+            $$ = {
+                "node": "Method",
+                "name": $2,
+                "type": $1,
+                "parameters": $3,
+                "throws": $5
+            };
+        }
     |   type Identifier formalParameters arrayDimensionBracks SEMI
+        {
+            $$ = {
+                "node": "Method",
+                "name": $2,
+                "type": $1,
+                "parameters": $3
+            };
+        }
     |   type Identifier formalParameters SEMI
+        {
+            $$ = {
+                "node": "Method",
+                "name": $2,
+                "type": $1,
+                "parameters": $3
+            };
+        }
     |   typeParameters VOID Identifier formalParameters arrayDimensionBracks throwsList block
     |   typeParameters VOID Identifier formalParameters arrayDimensionBracks block
     |   typeParameters VOID Identifier formalParameters block
@@ -410,11 +573,34 @@ classMemberDeclaration
     |   typeParameters type Identifier formalParameters SEMI
 
     /* Fields */
-    |    type variableDeclarators SEMI
+    |   type variableDeclarators SEMI
+        {
+            $$ = {
+                "node": "Field",
+                "type": $1,
+                "variables": $2
+            };
+        }
 
     /* Constructor */
-    |    Identifier formalParameters throwsList block
-    |    typeParameters Identifier formalParameters throwsList block
+    |   Identifier formalParameters throwsList block
+        {
+            $$ = {
+                "node": "Constructor",
+                "name": $1,
+                "parameters": $2,
+                "throws": $3
+            };
+        }
+    |   typeParameters Identifier formalParameters throwsList block
+        {
+            $$ = {
+                "node": "Constructor",
+                "name": $2,
+                "parameters": $3,
+                "throws": $4
+            };
+        }
 
     /* Inner class, enum, interface or annotation type */
     |   classDeclaration
@@ -427,62 +613,106 @@ classMemberDeclaration
 throwsList
     : %empty /* empty */
     |   THROWS qualifiedNameList
+        {
+            $$ = $2;
+        }
     ;
-/*
-methodDeclaration
-    :   VOID Identifier formalParameters arrayDimensionBracks throwsList block
-    |   VOID Identifier formalParameters arrayDimensionBracks block
-    |   VOID Identifier formalParameters block
-    |   type Identifier formalParameters arrayDimensionBracks throwsList block
-    |   type Identifier formalParameters arrayDimensionBracks block
-    |   type Identifier formalParameters block
-    |   VOID Identifier formalParameters arrayDimensionBracks throwsList SEMI
-    |   VOID Identifier formalParameters arrayDimensionBracks SEMI
-    |   VOID Identifier formalParameters SEMI
-    |   type Identifier formalParameters arrayDimensionBracks throwsList SEMI
-    |   type Identifier formalParameters arrayDimensionBracks SEMI
-    |   type Identifier formalParameters SEMI
-    ;
-
-genericMethodDeclaration
-    :   typeParameters methodDeclaration
-    ; 
-
-constructorDeclaration
-    :   Identifier formalParameters throwsList block
-    ;
-
-genericConstructorDeclaration
-    :   typeParameters Identifier formalParameters throwsList block
-    ;
-
-fieldDeclaration
-    :   type variableDeclarators SEMI
-    |   "$&*@#$^@$^@$^$^@^" // bogus state
-    ;
-
-interfaceConstOrMethodModifier
-    :   PUBLIC
-    |   PROTECTED
-    ; */  
 
 interfaceBodyDeclaration
     :   annotationl modifierL interfaceMemberDeclaration
+        {
+            $3["annotations"] = $1;
+            $3["modifiers"] = $2;
+            $$ = $3;
+        }
     |   modifierL annotationl interfaceMemberDeclaration
+        {
+            $3["annotations"] = $2;
+            $3["modifiers"] = $1;
+            $$ = $3;
+        }
     |   annotationl interfaceMemberDeclaration
+        {
+            $2["annotations"] = $1;
+            $$ = $2;
+        }
     |   modifierL interfaceMemberDeclaration
+        {
+            $2["modifiers"] = $1;
+            $$ = $2;
+        }
     |   interfaceMemberDeclaration
+        {
+            $$ = $1;
+        }
     |   SEMI
     ;
 
 interfaceMemberDeclaration
     :   type constDelarators SEMI
+        {
+            $$ = {
+                "node": "Field",
+                "type": $1,
+                "variables": $2
+            };
+        }
     |   VOID Identifier formalParameters arrayDimensionBracks throwsList SEMI
+        {
+            $$ = {
+                "node": "Method",
+                "type": "void",
+                "name": $2,
+                "parameters": $3,
+                "throws": $5
+            };
+        }
     |   VOID Identifier formalParameters arrayDimensionBracks SEMI
+        {
+            $$ = {
+                "node": "Method",
+                "type": "void",
+                "name": $2,
+                "parameters": $3
+            };
+        }
     |   VOID Identifier formalParameters SEMI
+        {
+            $$ = {
+                "node": "Method",
+                "type": "void",
+                "name": $2,
+                "parameters": $3
+            };
+        }
     |   type Identifier formalParameters arrayDimensionBracks throwsList SEMI
+        {
+            $$ = {
+                "node": "Method",
+                "type": $1,
+                "name": $2,
+                "parameters": $3,
+                "throws": $5
+            };
+        }
     |   type Identifier formalParameters arrayDimensionBracks SEMI
+        {
+            $$ = {
+                "node": "Method",
+                "type": $1,
+                "name": $2,
+                "parameters": $3
+            };
+        }
     |   type Identifier formalParameters SEMI
+        {
+            $$ = {
+                "node": "Method",
+                "type": $1,
+                "name": $2,
+                "parameters": $3
+            };
+        }
     |   typeParameters VOID Identifier formalParameters arrayDimensionBracks throwsList SEMI
     |   typeParameters VOID Identifier formalParameters arrayDimensionBracks SEMI
     |   typeParameters VOID Identifier formalParameters SEMI
@@ -501,12 +731,34 @@ constDeclaration
 
 constDelarators
     :   constantDeclarator
+        {
+            $$ = [ $1 ];
+        }
     |   constDelarators COMMA constantDeclarator
+        {
+            $1.push($3);
+            $$ = $1;
+        }
     ;
 
 constantDeclarator
     :   Identifier ASSIGN variableInitializer
+        {
+            $$ = {
+                "node": "Variable",
+                "name": $1,
+                "initializer": $3
+            };
+        }
     |   Identifier arrayDimensionBrackl ASSIGN variableInitializer
+        {
+            $$ = {
+                "node": "Variable",
+                "name": $1,
+                "arrayDimension": $2,
+                "initializer": $4
+            };
+        }
     ;
 
 /* see matching of [] comment in methodDeclaratorRest*/
@@ -531,16 +783,37 @@ interfaceNonVoidMethod
 
 variableDeclarators
     :   variableDeclarator
+        {
+            $$ = [ $1 ];
+        }
     |   variableDeclarators COMMA variableDeclarator
+        {
+            $1.push($3);
+            $$ = $1;
+        }
     ;
 
 variableDeclarator
     :   variableDeclaratorId
+        {
+            $$ = $1;
+        }
     |   variableDeclaratorId ASSIGN variableInitializer
+        {
+            $1["initializer"] = $3;
+            $$ = $1;
+        }
     ;
 
 variableDeclaratorId
     :   Identifier arrayDimensionBracks
+        {
+            $$ = {
+                "node": "Variable",
+                "name": $1,
+                "arrayDimension": $2
+            };
+        }
     ;
 
 variableInitializer
@@ -622,51 +895,130 @@ typeArgument_
 
 qualifiedNameList
     :   qualifiedName
+        {
+            $$ = [ $1 ];
+        }
     |   qualifiedNameList COMMA qualifiedName
+        {
+            $1.push($3);
+            $$ = $1;
+        }
     ;
 
 formalParameters
     :   LPAREN RPAREN
+        {
+            $$ = [];
+        }
     |   LPAREN formalParameterList RPAREN
+        {
+            $$ = $2;
+        }
     ;
 
 formalParameterList
     :   usualParameterList
+        {
+            $$ = $1;
+        }
     |   usualParameterList COMMA lastFormalParameter
+        {
+            $1.push($3);
+            $$ = $1;
+        }
     |   lastFormalParameter
+        {
+            $$ = [ $1 ];
+        }
     ;
 
 usualParameterList
     :   usualParameter
+        {
+            $$ = [ $1 ];
+        }
     |   usualParameterList COMMA usualParameter
+        {
+            $1.push($3);
+            $$ = $1;
+        }
     ;
 
 
 variableModifiers
     :   FINAL annotationl
+        {
+            $$ = [ $1 ];
+        }
     |   annotationl
     |   FINAL
+        {
+            $$ = [ $1 ];
+        }
     |   annotationl FINAL
+        {
+            $$ = [ $2 ];
+        }
     ;
 
 variableModifierL
     :   variableModifier
+        {
+            $$ = [ $1 ];
+        }
     |   variableModifierL variableModifier
+        {
+            $1.push($2);
+            $$ = $1;
+        }
     ;
 
 variableModifier
     :   FINAL
+        {
+            $$ = $1;
+        }
     |   annotations
     ;
 
 usualParameter
     :   variableModifiers type variableDeclaratorId
+        {
+            $$ = {
+                "node": "Parameter",
+                "type": $2,
+                "variable": $3,
+                "modifiers": $1
+            };
+        }
     |   type variableDeclaratorId
+        {
+            $$ = {
+                "node": "Parameter",
+                "type": $1,
+                "variable": $2
+            };
+        }
     ;
 
 lastFormalParameter
     :   variableModifiers type ELLIPSIS variableDeclaratorId
+        {
+            $$ = {
+                "node": "Parameter",
+                "type": $2,
+                "variable": $4,
+                "modifiers": $1
+            };        
+        }
     |   type ELLIPSIS variableDeclaratorId
+        {
+            $$ = {
+                "node": "Parameter",
+                "type": $1,
+                "variable": $3
+            };
+        }
     ;
 
 methodBody
@@ -702,17 +1054,47 @@ literal
 annotations
     :   %empty /* empty */
     |   annotationl
+        {
+            $$ = $1;
+        }
     ;
 
 annotationl
     :   annotation
+        {
+            $$ = [ $1 ];
+        }
     |   annotationl annotation
+        {
+            $1.push($2);
+            $$ = $1;
+        }
     ;
 
 annotation
     :   AT qualifiedName
+        {
+            $$ = {
+                "node": "Annotation",
+                "name": $2
+            };
+        }
     |   AT qualifiedName LPAREN elementValueList RPAREN
+        {
+            $$ = {
+                "node": "Annotation",
+                "name": $2,
+                "values": $4
+            };
+        }
     |   AT qualifiedName LPAREN elementValuePairs RPAREN
+        {
+            $$ = {
+                "node": "Annotation",
+                "name": $2,
+                "values": $4
+            };
+        }
     ;
 
 annotationOptValues
