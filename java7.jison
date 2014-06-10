@@ -129,7 +129,8 @@ importDeclarations
 importDeclaration
     :   IMPORT STATIC qualifiedName DOT MUL SEMI
         {
-            $$ = $3 + "." + "*";
+            $3["name"] = $3["name"] + ".*";
+            $$ = $3;
         }
     |   IMPORT STATIC qualifiedName SEMI
         {
@@ -137,7 +138,8 @@ importDeclaration
         }
     |	IMPORT qualifiedName DOT MUL SEMI
         {
-            $$ = $2 + "." + "*";
+            $2["name"] = $2["name"] + ".*";
+            $$ = $2;
         }
     |   IMPORT qualifiedName SEMI
         {
@@ -206,6 +208,16 @@ classDeclaration
             };
         }
     |   CLASS Identifier typeParameters classInheritance interfaceImplentation classBody
+        {
+            $$ = {
+                "node": "Class",
+                "name": $2,
+                "typeParameters": $3,
+                "extends": $4,
+                "implements": $5,
+                "body": $6
+            };
+        }
     ;
 
 classInheritance
@@ -232,46 +244,84 @@ interfaceImplentation
 
 typeParameters
     :   TEMPLATE
+        {
+            $$ = $1;
+        }
     ;
 
 enumDeclaration
-    :   ENUM Identifier interfaceImplentation
-        enumBody
-    /*|      ENUM Identifier interfaceImplentation
-        LBRACE enumOptionalConstantDeclaration optionalComma enumOptionalBodyDeclarations RBRACE*/
+    :   ENUM Identifier interfaceImplentation enumBody
+        {
+            $$ = {
+                "node": "Enum",
+                "name": $2,
+                "implements": $3,
+                "body": $4
+            };
+        }
     ;
 
 enumBody
     :   LBRACE RBRACE
     |   LBRACE enumBodyDeclaration RBRACE
+        {
+            $$ = $2;
+        }
     ;
 
 enumBodyDeclaration
     :   enumConstants
+        {
+            $$ = $1;
+        }
     |   enumConstants COMMA
+        {
+            $$ = $1;
+        }
     |   enumConstants SEMI
+        {
+            $$ = $1;
+        }
     |   enumConstants COMMA SEMI
+        {
+            $$ = $1;
+        }
     |   enumConstants SEMI classBodyDeclarationl
+        {
+            $$ = $1.concat($3);
+        }
     |   enumConstants COMMA SEMI classBodyDeclarationl
-    ;
-
-enumOptionalConstantDeclaration
-    :   %empty /* empty */
-    |   enumConstants
-    ;
-
-enumOptionalClassBody
-    :   %empty /* empty */
-    |   classBodyDeclarationl
+        {
+            $$ = $1.concat($4);
+        }
     ;
 
 enumConstants
     :   annotations Identifier enumConstantArguments enumConstantClassBody
+        {
+            $$ = [
+                {
+                    "node": "EnumConstant",
+                    "annotations": $1,
+                    "name": $2,
+                    "arguments": $3,
+                    "body": $4
+                }
+            ];
+        }
     |   enumConstants COMMA annotations Identifier enumConstantArguments enumConstantClassBody
-    ;
-
-enumConstant
-    :   annotations Identifier enumConstantArguments enumConstantClassBody
+        {
+            $1.push(
+                {
+                    "node": "EnumConstant",
+                    "annotations": $3,
+                    "name": $4,
+                    "arguments": $5,
+                    "body": $6
+                }
+            );
+            $$ = $1;
+        }
     ;
 
 enumConstantArguments
@@ -289,6 +339,7 @@ interfaceDeclaration
             $$ = {
                 "node": "Interface",
                 "name": $2,
+                "typeParameters": $3,
                 "body": $4
             };
         }
@@ -297,6 +348,7 @@ interfaceDeclaration
             $$ = {
                 "node": "Interface",
                 "name": $2,
+                "typeParameters": $3,
                 "extends": $5,
                 "body": $6
             };
@@ -318,6 +370,9 @@ typeList
 optionalTypeParameters
     :   %empty
     |   typeParameters
+        {
+            $$ = $1;
+        }
     ;
 classBody
     :   LBRACE  RBRACE
@@ -452,7 +507,8 @@ classMemberDeclaration
             $$ = {
                 "node": "Method",
                 "name": $2,
-                "type": "void",
+                "type": { "node": "Type", "name": "void" },
+                "arrayDimension": $4,
                 "parameters": $3,
                 "throws": $5
             };
@@ -462,7 +518,8 @@ classMemberDeclaration
             $$ = {
                 "node": "Method",
                 "name": $2,
-                "type": "void",
+                "type": { "node": "Type", "name": "void" },
+                "arrayDimension": $4,
                 "parameters": $3
             };
         }
@@ -471,7 +528,7 @@ classMemberDeclaration
             $$ = {
                 "node": "Method",
                 "name": $2,
-                "type": "void",
+                "type": { "node": "Type", "name": "void" },
                 "parameters": $3
             };
         }
@@ -481,6 +538,7 @@ classMemberDeclaration
                 "node": "Method",
                 "name": $2,
                 "type": $1,
+                "arrayDimension": $4,
                 "parameters": $3,
                 "throws": $5
             };
@@ -491,6 +549,7 @@ classMemberDeclaration
                 "node": "Method",
                 "name": $2,
                 "type": $1,
+                "arrayDimension": $4,
                 "parameters": $3
             };
         }
@@ -508,7 +567,8 @@ classMemberDeclaration
             $$ = {
                 "node": "Method",
                 "name": $2,
-                "type": "void",
+                "type": { "node": "Type", "name": "void" },
+                "arrayDimension": $4,
                 "parameters": $3,
                 "throws": $5
             };
@@ -518,7 +578,8 @@ classMemberDeclaration
             $$ = {
                 "node": "Method",
                 "name": $2,
-                "type": "void",
+                "type": { "node": "Type", "name": "void" },
+                "arrayDimension": $4,
                 "parameters": $3
             };
         }
@@ -527,7 +588,7 @@ classMemberDeclaration
             $$ = {
                 "node": "Method",
                 "name": $2,
-                "type": "void",
+                "type": { "node": "Type", "name": "void" },
                 "parameters": $3
             };
         }
@@ -537,6 +598,7 @@ classMemberDeclaration
                 "node": "Method",
                 "name": $2,
                 "type": $1,
+                "arrayDimension": $4,
                 "parameters": $3,
                 "throws": $5
             };
@@ -547,6 +609,7 @@ classMemberDeclaration
                 "node": "Method",
                 "name": $2,
                 "type": $1,
+                "arrayDimension": $4,
                 "parameters": $3
             };
         }
@@ -560,17 +623,137 @@ classMemberDeclaration
             };
         }
     |   typeParameters VOID Identifier formalParameters arrayDimensionBracks throwsList block
+        {
+            $$ = {
+                "node": "Method",
+                "typeParameters": $1,
+                "name": $3,
+                "type": { "node": "Type", "name": "void" },
+                "arrayDimension": $5,
+                "parameters": $4,
+                "throws": $6
+            };
+        }
     |   typeParameters VOID Identifier formalParameters arrayDimensionBracks block
+        {
+            $$ = {
+                "node": "Method",
+                "typeParameters": $1,
+                "name": $3,
+                "type": { "node": "Type", "name": "void" },
+                "arrayDimension": $5,
+                "parameters": $4
+            };
+        }
     |   typeParameters VOID Identifier formalParameters block
+        {
+            $$ = {
+                "node": "Method",
+                "typeParameters": $1,
+                "name": $3,
+                "type": { "node": "Type", "name": "void" },
+                "parameters": $4
+            };
+        }
     |   typeParameters type Identifier formalParameters arrayDimensionBracks throwsList block
+        {
+            $$ = {
+                "node": "Method",
+                "typeParameters": $1,
+                "name": $3,
+                "type": $2,
+                "arrayDimension": $5,
+                "parameters": $4,
+                "throws": $6
+            };
+        }
     |   typeParameters type Identifier formalParameters arrayDimensionBracks block
+        {
+            $$ = {
+                "node": "Method",
+                "typeParameters": $1,
+                "name": $3,
+                "type": $2,
+                "arrayDimension": $5,
+                "parameters": $4
+            };
+        }
     |   typeParameters type Identifier formalParameters block
+        {
+            $$ = {
+                "node": "Method",
+                "typeParameters": $1,
+                "name": $3,
+                "type": $2,
+                "parameters": $4
+            };
+        }
     |   typeParameters VOID Identifier formalParameters arrayDimensionBracks throwsList SEMI
+        {
+            $$ = {
+                "node": "Method",
+                "typeParameters": $1,
+                "name": $3,
+                "type": { "node": "Type", "name": "void" },
+                "arrayDimension": $5,
+                "parameters": $4,
+                "throws": $6
+            };
+        }
     |   typeParameters VOID Identifier formalParameters arrayDimensionBracks SEMI
+        {
+            $$ = {
+                "node": "Method",
+                "typeParameters": $1,
+                "name": $3,
+                "type": { "node": "Type", "name": "void" },
+                "arrayDimension": $5,
+                "parameters": $4
+            };
+        }
     |   typeParameters VOID Identifier formalParameters SEMI
+        {
+            $$ = {
+                "node": "Method",
+                "typeParameters": $1,
+                "name": $3,
+                "type": { "node": "Type", "name": "void" },
+                "parameters": $4
+            };
+        }
     |   typeParameters type Identifier formalParameters arrayDimensionBracks throwsList SEMI
+        {
+            $$ = {
+                "node": "Method",
+                "typeParameters": $1,
+                "name": $3,
+                "type": $2,
+                "arrayDimension": $5,
+                "parameters": $4,
+                "throws": $6
+            };
+        }
     |   typeParameters type Identifier formalParameters arrayDimensionBracks SEMI
+        {
+            $$ = {
+                "node": "Method",
+                "typeParameters": $1,
+                "name": $3,
+                "type": $2,
+                "arrayDimension": $5,
+                "parameters": $4
+            };
+        }
     |   typeParameters type Identifier formalParameters SEMI
+        {
+            $$ = {
+                "node": "Method",
+                "typeParameters": $1,
+                "name": $3,
+                "type": $2,
+                "parameters": $4
+            };
+        }
 
     /* Fields */
     |   type variableDeclarators SEMI
@@ -661,7 +844,8 @@ interfaceMemberDeclaration
         {
             $$ = {
                 "node": "Method",
-                "type": "void",
+                "type": { "node": "Type", "name": "void" },
+                "arrayDimension": $4,
                 "name": $2,
                 "parameters": $3,
                 "throws": $5
@@ -671,7 +855,8 @@ interfaceMemberDeclaration
         {
             $$ = {
                 "node": "Method",
-                "type": "void",
+                "type": { "node": "Type", "name": "void" },
+                "arrayDimension": $4,
                 "name": $2,
                 "parameters": $3
             };
@@ -680,7 +865,7 @@ interfaceMemberDeclaration
         {
             $$ = {
                 "node": "Method",
-                "type": "void",
+                "type": { "node": "Type", "name": "void" },
                 "name": $2,
                 "parameters": $3
             };
@@ -690,6 +875,7 @@ interfaceMemberDeclaration
             $$ = {
                 "node": "Method",
                 "type": $1,
+                "arrayDimension": $4,
                 "name": $2,
                 "parameters": $3,
                 "throws": $5
@@ -700,6 +886,7 @@ interfaceMemberDeclaration
             $$ = {
                 "node": "Method",
                 "type": $1,
+                "arrayDimension": $4,
                 "name": $2,
                 "parameters": $3
             };
@@ -714,11 +901,71 @@ interfaceMemberDeclaration
             };
         }
     |   typeParameters VOID Identifier formalParameters arrayDimensionBracks throwsList SEMI
+        {
+            $$ = {
+                "node": "Method",
+                "typeParameters": $1,
+                "type": { "node": "Type", "name": "void" },
+                "arrayDimension": $5,
+                "name": $3,
+                "parameters": $4,
+                "throws": $6
+            };
+        }
     |   typeParameters VOID Identifier formalParameters arrayDimensionBracks SEMI
+        {
+            $$ = {
+                "node": "Method",
+                "typeParameters": $1,
+                "type": { "node": "Type", "name": "void" },
+                "arrayDimension": $5,
+                "name": $3,
+                "parameters": $4
+            };
+        }
     |   typeParameters VOID Identifier formalParameters SEMI
+        {
+            $$ = {
+                "node": "Method",
+                "typeParameters": $1,
+                "type": { "node": "Type", "name": "void" },
+                "name": $3,
+                "parameters": $4
+            };
+        }
     |   typeParameters type Identifier formalParameters arrayDimensionBracks throwsList SEMI
+        {
+            $$ = {
+                "node": "Method",
+                "typeParameters": $1,
+                "type": $2,
+                "arrayDimension": $5,
+                "name": $3,
+                "parameters": $4,
+                "throws": $6
+            };
+        }
     |   typeParameters type Identifier formalParameters arrayDimensionBracks SEMI
+        {
+            $$ = {
+                "node": "Method",
+                "typeParameters": $1,
+                "type": $2,
+                "arrayDimension": $5,
+                "name": $3,
+                "parameters": $4
+            };
+        }
     |   typeParameters type Identifier formalParameters SEMI
+        {
+            $$ = {
+                "node": "Method",
+                "typeParameters": $1,
+                "type": $2,
+                "name": $3,
+                "parameters": $4
+            };
+        }
     |   classDeclaration
     |   interfaceDeclaration
     |   enumDeclaration
@@ -760,26 +1007,6 @@ constantDeclarator
             };
         }
     ;
-
-/* see matching of [] comment in methodDeclaratorRest*/
-/*interfaceMethodDeclaration
-    :   interfaceVoidMethod
-    |   TEMPLATE interfaceVoidMethod   
-    |   interfaceNonVoidMethod
-    |   TEMPLATE interfaceNonVoidMethod
-    ;
-
-interfaceVoidMethod
-    :   VOID Identifier formalParameters arrayDimensionBracks throwsList SEMI
-    |   VOID Identifier formalParameters arrayDimensionBracks SEMI
-    |   VOID Identifier formalParameters SEMI
-    ;
-
-interfaceNonVoidMethod
-    :   type Identifier formalParameters arrayDimensionBracks throwsList SEMI
-    |   type Identifier formalParameters arrayDimensionBracks SEMI
-    |   type Identifier formalParameters SEMI
-    ; */
 
 variableDeclarators
     :   variableDeclarator
@@ -839,21 +1066,48 @@ enumConstantName
 
 type
     :   qualifiedName arrayDimensionBracks
+        {
+            $$ = {
+                "node": "Type",
+                "name": $1,
+                "arrayDimension": $2
+            };
+        }
     |   primitiveType arrayDimensionBracks
+        {
+            $$ = {
+                "node": "Type",
+                "name": $1,
+                "arrayDimension": $2
+            };
+        }
     ;
 
 arrayDimensionBracks
     :   %empty /* empty */
     |   arrayDimensionBrackl
+        {
+            $$ = $1;
+        }
     ;
 
 arrayDimensionBrackl
     :   arrayDimensionBrack
+        {
+            $$ = [ $1 ];
+        }
     |   arrayDimensionBrackl arrayDimensionBrack
+        {
+            $1.push($2);
+            $$ = $1;
+        }
     ;
 
 arrayDimensionBrack
     :   LBRACK RBRACK
+        {
+            $$ = "[]";
+        }
     ;
 classOrInterfaceType
     :   qualifiedName
@@ -1031,13 +1285,35 @@ constructorBody
 
 qualifiedName
     :   Identifier
-        { $$ = $1; }
+        {
+            $$ = {
+                "node": "QualifiedName",
+                "name": $1
+            };
+        }
     |   Identifier typeParameters
-        { $$ = $1; }
+        {
+            $$ = {
+                "node": "QualifiedName",
+                "name": $1,
+                "typeParameters": $2
+            };
+        }
     |   qualifiedName DOT Identifier
-        { $$ = $1 + "." + $3; }
+        {
+            $$ = {
+                "node": "QualifiedName",
+                "name": $1.name + "." + $3
+            };
+        }
     |   qualifiedName DOT Identifier typeParameters
-        { $$ = $1 + "." + $3; }
+        {
+            $$ = {
+                "node": "QualifiedName",
+                "name": $1.name + "." + $3,
+                "typeParameters": $4
+            };
+        }
     ;
 
 literal
@@ -1144,19 +1420,43 @@ elementValueList
 
 annotationTypeDeclaration
     :   AT INTERFACE Identifier annotationTypeBody
+        {
+            $$ = {
+                "node": "AnnotationType",
+                "name": $3,
+                "body": $4
+            };
+        }
     |   AT INTERFACE Identifier EXTENDS typeList annotationTypeBody
-        
+        {
+            $$ = {
+                "node": "AnnotationType",
+                "name": $3,
+                "extends": $5,
+                "body": $6
+            };
+        }        
     ;
 
 annotationTypeBody
     :   LBRACE RBRACE
     |   LBRACE annotationTypeElementDeclarations RBRACE
+        {
+            $$ = $2;
+        }
     ;
 
 
 annotationTypeElementDeclarations
     :   annotationTypeElementDeclaration
+        {
+            $$ = [ $1 ];
+        }
     |   annotationTypeElementDeclarations annotationTypeElementDeclaration
+        {
+            $1.push($2);
+            $$ = $1;
+        }
     ;
 
 annotationTypeElementDeclaration
