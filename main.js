@@ -24,15 +24,16 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var Repository     = staruml.getModule("engine/Repository"),
-        Engine         = staruml.getModule("engine/Engine"),
-        Commands       = staruml.getModule("menu/Commands"),
-        MenuManager    = staruml.getModule("menu/MenuManager"),
-        Dialogs        = staruml.getModule("widgets/Dialogs"),
-        ElementPicker  = staruml.getModule("dialogs/ElementPicker"),
-        FileSystem     = staruml.getModule("utils/FileSystem"),
-        ExtensionUtils = staruml.getModule("utils/ExtensionUtils"),
-        UML            = staruml.getModule("uml/UML");
+    var Repository      = staruml.getModule("engine/Repository"),
+        Engine          = staruml.getModule("engine/Engine"),
+        Commands        = staruml.getModule("menu/Commands"),
+        MenuManager     = staruml.getModule("menu/MenuManager"),
+        Dialogs         = staruml.getModule("widgets/Dialogs"),
+        ElementPicker   = staruml.getModule("dialogs/ElementPicker"),
+        FileSystem      = staruml.getModule("filesystem/FileSystem"),
+        FileSystemError = staruml.getModule("filesystem/FileSystemError"),
+        ExtensionUtils  = staruml.getModule("utils/ExtensionUtils"),
+        UML             = staruml.getModule("uml/UML");
 
     var ConfigDialog        = require("ConfigDialog"),
         CodeGenUtils        = require("CodeGenUtils"),
@@ -42,24 +43,24 @@ define(function (require, exports, module) {
     /**
      * Menu IDs
      */
-    var TOOLS_JAVACODEGEN          = 'tools-javacodegen',
-        TOOLS_JAVACODEGEN_CONFIG   = 'tools-javacodegen-config',
-        TOOLS_JAVACODEGEN_GENERATE = 'tools-javacodegen-generate';
+    var TOOLS_JAVA          = 'tools.java',
+        TOOLS_JAVA_CONFIG   = 'tools.java.config',
+        TOOLS_JAVA_GENERATE = 'tools.java.generate',
+        TOOLS_JAVA_REVERSE  = 'tools.java.reverse';
 
     function checkConfig(callback) {
         var baseModel = JavaCodeGenerator.getBaseModel(),
             targetDir = JavaCodeGenerator.getTargetDirectory();
-        FileSystem.stat(targetDir, function (err, stat) {
-            if (err === FileSystem.NO_ERROR && stat.isDirectory()) {
-                if (baseModel instanceof type.UMLPackage) {
-                    callback(true, baseModel, targetDir);
-                } else {
-                    callback(false);
-                }
+        var dir = FileSystem.getDirectoryForPath(targetDir);
+        if (dir && dir._isDirectory === true) {
+            if (baseModel instanceof type.UMLPackage) {
+                callback(true, baseModel, targetDir);
             } else {
                 callback(false);
             }
-        });
+        } else {
+            callback(false);
+        }
     }
 
     function generate(baseModel, targetDir) {
@@ -71,7 +72,7 @@ define(function (require, exports, module) {
                     if (err === FileSystem.NO_ERROR) {
                         generate(elem, dir);
                     } else {
-                        console.log("[JavaCodeGen] Failed to make directory - " + dir);
+                        console.log("[Java] Failed to make directory - " + dir);
                     }
                 });
             } else if (elem instanceof type.UMLClass) {
@@ -84,7 +85,7 @@ define(function (require, exports, module) {
                 JavaCodeGenerator.writeClass(codeWriter, elem);
                 FileSystem.writeFile(file, codeWriter.getData(), "utf8", function (err) {
                     if (err !== FileSystem.NO_ERROR) {
-                        console.log("[JavaCodeGen] Failed to generate - " + file);
+                        console.log("[Java] Failed to generate - " + file);
                     }
                 });
             } else if (elem instanceof type.UMLInterface) {
@@ -97,7 +98,7 @@ define(function (require, exports, module) {
                 JavaCodeGenerator.writeInterface(codeWriter, elem);
                 FileSystem.writeFile(file, codeWriter.getData(), "utf8", function (err) {
                     if (err !== FileSystem.NO_ERROR) {
-                        console.log("[JavaCodeGen] Failed to generate - " + file);
+                        console.log("[Java] Failed to generate - " + file);
                     }
                 });
             } else if (elem instanceof type.UMLEnumeration) {
@@ -108,11 +109,25 @@ define(function (require, exports, module) {
                 JavaCodeGenerator.writeEnum(codeWriter, elem);
                 FileSystem.writeFile(file, codeWriter.getData(), "utf8", function (err) {
                     if (err !== FileSystem.NO_ERROR) {
-                        console.log("[JavaCodeGen] Failed to generate - " + file);
+                        console.log("[Java] Failed to generate - " + file);
                     }
                 });
             }
         }
+    }
+
+    function traverse(dir, analyzer) {
+        dir.getContents(function (err, entries, stats) {
+            if (entries && entries.length > 0) {
+                for (var i = 0, len = entries.length; i < len; i++) {
+                    var entry = entries[i];
+                    analyzer(entry);
+                    if (entry._isDirectory === true) {
+                        traverse(entry, analyzer);
+                    }
+                }
+            }
+        });        
     }
 
     /**
@@ -120,20 +135,29 @@ define(function (require, exports, module) {
      */
     function init() {
         // MenuManager.addMenuItemSeparator(Commands.TOOLS);
-        MenuManager.addMenuItem(TOOLS_JAVACODEGEN,          Commands.TOOLS,    "Java Code Generation", "", "", null, null);
-        MenuManager.addMenuItem(TOOLS_JAVACODEGEN_CONFIG,   TOOLS_JAVACODEGEN, "Configuration...",     "", "", null, null);
-        MenuManager.addMenuItem(TOOLS_JAVACODEGEN_GENERATE, TOOLS_JAVACODEGEN, "Generate Code",        "", "", null, null);
+        MenuManager.addMenuItem(TOOLS_JAVA,          Commands.TOOLS,    "Java", "", "", null, null);
+        MenuManager.addMenuItem(TOOLS_JAVA_CONFIG,   TOOLS_JAVA, "Configuration...",     "", "", null, null);
+        MenuManager.addMenuItem(TOOLS_JAVA_GENERATE, TOOLS_JAVA, "Generate Code...",        "", "", null, null);
+        MenuManager.addMenuItem(TOOLS_JAVA_REVERSE,  TOOLS_JAVA, "Analyze Code...",        "", "", null, null);
         $(MenuManager).on('menuItemClicked', function (event, id) {
-            switch (id) {                
-            case TOOLS_JAVACODEGEN_CONFIG:
+            switch (id) {
+            case TOOLS_JAVA_CONFIG:
                 ConfigDialog.showDialog();
                 break;
-            case TOOLS_JAVACODEGEN_GENERATE:
+            case TOOLS_JAVA_GENERATE:
                 checkConfig(function (configured, baseModel, targetDir) {
                     if (configured) {
                         generate(baseModel, targetDir);
                     } else {
                         Dialogs.showAlertDialog("Java Code Generation is not configured.");
+                    }
+                });
+                break;
+            case TOOLS_JAVA_REVERSE:
+                FileSystem.showOpenDialog(false, true, "Select Folder", null, null, function (err, files) {
+                    if (files && files.length === 1) {
+                        var dir = FileSystem.getDirectoryForPath(files[0]);
+                        JavaReverseEngineer.analyze(dir);
                     }
                 });
                 break;

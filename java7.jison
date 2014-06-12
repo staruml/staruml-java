@@ -1461,17 +1461,54 @@ annotationTypeElementDeclarations
 
 annotationTypeElementDeclaration
     :   modifierL annotationTypeElementRest
+        {
+            $2["modifiers"] = $1;
+            $$ = $2;
+        }
     |   annotationl annotationTypeElementRest
+        {
+            $2["annotations"] = $1;
+            $$ = $2;
+        }
     |   annotationl modifierL annotationTypeElementRest
+        {
+            $3["annotations"] = $1;
+            $3["modifiers"] = $2;
+            $$ = $3;
+        }
     |   modifierL annotationl annotationTypeElementRest
+        {
+            $3["annotations"] = $2;
+            $3["modifiers"] = $1;
+            $$ = $3;
+        }
     |   annotationTypeElementRest
+        {
+            $$ = $1;
+        }
     |   SEMI /* this is not allowed by the grammar, but apparently allowed by the actual compiler*/
     ;
 
 annotationTypeElementRest
     :   type annotationConstantRest SEMI
+        {
+            $$ = {
+                "node": "AnnotationConstant",
+                "type": $1,
+                "variables": $2
+            };
+        }
     |   typeParameters type annotationMethodRest SEMI
+        {
+            $3["typeParameters"] = $1;
+            $3["type"] = $2;
+            $$ = $3;
+        }
     |   type annotationMethodRest SEMI
+        {
+            $2["type"] = $1;
+            $$ = $2;
+        }
     |   classDeclaration
     |   interfaceDeclaration
     |   enumDeclaration
@@ -1485,7 +1522,20 @@ semiOpt
 
 annotationMethodRest
     :   Identifier LPAREN RPAREN defaultValue
+        {
+            $$ = {
+                "node": "AnnotationMethod",
+                "name": $1,
+                "defaultValue": $4
+            };
+        }
     |   Identifier LPAREN RPAREN
+        {
+            $$ = {
+                "node": "AnnotationMethod",
+                "name": $1
+            };
+        }
     ;
 
 defaultValueOpt
@@ -1498,6 +1548,9 @@ annotationConstantRest
 
 defaultValue
     :   DEFAULT elementValue
+        {
+            $$ = $2;
+        }
     ;
 
 /* STATEMENTS / BLOCKS */

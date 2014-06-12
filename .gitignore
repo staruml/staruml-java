@@ -8,5 +8,5 @@ Thumbs.db
 .DS_Store
 
 #Java Test Sources
-/java-testset
+/test/src-jdk
 jisonOutput.txt
