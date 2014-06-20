@@ -31,7 +31,7 @@ define(function (require, exports, module) {
         Strings        = staruml.getModule("strings"),
         Dialogs        = staruml.getModule("widgets/Dialogs"),
         ElementPicker  = staruml.getModule("dialogs/ElementPicker"),
-        FileSystem     = staruml.getModule("utils/FileSystem"),
+        FileSystem     = staruml.getModule("filesystem/FileSystem"),
         ExtensionUtils = staruml.getModule("utils/ExtensionUtils"),
         UML            = staruml.getModule("uml/UML");
 
@@ -43,7 +43,7 @@ define(function (require, exports, module) {
      */
     var JavaCodeGenerator    = require("JavaCodeGenerator"),
         configDialogTemplate = require("text!htmlContent/config-dialog.html");
-    
+
     /**
      * Update Configuration Dialog
      */
@@ -85,15 +85,15 @@ define(function (require, exports, module) {
             ElementPicker.showModal("Select Base Model", type.UMLPackage).done(function (buttonId, selected) {
                 if (buttonId === Dialogs.DIALOG_BTN_OK) {
                     JavaCodeGenerator.setBaseModel(selected);
-                    updateDialog($dlg);                    
+                    updateDialog($dlg);
                 }
             });
         });
         // Find Target Directory Button
         $findDirectory.click(function () {
             FileSystem.showOpenDialog(false, true, "Select Target Directory", null, null, function (err, files) {
-                if (err === FileSystem.NO_ERROR) {
-                    if (files && files.length > 0) {
+                if (!err) {
+                    if (files.length > 0) {
                         JavaCodeGenerator.setTargetDirectory(files[0]);
                     }
                 }
