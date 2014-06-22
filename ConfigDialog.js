@@ -27,7 +27,6 @@ define(function (require, exports, module) {
     var Repository     = staruml.getModule("engine/Repository"),
         Engine         = staruml.getModule("engine/Engine"),
         Commands       = staruml.getModule("menu/Commands"),
-        MenuManager    = staruml.getModule("menu/MenuManager"),
         Strings        = staruml.getModule("strings"),
         Dialogs        = staruml.getModule("widgets/Dialogs"),
         ElementPicker  = staruml.getModule("dialogs/ElementPicker"),

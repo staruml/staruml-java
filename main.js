@@ -24,9 +24,11 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var Repository      = staruml.getModule("engine/Repository"),
+    var AppInit         = staruml.getModule("utils/AppInit"),
+        Repository      = staruml.getModule("engine/Repository"),
         Engine          = staruml.getModule("engine/Engine"),
         Commands        = staruml.getModule("menu/Commands"),
+        CommandManager  = staruml.getModule("menu/CommandManager"),
         MenuManager     = staruml.getModule("menu/MenuManager"),
         Dialogs         = staruml.getModule("widgets/Dialogs"),
         ElementPicker   = staruml.getModule("dialogs/ElementPicker"),
@@ -43,11 +45,12 @@ define(function (require, exports, module) {
     /**
      * Menu IDs
      */
-    var TOOLS_JAVA          = 'tools.java',
-        TOOLS_JAVA_CONFIG   = 'tools.java.config',
-        TOOLS_JAVA_GENERATE = 'tools.java.generate',
-        TOOLS_JAVA_REVERSE  = 'tools.java.reverse';
+    var CMD_JAVA          = 'java',
+        CMD_JAVA_CONFIG   = 'java.config',
+        CMD_JAVA_GENERATE = 'java.generate',
+        CMD_JAVA_REVERSE  = 'java.reverse';
 
+    // TODO: Return $.Promise
     function checkConfig(callback) {
         var baseModel = JavaCodeGenerator.getBaseModel(),
             targetDir = JavaCodeGenerator.getTargetDirectory();
@@ -127,44 +130,62 @@ define(function (require, exports, module) {
                     }
                 }
             }
-        });        
+        });
+    }
+
+    function _handleConfig() {
+        ConfigDialog.showDialog();
     }
 
     /**
-     * Initialize extension
+     * CommandManager.execute로부터 파라미터를 받아서 코드 생성 가능하게 한다.
+     * 파라미터가 없으면 baseModel, targetDir을 사용한다.
      */
-    function init() {
-        // MenuManager.addMenuItemSeparator(Commands.TOOLS);
-        MenuManager.addMenuItem(TOOLS_JAVA,          Commands.TOOLS,    "Java", "", "", null, null);
-        MenuManager.addMenuItem(TOOLS_JAVA_CONFIG,   TOOLS_JAVA, "Configuration...",     "", "", null, null);
-        MenuManager.addMenuItem(TOOLS_JAVA_GENERATE, TOOLS_JAVA, "Generate Code...",        "", "", null, null);
-        MenuManager.addMenuItem(TOOLS_JAVA_REVERSE,  TOOLS_JAVA, "Analyze Code...",        "", "", null, null);
-        $(MenuManager).on('menuItemClicked', function (event, id) {
-            switch (id) {
-            case TOOLS_JAVA_CONFIG:
-                ConfigDialog.showDialog();
-                break;
-            case TOOLS_JAVA_GENERATE:
-                checkConfig(function (configured, baseModel, targetDir) {
-                    if (configured) {
-                        generate(baseModel, targetDir);
-                    } else {
-                        Dialogs.showAlertDialog("Java Code Generation is not configured.");
-                    }
-                });
-                break;
-            case TOOLS_JAVA_REVERSE:
-                FileSystem.showOpenDialog(false, true, "Select Folder", null, null, function (err, files) {
-                    if (files && files.length === 1) {
-                        var dir = FileSystem.getDirectoryForPath(files[0]);
-                        JavaReverseEngineer.analyze(dir);
-                    }
-                });
-                break;
+    function _handleGenerate() {
+        checkConfig(function (configured, baseModel, targetDir) {
+            if (configured) {
+                generate(baseModel, targetDir);
+            } else {
+                Dialogs.showAlertDialog("Java Code Generation is not configured.");
             }
         });
-    };
+    }
 
-    init();
+    /**
+     * CommandManager.execute로부터 파라미터를 받아서 코드 역공학이 가능하게 한다.
+     * e.g.) options = {
+     *          path: "/User/niklaus/...",
+     *          files: [ "....java", ".java" ],
+     *          typeHiarachy: true
+     *          packageOverview: true
+     *          packageStructure: true
+     *       }
+     * 파라미터가 없으면 baseModel, targetDir을 사용한다.
+     * Must return $.Promise
+     */
+    function _handleReverse(options) {
+        FileSystem.showOpenDialog(false, true, "Select Folder", null, null, function (err, files) {
+            if (!err) {
+                if (files && files.length === 1) {
+                    var dir = FileSystem.getDirectoryForPath(files[0]);
+                    JavaReverseEngineer.analyze(dir);
+                }
+            }
+        });
+    }
+
+    // Register Commands
+    CommandManager.register("Java",         CMD_JAVA,          CommandManager.doNothing);
+    CommandManager.register("Configure...", CMD_JAVA_CONFIG,   _handleConfig);
+    CommandManager.register("Generate...",  CMD_JAVA_GENERATE, _handleGenerate);
+    CommandManager.register("Reverse...",   CMD_JAVA_REVERSE,  _handleReverse);
+
+    var menu, menuItem;
+    menu = MenuManager.getMenu(Commands.TOOLS);
+    menuItem = menu.addMenuItem(CMD_JAVA);
+    menuItem.addMenuItem(CMD_JAVA_CONFIG);
+    menuItem.addMenuItem(CMD_JAVA_GENERATE);
+    menuItem.addMenuItem(CMD_JAVA_REVERSE);
+
 
 });
