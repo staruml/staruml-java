@@ -109,7 +109,7 @@ packageDeclaration
         {
             $$ = {
                 "node": "Package",
-                "name": $2
+                "qualifiedName": $2
             };
         }
     ;
@@ -1263,7 +1263,7 @@ lastFormalParameter
                 "type": $2,
                 "variable": $4,
                 "modifiers": $1
-            };        
+            };
         }
     |   type ELLIPSIS variableDeclaratorId
         {
@@ -1435,7 +1435,7 @@ annotationTypeDeclaration
                 "extends": $5,
                 "body": $6
             };
-        }        
+        }
     ;
 
 annotationTypeBody
@@ -1557,9 +1557,9 @@ defaultValue
 
 block
     :   LBRACE RBRACE
-        
+
     |   LBRACE blockStatementList RBRACE
-        
+
     ;
 
 blockStatements
@@ -1576,9 +1576,9 @@ blockStatement
     :   statement
     /*|   typeDeclaration */
     |   LBRACE RBRACE
-        
+
     |   LBRACE blockStatementList RBRACE
-        
+
     ;
 
 localVariableDeclarationStatement
@@ -1633,7 +1633,7 @@ variableDeclaratorsWithPrefixes
     |   modifierL annotationl localVariableDeclaration
     |   modifierL localVariableDeclaration
     |   annotationl localVariableDeclaration
-    |   localVariableDeclaration 
+    |   localVariableDeclaration
     ;
 
 simpleExpressionStatement
@@ -1720,7 +1720,7 @@ switchLabel
 
 forControl
     :   enhancedForControl
-        
+
     |   forInit SEMI optionalExpression SEMI optionalForUpdate
     |   SEMI optionalExpression SEMI optionalForUpdate
     ;
@@ -1864,7 +1864,7 @@ expression
     |   expression DOT SUPER DOT expression
     |   expression DOT SUPER arguments
     |   expression DOT SUPER LPAREN RPAREN
-    |   expression 
+    |   expression
     |   qualifiedName DOT newCreator
     |   expression DOT newCreator /* openjdk/jdk/src/share/classes/com/sun/java/util/jar/pack/Attribute.java:487 */
     |   qualifiedName arrayDimensionBrackl DOT CLASS
@@ -1875,7 +1875,7 @@ expression
     |   expression DOT THIS
     |   expression DOT NEW optionalNonWildcardTypeArguments innerCreator
     |   qualifiedName DOT explicitGenericInvocation
-    |   expression DOT qualifiedName 
+    |   expression DOT qualifiedName
     |   expression DOT typeParameters Identifier arguments
     |   expression LBRACK expression RBRACK
     |   qualifiedName LBRACK expression RBRACK

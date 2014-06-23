@@ -143,7 +143,7 @@ break;
 case 10:
             this.$ = {
                 "node": "Package",
-                "name": $$[$0-1]
+                "qualifiedName": $$[$0-1]
             };
         
 break;
@@ -1023,7 +1023,7 @@ case 216:
                 "type": $$[$0-2],
                 "variable": $$[$0],
                 "modifiers": $$[$0-3]
-            };        
+            };
         
 break;
 case 217:

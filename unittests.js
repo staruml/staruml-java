@@ -23,22 +23,99 @@
 
 
 /*jslint vars: true, plusplus: true, devel: true, browser: true, nomen: true, indent: 4, maxerr: 50 */
-/*global define, describe, it, xit, expect, beforeEach, afterEach, waitsFor, runs, $, staruml, waitsForDone */
+/*global define, describe, it, xit, expect, beforeEach, afterEach, waitsFor, runs, $, staruml, waitsForDone, java7 */
 
 define(function (require, exports, module) {
     "use strict";
 
     // Modules from the SpecRunner window
-    var SpecRunnerUtils = staruml.getModule("spec/SpecRunnerUtils");
+    var SpecRunnerUtils = staruml.getModule("spec/SpecRunnerUtils"),
+        FileUtils       = staruml.getModule("file/FileUtils"),
+        FileSystem      = staruml.getModule("filesystem/FileSystem"),
+        ExtensionUtils  = staruml.getModule("utils/ExtensionUtils");
 
-    describe("Java Support", function () {
+    require("grammar/java7");
 
-        it("test", function () {
+    describe("Java Parser", function () {
+
+        it("can parse CompilationUnit", function () {
+            var parseComplete,
+                ast;
+
+            runs(function () {
+                var path = ExtensionUtils.getModulePath(module) + "unittest-files/ClassTest.java";
+                var file = FileSystem.getFileForPath(path);
+                file.read({}, function (err, data, stat) {
+                    if (!err) {
+                        ast = java7.parse(data);
+                        parseComplete = true;
+                        console.log(ast);
+                    }
+                });
+            });
+
+            waitsFor(
+                function () { return parseComplete; },
+                "Waiting for parsing",
+                3000
+            );
+
+            runs(function () {
+                expect(ast.node).toEqual("CompilationUnit");
+                expect(ast["package"].node).toEqual("Package");
+                expect(ast["package"].qualifiedName.node).toEqual("QualifiedName");
+                expect(ast["package"].qualifiedName.name).toEqual("com.mycompany.test");
+
+                // TODO: Test import statements.
+
+            });
         });
 
-        it("test2", function () {
+        it("can parse Class", function () {
+            var parseComplete,
+                ast;
+
+            runs(function () {
+                var path = ExtensionUtils.getModulePath(module) + "unittest-files/ClassTest.java";
+                var file = FileSystem.getFileForPath(path);
+                file.read({}, function (err, data, stat) {
+                    if (!err) {
+                        ast = java7.parse(data);
+                        parseComplete = true;
+                    }
+                });
+            });
+
+            waitsFor(
+                function () { return parseComplete; },
+                "Waiting for parsing",
+                3000
+            );
+
+            runs(function () {
+
+            });
         });
 
+        it("can parse Fields", function () {
+
+        });
+
+        it("can parse Operations", function () {
+
+        });
+
+        it("can parse Interface", function () {
+
+        });
+
+        it("can parse Enum", function () {
+
+        });
+
+        it("can parse AnnotationType", function () {
+
+        });
 
     });
 });
