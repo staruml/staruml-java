@@ -129,21 +129,35 @@ importDeclarations
 importDeclaration
     :   IMPORT STATIC qualifiedName DOT MUL SEMI
         {
-            $3["name"] = $3["name"] + ".*";
-            $$ = $3;
+            $$ = {
+                "node": "Import",
+                "qualifiedName": $3,
+                "wildcard": true,
+                "isStatic": true
+            };
         }
     |   IMPORT STATIC qualifiedName SEMI
         {
-            $$ = $3;
+            $$ = {
+                "node": "Import",
+                "qualifiedName": $3,
+                "isStatic": true
+            };
         }
     |	IMPORT qualifiedName DOT MUL SEMI
         {
-            $2["name"] = $2["name"] + ".*";
-            $$ = $2;
+            $$ = {
+                "node": "Import",
+                "qualifiedName": $2,
+                "wildcard": true
+            };
         }
     |   IMPORT qualifiedName SEMI
         {
-            $$ = $2;
+            $$ = {
+                "node": "Import",
+                "qualifiedName": $2
+            };
         }
     ;
 
@@ -507,7 +521,7 @@ classMemberDeclaration
             $$ = {
                 "node": "Method",
                 "name": $2,
-                "type": { "node": "Type", "name": "void" },
+                "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
                 "arrayDimension": $4,
                 "parameters": $3,
                 "throws": $5
@@ -518,7 +532,7 @@ classMemberDeclaration
             $$ = {
                 "node": "Method",
                 "name": $2,
-                "type": { "node": "Type", "name": "void" },
+                "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
                 "arrayDimension": $4,
                 "parameters": $3
             };
@@ -528,7 +542,7 @@ classMemberDeclaration
             $$ = {
                 "node": "Method",
                 "name": $2,
-                "type": { "node": "Type", "name": "void" },
+                "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
                 "parameters": $3
             };
         }
@@ -567,7 +581,7 @@ classMemberDeclaration
             $$ = {
                 "node": "Method",
                 "name": $2,
-                "type": { "node": "Type", "name": "void" },
+                "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
                 "arrayDimension": $4,
                 "parameters": $3,
                 "throws": $5
@@ -578,7 +592,7 @@ classMemberDeclaration
             $$ = {
                 "node": "Method",
                 "name": $2,
-                "type": { "node": "Type", "name": "void" },
+                "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
                 "arrayDimension": $4,
                 "parameters": $3
             };
@@ -588,7 +602,7 @@ classMemberDeclaration
             $$ = {
                 "node": "Method",
                 "name": $2,
-                "type": { "node": "Type", "name": "void" },
+                "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
                 "parameters": $3
             };
         }
@@ -628,7 +642,7 @@ classMemberDeclaration
                 "node": "Method",
                 "typeParameters": $1,
                 "name": $3,
-                "type": { "node": "Type", "name": "void" },
+                "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
                 "arrayDimension": $5,
                 "parameters": $4,
                 "throws": $6
@@ -640,7 +654,7 @@ classMemberDeclaration
                 "node": "Method",
                 "typeParameters": $1,
                 "name": $3,
-                "type": { "node": "Type", "name": "void" },
+                "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
                 "arrayDimension": $5,
                 "parameters": $4
             };
@@ -651,7 +665,7 @@ classMemberDeclaration
                 "node": "Method",
                 "typeParameters": $1,
                 "name": $3,
-                "type": { "node": "Type", "name": "void" },
+                "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
                 "parameters": $4
             };
         }
@@ -694,7 +708,7 @@ classMemberDeclaration
                 "node": "Method",
                 "typeParameters": $1,
                 "name": $3,
-                "type": { "node": "Type", "name": "void" },
+                "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
                 "arrayDimension": $5,
                 "parameters": $4,
                 "throws": $6
@@ -706,7 +720,7 @@ classMemberDeclaration
                 "node": "Method",
                 "typeParameters": $1,
                 "name": $3,
-                "type": { "node": "Type", "name": "void" },
+                "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
                 "arrayDimension": $5,
                 "parameters": $4
             };
@@ -717,7 +731,7 @@ classMemberDeclaration
                 "node": "Method",
                 "typeParameters": $1,
                 "name": $3,
-                "type": { "node": "Type", "name": "void" },
+                "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
                 "parameters": $4
             };
         }
@@ -844,7 +858,7 @@ interfaceMemberDeclaration
         {
             $$ = {
                 "node": "Method",
-                "type": { "node": "Type", "name": "void" },
+                "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
                 "arrayDimension": $4,
                 "name": $2,
                 "parameters": $3,
@@ -855,7 +869,7 @@ interfaceMemberDeclaration
         {
             $$ = {
                 "node": "Method",
-                "type": { "node": "Type", "name": "void" },
+                "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
                 "arrayDimension": $4,
                 "name": $2,
                 "parameters": $3
@@ -865,7 +879,7 @@ interfaceMemberDeclaration
         {
             $$ = {
                 "node": "Method",
-                "type": { "node": "Type", "name": "void" },
+                "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
                 "name": $2,
                 "parameters": $3
             };
@@ -1037,9 +1051,11 @@ variableDeclaratorId
         {
             $$ = {
                 "node": "Variable",
-                "name": $1,
-                "arrayDimension": $2
+                "name": $1
             };
+            if ($2) {
+                $$.arrayDimension = $2;
+            }
         }
     ;
 
@@ -1050,9 +1066,21 @@ variableInitializer
 
 arrayInitializer
     :   LBRACE RBRACE /*(variableInitializerL (",")? )?*/
+        {
+            $$ = null;
+        }
     |   LBRACE variableInitializerL SEMI RBRACE
+        {
+            $$ = null;
+        }
     |   LBRACE variableInitializerL RBRACE
+        {
+            $$ = null;
+        }
     |   LBRACE variableInitializerL COMMA RBRACE
+        {
+            $$ = null;
+        }
     ;
 
 variableInitializerL
@@ -1069,17 +1097,24 @@ type
         {
             $$ = {
                 "node": "Type",
-                "name": $1,
-                "arrayDimension": $2
+                "qualifiedName": $1
             };
+            if ($2) {
+                $$.arrayDimension = $2;
+            }
         }
     |   primitiveType arrayDimensionBracks
         {
             $$ = {
                 "node": "Type",
-                "name": $1,
-                "arrayDimension": $2
+                "qualifiedName": {
+                    "node": "QualifiedName",
+                    "name": $1
+                }
             };
+            if ($2) {
+                $$.arrayDimension = $2;
+            }
         }
     ;
 
@@ -1853,66 +1888,234 @@ newCreator
 
 expression
     :   parExpression
+        {
+            $$ = null;
+        }
     |   qualifiedName
+        {
+            $$ = null;
+        }
     /*|   qualifiedName LT expression */
     /*|   qualifiedName DOT CLASS*/
     |   qualifiedName DOT CLASS
+        {
+            $$ = null;
+        }
     |   expression DOT qualifiedName
+        {
+            $$ = null;
+        }
     |   expression DOT SUPER
+        {
+            $$ = null;
+        }
     |   qualifiedName DOT SUPER
+        {
+            $$ = null;
+        }
     |   qualifiedName DOT SUPER DOT expression
+        {
+            $$ = null;
+        }
     |   expression DOT SUPER DOT expression
+        {
+            $$ = null;
+        }
     |   expression DOT SUPER arguments
+        {
+            $$ = null;
+        }
     |   expression DOT SUPER LPAREN RPAREN
+        {
+            $$ = null;
+        }
     |   expression
+        {
+            $$ = null;
+        }
     |   qualifiedName DOT newCreator
+        {
+            $$ = null;
+        }
     |   expression DOT newCreator /* openjdk/jdk/src/share/classes/com/sun/java/util/jar/pack/Attribute.java:487 */
+        {
+            $$ = null;
+        }
     |   qualifiedName arrayDimensionBrackl DOT CLASS
+        {
+            $$ = null;
+        }
     |   primitiveType DOT CLASS
+        {
+            $$ = null;
+        }
     /*|   type DOT CLASS*/
     |   primitiveType arrayDimensionBrackl DOT CLASS
+        {
+            $$ = null;
+        }
     |   qualifiedName DOT THIS
+        {
+            $$ = null;
+        }
     |   expression DOT THIS
+        {
+            $$ = null;
+        }
     |   expression DOT NEW optionalNonWildcardTypeArguments innerCreator
+        {
+            $$ = null;
+        }
     |   qualifiedName DOT explicitGenericInvocation
+        {
+            $$ = null;
+        }
     |   expression DOT qualifiedName
+        {
+            $$ = null;
+        }
     |   expression DOT typeParameters Identifier arguments
+        {
+            $$ = null;
+        }
     |   expression LBRACK expression RBRACK
+        {
+            $$ = null;
+        }
     |   qualifiedName LBRACK expression RBRACK
+        {
+            $$ = null;
+        }
     |   expression arguments
+        {
+            $$ = null;
+        }
     |   expression LPAREN RPAREN
+        {
+            $$ = null;
+        }
     |   newCreator
+        {
+            $$ = null;
+        }
     |   parExpression expression
+        {
+            $$ = null;
+        }
     /*|   typeCast expression*/
     /*|   typeCast DOT qualifiedName*/
     |   expression incrementOrDecrement
+        {
+            $$ = null;
+        }
     |   plusMinusIncOrDec expression
+        {
+            $$ = null;
+        }
     |   prefixTildeOrBang expression
+        {
+            $$ = null;
+        }
     |   expression mulDivOrMod expression
+        {
+            $$ = null;
+        }
     |   expression addOrSub expression
+        {
+            $$ = null;
+        }
     |   expression LSHIFT expression
+        {
+            $$ = null;
+        }
     |   expression GT GT expression
+        {
+            $$ = null;
+        }
     |   expression GT GT GT expression
+        {
+            $$ = null;
+        }
     |   expression lE_GE_LT_GT expression
+        {
+            $$ = null;
+        }
     |   expression INSTANCEOF type
+        {
+            $$ = null;
+        }
     |   expression equals_NotEqual expression
+        {
+            $$ = null;
+        }
     |   expression BITAND expression
+        {
+            $$ = null;
+        }
     |   expression CARET expression
+        {
+            $$ = null;
+        }
     |   expression BITOR expression
+        {
+            $$ = null;
+        }
     |   expression AND expression
+        {
+            $$ = null;
+        }
     |   expression OR expression
+        {
+            $$ = null;
+        }
     |   expression QUESTION expression COLON expression
+        {
+            $$ = null;
+        }
     |   expression assignmentToken expression
+        {
+            $$ = null;
+        }
     |   THIS
+        {
+            $$ = null;
+        }
     |   SUPER
+        {
+            $$ = null;
+        }
     |   IntegerLiteral
+        {
+            $$ = $1;
+        }
     |   FloatingPointLiteral
+        {
+            $$ = $1;
+        }
     |   CharacterLiteral
+        {
+            $$ = $1;
+        }
     |   StringLiteral
+        {
+            $$ = $1;
+        }
     |   BooleanLiteral
+        {
+            $$ = $1;
+        }
     |   NullLiteral
+        {
+            $$ = $1;
+        }
     |   VOID DOT CLASS
+        {
+            $$ = null;
+        }
     |   nonWildcardTypeArguments explicitGenericInvocationSuffixOrThisArgs
+        {
+            $$ = null;
+        }
     ;
 
 parExpression

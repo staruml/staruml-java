@@ -157,21 +157,35 @@ case 12:
         
 break;
 case 13:
-            $$[$0-3]["name"] = $$[$0-3]["name"] + ".*";
-            this.$ = $$[$0-3];
+            this.$ = {
+                "node": "Import",
+                "qualifiedName": $$[$0-3],
+                "wildcard": true,
+                "isStatic": true
+            };
         
 break;
 case 14:
-            this.$ = $$[$0-1];
+            this.$ = {
+                "node": "Import",
+                "qualifiedName": $$[$0-1],
+                "isStatic": true
+            };
         
 break;
 case 15:
-            $$[$0-3]["name"] = $$[$0-3]["name"] + ".*";
-            this.$ = $$[$0-3];
+            this.$ = {
+                "node": "Import",
+                "qualifiedName": $$[$0-3],
+                "wildcard": true
+            };
         
 break;
 case 16:
-            this.$ = $$[$0-1];
+            this.$ = {
+                "node": "Import",
+                "qualifiedName": $$[$0-1]
+            };
         
 break;
 case 17:
@@ -413,7 +427,7 @@ case 95:
             this.$ = {
                 "node": "Method",
                 "name": $$[$0-4],
-                "type": { "node": "Type", "name": "void" },
+                "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
                 "arrayDimension": $$[$0-2],
                 "parameters": $$[$0-3],
                 "throws": $$[$0-1]
@@ -424,7 +438,7 @@ case 96:
             this.$ = {
                 "node": "Method",
                 "name": $$[$0-3],
-                "type": { "node": "Type", "name": "void" },
+                "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
                 "arrayDimension": $$[$0-1],
                 "parameters": $$[$0-2]
             };
@@ -434,7 +448,7 @@ case 97:
             this.$ = {
                 "node": "Method",
                 "name": $$[$0-2],
-                "type": { "node": "Type", "name": "void" },
+                "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
                 "parameters": $$[$0-1]
             };
         
@@ -473,7 +487,7 @@ case 101:
             this.$ = {
                 "node": "Method",
                 "name": $$[$0-4],
-                "type": { "node": "Type", "name": "void" },
+                "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
                 "arrayDimension": $$[$0-2],
                 "parameters": $$[$0-3],
                 "throws": $$[$0-1]
@@ -484,7 +498,7 @@ case 102:
             this.$ = {
                 "node": "Method",
                 "name": $$[$0-3],
-                "type": { "node": "Type", "name": "void" },
+                "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
                 "arrayDimension": $$[$0-1],
                 "parameters": $$[$0-2]
             };
@@ -494,7 +508,7 @@ case 103:
             this.$ = {
                 "node": "Method",
                 "name": $$[$0-2],
-                "type": { "node": "Type", "name": "void" },
+                "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
                 "parameters": $$[$0-1]
             };
         
@@ -534,7 +548,7 @@ case 107:
                 "node": "Method",
                 "typeParameters": $$[$0-6],
                 "name": $$[$0-4],
-                "type": { "node": "Type", "name": "void" },
+                "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
                 "arrayDimension": $$[$0-2],
                 "parameters": $$[$0-3],
                 "throws": $$[$0-1]
@@ -546,7 +560,7 @@ case 108:
                 "node": "Method",
                 "typeParameters": $$[$0-5],
                 "name": $$[$0-3],
-                "type": { "node": "Type", "name": "void" },
+                "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
                 "arrayDimension": $$[$0-1],
                 "parameters": $$[$0-2]
             };
@@ -557,7 +571,7 @@ case 109:
                 "node": "Method",
                 "typeParameters": $$[$0-4],
                 "name": $$[$0-2],
-                "type": { "node": "Type", "name": "void" },
+                "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
                 "parameters": $$[$0-1]
             };
         
@@ -600,7 +614,7 @@ case 113:
                 "node": "Method",
                 "typeParameters": $$[$0-6],
                 "name": $$[$0-4],
-                "type": { "node": "Type", "name": "void" },
+                "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
                 "arrayDimension": $$[$0-2],
                 "parameters": $$[$0-3],
                 "throws": $$[$0-1]
@@ -612,7 +626,7 @@ case 114:
                 "node": "Method",
                 "typeParameters": $$[$0-5],
                 "name": $$[$0-3],
-                "type": { "node": "Type", "name": "void" },
+                "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
                 "arrayDimension": $$[$0-1],
                 "parameters": $$[$0-2]
             };
@@ -623,7 +637,7 @@ case 115:
                 "node": "Method",
                 "typeParameters": $$[$0-4],
                 "name": $$[$0-2],
-                "type": { "node": "Type", "name": "void" },
+                "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
                 "parameters": $$[$0-1]
             };
         
@@ -728,7 +742,7 @@ break;
 case 135:
             this.$ = {
                 "node": "Method",
-                "type": { "node": "Type", "name": "void" },
+                "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
                 "arrayDimension": $$[$0-2],
                 "name": $$[$0-4],
                 "parameters": $$[$0-3],
@@ -739,7 +753,7 @@ break;
 case 136:
             this.$ = {
                 "node": "Method",
-                "type": { "node": "Type", "name": "void" },
+                "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
                 "arrayDimension": $$[$0-1],
                 "name": $$[$0-3],
                 "parameters": $$[$0-2]
@@ -749,7 +763,7 @@ break;
 case 137:
             this.$ = {
                 "node": "Method",
-                "type": { "node": "Type", "name": "void" },
+                "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
                 "name": $$[$0-2],
                 "parameters": $$[$0-1]
             };
@@ -898,25 +912,50 @@ break;
 case 160:
             this.$ = {
                 "node": "Variable",
-                "name": $$[$0-1],
-                "arrayDimension": $$[$0]
+                "name": $$[$0-1]
             };
+            if ($$[$0]) {
+                this.$.arrayDimension = $$[$0];
+            }
+        
+break;
+case 163:
+            this.$ = null;
+        
+break;
+case 164:
+            this.$ = null;
+        
+break;
+case 165:
+            this.$ = null;
+        
+break;
+case 166:
+            this.$ = null;
         
 break;
 case 170:
             this.$ = {
                 "node": "Type",
-                "name": $$[$0-1],
-                "arrayDimension": $$[$0]
+                "qualifiedName": $$[$0-1]
             };
+            if ($$[$0]) {
+                this.$.arrayDimension = $$[$0];
+            }
         
 break;
 case 171:
             this.$ = {
                 "node": "Type",
-                "name": $$[$0-1],
-                "arrayDimension": $$[$0]
+                "qualifiedName": {
+                    "node": "QualifiedName",
+                    "name": $$[$0-1]
+                }
             };
+            if ($$[$0]) {
+                this.$.arrayDimension = $$[$0];
+            }
         
 break;
 case 173:
@@ -1192,6 +1231,230 @@ case 278:
 break;
 case 282:
             this.$ = $$[$0];
+        
+break;
+case 418:
+            this.$ = null;
+        
+break;
+case 419:
+            this.$ = null;
+        
+break;
+case 420:
+            this.$ = null;
+        
+break;
+case 421:
+            this.$ = null;
+        
+break;
+case 422:
+            this.$ = null;
+        
+break;
+case 423:
+            this.$ = null;
+        
+break;
+case 424:
+            this.$ = null;
+        
+break;
+case 425:
+            this.$ = null;
+        
+break;
+case 426:
+            this.$ = null;
+        
+break;
+case 427:
+            this.$ = null;
+        
+break;
+case 428:
+            this.$ = null;
+        
+break;
+case 429:
+            this.$ = null;
+        
+break;
+case 430:
+            this.$ = null;
+        
+break;
+case 431:
+            this.$ = null;
+        
+break;
+case 432:
+            this.$ = null;
+        
+break;
+case 433:
+            this.$ = null;
+        
+break;
+case 434:
+            this.$ = null;
+        
+break;
+case 435:
+            this.$ = null;
+        
+break;
+case 436:
+            this.$ = null;
+        
+break;
+case 437:
+            this.$ = null;
+        
+break;
+case 438:
+            this.$ = null;
+        
+break;
+case 439:
+            this.$ = null;
+        
+break;
+case 440:
+            this.$ = null;
+        
+break;
+case 441:
+            this.$ = null;
+        
+break;
+case 442:
+            this.$ = null;
+        
+break;
+case 443:
+            this.$ = null;
+        
+break;
+case 444:
+            this.$ = null;
+        
+break;
+case 445:
+            this.$ = null;
+        
+break;
+case 446:
+            this.$ = null;
+        
+break;
+case 447:
+            this.$ = null;
+        
+break;
+case 448:
+            this.$ = null;
+        
+break;
+case 449:
+            this.$ = null;
+        
+break;
+case 450:
+            this.$ = null;
+        
+break;
+case 451:
+            this.$ = null;
+        
+break;
+case 452:
+            this.$ = null;
+        
+break;
+case 453:
+            this.$ = null;
+        
+break;
+case 454:
+            this.$ = null;
+        
+break;
+case 455:
+            this.$ = null;
+        
+break;
+case 456:
+            this.$ = null;
+        
+break;
+case 457:
+            this.$ = null;
+        
+break;
+case 458:
+            this.$ = null;
+        
+break;
+case 459:
+            this.$ = null;
+        
+break;
+case 460:
+            this.$ = null;
+        
+break;
+case 461:
+            this.$ = null;
+        
+break;
+case 462:
+            this.$ = null;
+        
+break;
+case 463:
+            this.$ = null;
+        
+break;
+case 464:
+            this.$ = null;
+        
+break;
+case 465:
+            this.$ = null;
+        
+break;
+case 466:
+            this.$ = $$[$0];
+        
+break;
+case 467:
+            this.$ = $$[$0];
+        
+break;
+case 468:
+            this.$ = $$[$0];
+        
+break;
+case 469:
+            this.$ = $$[$0];
+        
+break;
+case 470:
+            this.$ = $$[$0];
+        
+break;
+case 471:
+            this.$ = $$[$0];
+        
+break;
+case 472:
+            this.$ = null;
+        
+break;
+case 473:
+            this.$ = null;
         
 break;
 }
