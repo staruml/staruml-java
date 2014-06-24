@@ -5,7 +5,6 @@ import java.lang.*;
 import static java.awt.Color;
 import static java.lang.Math.*;
 
-@Author(name = "Benjamin Franklin", date = "3/27/2003")
 public class ClassTest extends java.util.Vector implements java.lang.Runnable, java.lang.Serializable {
 
     // Visibility
@@ -38,6 +37,8 @@ public class ClassTest extends java.util.Vector implements java.lang.Runnable, j
 
     // Annotated Method
     @Deprecated
+    @SuppressWarnings({ "unchecked", "deprecation" })
+    @MethodInfo(author = "Pankaj", comments = "Main method", date = "Nov 17 2012", revision = 10)
     void annotatedMethod() {}
 
     // Inner Class

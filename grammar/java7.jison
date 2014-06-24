@@ -1387,23 +1387,23 @@ annotation
         {
             $$ = {
                 "node": "Annotation",
-                "name": $2
+                "qualifiedName": $2
             };
         }
     |   AT qualifiedName LPAREN elementValueList RPAREN
         {
             $$ = {
                 "node": "Annotation",
-                "name": $2,
-                "values": $4
+                "qualifiedName": $2,
+                "valueList": $4
             };
         }
     |   AT qualifiedName LPAREN elementValuePairs RPAREN
         {
             $$ = {
                 "node": "Annotation",
-                "name": $2,
-                "values": $4
+                "qualifiedName": $2,
+                "valuePairs": $4
             };
         }
     ;
@@ -1424,18 +1424,44 @@ annotationName
 
 elementValuePairs
     :   elementValuePair
+        {
+            $$ = [ $1 ];
+        }
     |   elementValuePairs COMMA elementValuePair
+        {
+            $1.push($3);
+            $$ = $1;
+        }
     ;
 
 elementValuePair
     :   Identifier ASSIGN elementValue
+        {
+            $$ = {
+                "node": "ValuePair",
+                "name": $1,
+                "value": $3
+            };
+        }
     ;
 
 elementValue
     :   expression
+        {
+            $$ = $1;
+        }
     |   annotations
+        {
+            $$ = $1;
+        }
     |   LBRACE RBRACE /*(elementValue ("," elementValue)*)? (",")?*/
+        {
+            $$ = null;
+        }
     |   LBRACE elementValueList RBRACE
+        {
+            $$ = $2;
+        }
     ;
 
 elementValueArrayInitializer
@@ -1450,7 +1476,14 @@ elementValueListOpt
 
 elementValueList
     :   elementValue
+        {
+            $$ = [ $1 ];
+        }
     |   elementValueList COMMA elementValue
+        {
+            $1.push($3);
+            $$ = $1;
+        }
     ;
 
 annotationTypeDeclaration

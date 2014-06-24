@@ -1119,24 +1119,66 @@ break;
 case 234:
             this.$ = {
                 "node": "Annotation",
-                "name": $$[$0]
+                "qualifiedName": $$[$0]
             };
         
 break;
 case 235:
             this.$ = {
                 "node": "Annotation",
-                "name": $$[$0-3],
-                "values": $$[$0-1]
+                "qualifiedName": $$[$0-3],
+                "valueList": $$[$0-1]
             };
         
 break;
 case 236:
             this.$ = {
                 "node": "Annotation",
-                "name": $$[$0-3],
-                "values": $$[$0-1]
+                "qualifiedName": $$[$0-3],
+                "valuePairs": $$[$0-1]
             };
+        
+break;
+case 243:
+            this.$ = [ $$[$0] ];
+        
+break;
+case 244:
+            $$[$0-2].push($$[$0]);
+            this.$ = $$[$0-2];
+        
+break;
+case 245:
+            this.$ = {
+                "node": "ValuePair",
+                "name": $$[$0-2],
+                "value": $$[$0]
+            };
+        
+break;
+case 246:
+            this.$ = $$[$0];
+        
+break;
+case 247:
+            this.$ = $$[$0];
+        
+break;
+case 248:
+            this.$ = null;
+        
+break;
+case 249:
+            this.$ = $$[$0-1];
+        
+break;
+case 254:
+            this.$ = [ $$[$0] ];
+        
+break;
+case 255:
+            $$[$0-2].push($$[$0]);
+            this.$ = $$[$0-2];
         
 break;
 case 256:
