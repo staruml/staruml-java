@@ -1,4 +1,4 @@
-package com.sun.corba.se.spi.protocol ;
+package com.mycompany.test;
 
 public enum RetryType {
     NONE( false ),
@@ -14,4 +14,4 @@ public enum RetryType {
     public boolean isRetry() {
         return this.isRetry ;
     }
-} ;
+}

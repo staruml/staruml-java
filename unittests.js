@@ -32,12 +32,26 @@ define(function (require, exports, module) {
     var SpecRunnerUtils = staruml.getModule("spec/SpecRunnerUtils"),
         FileUtils       = staruml.getModule("file/FileUtils"),
         FileSystem      = staruml.getModule("filesystem/FileSystem"),
-        ExtensionUtils  = staruml.getModule("utils/ExtensionUtils");
+        ExtensionUtils  = staruml.getModule("utils/ExtensionUtils"),
+        Repository      = staruml.getModule("engine/Repository"),
+        UML             = staruml.getModule("uml/UML");
+
+    var JavaCodeGenerator   = require("JavaCodeGenerator"),
+        JavaReverseEngineer = require("JavaReverseEngineer");
 
     require("grammar/java7");
 
-    describe("Java Language Support", function () {
+    describe("Java Support", function () {
 
+        /**
+         * Java Parser Test Cases
+         *
+         * - Class
+         * - Generic Class
+         * - Interface
+         * - Enum
+         * - AnnotationType
+         */
         describe("Java Parser (Class)", function () {
             var parseComplete = false,
                 ast;
@@ -533,8 +547,6 @@ define(function (require, exports, module) {
                     expect(_enum.body[2].node).toEqual("EnumConstant");
                     expect(_enum.body[2].name).toEqual("AFTER_RESPONSE");
                     expect(_enum.body[2]["arguments"][0]).toEqual("true");
-
-                    console.log(JSON.stringify(ast, null, 4));
                 });
             });
         });
@@ -590,11 +602,93 @@ define(function (require, exports, module) {
                     expect(_annotationType.body[2].name).toEqual("lastModified");
                     expect(_annotationType.body[2].type.qualifiedName.name).toEqual("String");
                     expect(_annotationType.body[2].defaultValue).toEqual("\"N/A\"");
-
-                    console.log(JSON.stringify(ast, null, 4));
                 });
             });
         });
+
+        /**
+         * Java Reverse Engineering
+         *
+         */
+        describe("Java Reverse Engineering", function () {
+
+            Repository.newProject();
+            var options = {
+                path: ExtensionUtils.getModulePath(module) + "unittest-files"
+            };
+            var promise = JavaReverseEngineer.analyze(options);
+            waitsForDone(promise, "Analyzing...", 3000);
+
+            it("can reverse Java Package", function () {
+                runs(function () {
+                    var _model = Repository.getProject().ownedElements[0];
+                    expect(_model.ownedElements[0].name).toEqual("com");
+                    expect(_model.ownedElements[0].ownedElements[0].name).toEqual("mycompany");
+                    expect(_model.ownedElements[0].ownedElements[0].ownedElements[0].name).toEqual("test");
+                });
+            });
+
+            it("can reverse Java Class", function () {
+                runs(function () {
+                    var _model = Repository.getProject().ownedElements[0],
+                        _class = _model.ownedElements[0].ownedElements[0].ownedElements[0].findByName("ClassTest");
+
+                    // public class ClassTest
+                    expect(_class).toBeDefined();
+                    expect(_class.visibility).toEqual(UML.VK_PUBLIC);
+                });
+            });
+
+            it("can reverse Generalization of Java Class", function () {
+                runs(function () {
+                    // extends java.util.Vector
+                });
+            });
+
+            it("can reverse Interface Realization of Java Class", function () {
+                runs(function () {
+                    // implements java.lang.Runnable, java.lang.Serializable
+                });
+            });
+
+            it("can reverse Associations of Java Class", function () {
+                runs(function () {
+                });
+            });
+
+            it("can reverse Fields of Java Class", function () {
+                runs(function () {
+                });
+            });
+
+            it("can reverse Methods of Java Class", function () {
+                runs(function () {
+                });
+            });
+
+            it("can reverse Fields of Java Generic Class", function () {
+                runs(function () {
+                });
+            });
+
+            it("can reverse Java Interface", function () {
+                runs(function () {
+                });
+            });
+
+            it("can reverse Java Enum", function () {
+                runs(function () {
+                });
+            });
+
+            it("can reverse Java AnnotationType", function () {
+                runs(function () {
+                });
+            });
+
+        });
+
+
     });
 
 });

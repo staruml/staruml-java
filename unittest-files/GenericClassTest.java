@@ -1,3 +1,5 @@
+package com.mycompany.test;
+
 // Generic Class
 public class Vector<E, T> extends AbstractList<E> implements List<E>, RandomAccess, Cloneable, java.io.Serializable {
 

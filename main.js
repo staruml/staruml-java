@@ -21,6 +21,8 @@
  *
  */
 
+/*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50, regexp: true */
+/*global define, $, _, window, staruml, type, appshell, document */
 define(function (require, exports, module) {
     "use strict";
 
@@ -67,7 +69,8 @@ define(function (require, exports, module) {
     }
 
     function generate(baseModel, targetDir) {
-        for (var i = 0, len = baseModel.ownedElements.length; i < len; i++) {
+        var i, len;
+        for (i = 0, len = baseModel.ownedElements.length; i < len; i++) {
             var elem = baseModel.ownedElements[i];
             if (elem instanceof type.UMLPackage) {
                 var dir = targetDir + "/" + elem.name;
@@ -163,15 +166,24 @@ define(function (require, exports, module) {
      * 파라미터가 없으면 baseModel, targetDir을 사용한다.
      * Must return $.Promise
      */
+    // TODO: options.path 가 주어져 있으면 showOpenDialog를 하지 않는다.
     function _handleReverse(options) {
+        var result = new $.Deferred();
         FileSystem.showOpenDialog(false, true, "Select Folder", null, null, function (err, files) {
             if (!err) {
-                if (files && files.length === 1) {
-                    var dir = FileSystem.getDirectoryForPath(files[0]);
-                    JavaReverseEngineer.analyze(dir);
+                if (files && files.length > 0) {
+                    var options = {
+                        path: files[0]
+                    };
+                    JavaReverseEngineer.analyze(options).then(result.resolve, result.reject);
+                } else {
+                    result.reject();
                 }
+            } else {
+                result.reject(err);
             }
         });
+        return result.promise();
     }
 
     // Register Commands

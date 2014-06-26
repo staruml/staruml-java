@@ -85,9 +85,59 @@ define(function (require, exports, module) {
         /** @member {Array.<File>} */
         this._files = [];
 
-        this._builder = new ModelBuilder();
+        this._builder = new ModelBuilder(); // ???
+
+        // For 2nd Phase
+        this._relationships = [];
+
+        // For 2nd Phase
+        this._types = [];
 
     }
+
+    /**
+     * Add File to Reverse Engineer
+     * @param {File} file
+     */
+    JavaAnalyzer.prototype.addFile = function (file) {
+        this._files.push(file);
+    };
+
+    /**
+     * Analyze all files.
+     * @return {$.Promise}
+     */
+    JavaAnalyzer.prototype.analyze = function () {
+        var self = this;
+        // First Phase
+        var promise = Async.doSequentially(this._files, function (file) {
+            var result = new $.Deferred();
+            file.read({}, function (err, data, stat) {
+                if (!err) {
+                    try {
+                        var parent = self._builder.getBaseModel(),
+                            ast    = java7.parse(data);
+                        self.translateCompilationUnit(parent, ast);
+                    } catch (e) {
+                        console.log("[Java] Failed to parse : " + file._path);
+                    }
+                    result.resolve();
+                } else {
+                    result.reject(err);
+                }
+            });
+            return result.promise();
+        }, false);
+
+        promise.always(function () {
+            var json = self._builder.toJson();
+            Repository.importFromJson(Repository.getProject(), json, function (elem) {
+                console.log("[Java] done.");
+            });
+        });
+
+        return promise;
+    };
 
     /**
      * @param {Array.<string>} modifiers
@@ -107,55 +157,10 @@ define(function (require, exports, module) {
      * @param {Object} typeNode
      */
     JavaAnalyzer.prototype._getType = function (typeNode) {
-        if (_.isString(typeNode.name)) {
-            return typeNode.name;
-        } else if (typeNode.name.name) {
-            return typeNode.name.name;
+        if (typeNode.qualifiedName && _.isString(typeNode.qualifiedName.name)) {
+            return typeNode.qualifiedName.name;
         }
-    };
-
-    /**
-     * Add File to Reverse Engineer
-     * @param {File} file
-     */
-    JavaAnalyzer.prototype.addFile = function (file) {
-        this._files.push(file);
-    };
-
-
-    /**
-     * Analyze all files.
-     * @return {$.Promise}
-     */
-    JavaAnalyzer.prototype.analyze = function () {
-        var self = this;
-
-        // First Phase
-        var promise = Async.doSequentially(this._files, function (file) {
-            var result = new $.Deferred();
-            file.read({}, function (err, data, stat) {
-                try {
-                    var parent = self._builder.getBaseModel(),
-                        ast    = java7.parse(data);
-                    self.translateCompilationUnit(parent, ast);
-                    result.resolve();
-                } catch (e) {
-                    console.log(e);
-                    console.log("[Java] Failed to parse : " + file._path);
-                    result.reject();
-                }
-            });
-            return result.promise();
-        }, false);
-
-        promise.always(function () {
-            var json = self._builder.toJson();
-            Repository.importFromJson(Repository.getProject(), json, function (elem) {
-                console.log("[Java] done.");
-            });
-        });
-
-        return promise;
+        return null;
     };
 
     /**
@@ -238,8 +243,8 @@ define(function (require, exports, module) {
      * @param {Object} compilationUnitNode
      */
     JavaAnalyzer.prototype.translatePackage = function (parent, packageNode) {
-        if (packageNode && packageNode.name && packageNode.name.name) {
-            var pathNames = packageNode.name.name.split(".");
+        if (packageNode && packageNode.qualifiedName && packageNode.qualifiedName.name) {
+            var pathNames = packageNode.qualifiedName.name.split(".");
             return this.ensurePackage(parent, pathNames);
         }
         return null;
@@ -258,6 +263,15 @@ define(function (require, exports, module) {
         _class.name = classNode.name;
         _class.visibility = this._getVisibility(classNode.modifiers);
         parent.ownedElements.push(_class);
+
+        // TODO: Translate Extends
+        // - 1) 타입이 소스에 있는 경우 --> 해당 타입으로 Generalization 생성
+        // - 2) 타입이 소스에 없는 경우 (e.g. java.util.ArrayList) --> 타입을 생성(어디에?)한 뒤 Generalization 생성
+        // 모든 타입이 생성된 다음에 Generalization (혹은 기타 Relationships)이 연결되어야 하므로, 어딘가에 등록한 다음이 2nd Phase에서 처리.
+
+        // TODO: Translate Implements
+        // - ...
+
         // Translate Body
         if (classNode.body && classNode.body.length > 0) {
             for (i = 0, len = classNode.body.length; i < len; i++) {
@@ -272,8 +286,6 @@ define(function (require, exports, module) {
                 }
             }
         }
-        console.log(classNode);
-        // if (classNode[""])
     };
 
     JavaAnalyzer.prototype.translateInterface = function (parent, interfaceNode) {
@@ -304,6 +316,9 @@ define(function (require, exports, module) {
                 // TODO: arrayDimension
                 // TODO: initializer
                 // TODO: static, ..., other modifiers...
+                // TODO: 타입?이 2nd Phase에서 Resolve될 수 있도록 해야 함.
+                // TODO: Attribute? or Assocation?
+
                 parent.attributes.push(_attribute);
             }
         }
@@ -341,6 +356,8 @@ define(function (require, exports, module) {
      * @param {Object} options
      *       options = {
      *          path: "/User/niklaus/...",
+     *          association: true,
+     *          publicOnly: true,
      *          typeHiarachy: true,
      *          packageOverview: true,
      *          packageStructure: true

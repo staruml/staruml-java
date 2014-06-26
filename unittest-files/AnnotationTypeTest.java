@@ -1,3 +1,5 @@
+package com.mycompany.test;
+
 @interface ClassPreamble {
     int _annotationConstant;
     String author();

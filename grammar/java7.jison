@@ -361,19 +361,23 @@ interfaceDeclaration
             $$ = {
                 "node": "Interface",
                 "name": $2,
-                "typeParameters": $3,
                 "body": $4
             };
+            if ($3) {
+                $$["typeParameters"] = $3;
+            }
         }
     |   INTERFACE Identifier optionalTypeParameters EXTENDS typeList interfaceBody
         {
             $$ = {
                 "node": "Interface",
                 "name": $2,
-                "typeParameters": $3,
                 "extends": $5,
                 "body": $6
             };
+            if ($3) {
+                $$["typeParameters"] = $3;
+            }
         }
     ;
 

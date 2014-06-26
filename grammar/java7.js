@@ -338,19 +338,23 @@ case 51:
             this.$ = {
                 "node": "Interface",
                 "name": $$[$0-2],
-                "typeParameters": $$[$0-1],
                 "body": $$[$0]
             };
+            if ($$[$0-1]) {
+                this.$["typeParameters"] = $$[$0-1];
+            }
         
 break;
 case 52:
             this.$ = {
                 "node": "Interface",
                 "name": $$[$0-4],
-                "typeParameters": $$[$0-3],
                 "extends": $$[$0-1],
                 "body": $$[$0]
             };
+            if ($$[$0-3]) {
+                this.$["typeParameters"] = $$[$0-3];
+            }
         
 break;
 case 53:
