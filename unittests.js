@@ -309,6 +309,99 @@ define(function (require, exports, module) {
             });
         });
 
+        describe("Java Parser (Generic Class)", function () {
+            var parseComplete = false,
+                ast;
+
+            beforeEach(function () {
+                runs(function () {
+                    var path = ExtensionUtils.getModulePath(module) + "unittest-files/GenericClassTest.java";
+                    var file = FileSystem.getFileForPath(path);
+                    file.read({}, function (err, data, stat) {
+                        if (!err) {
+                            ast = java7.parse(data);
+                            parseComplete = true;
+                        }
+                    });
+                });
+
+                waitsFor(
+                    function () { return parseComplete; },
+                    "Waiting for parsing",
+                    3000
+                );
+            });
+
+            afterEach(function () {
+                parseComplete = false;
+                ast = null;
+            });
+
+            it("can parse Generic Class", function () {
+                runs(function () {
+                    var _class = ast.types[0];
+
+                    // public class Vector<E, T>
+                    expect(_class.node).toEqual("Class");
+                    expect(_class.name).toEqual("Vector");
+                    expect(_class.modifiers[0]).toEqual("public");
+                    expect(_class.typeParameters.length).toEqual(2);
+                    expect(_class.typeParameters[0]).toEqual("E");
+                    expect(_class.typeParameters[1]).toEqual("T");
+
+                    // extends AbstractList<E>
+                    expect(_class["extends"].node).toEqual("Type");
+                    expect(_class["extends"].qualifiedName.name).toEqual("AbstractList");
+                    expect(_class["extends"].qualifiedName.typeParameters[0]).toEqual("E");
+
+                    // implements List<E>, RandomAccess, Cloneable, java.io.Serializable
+                    expect(_class["implements"].length).toEqual(4);
+                    expect(_class["implements"][0].node).toEqual("Type");
+                    expect(_class["implements"][0].qualifiedName.name).toEqual("List");
+                    expect(_class["implements"][0].qualifiedName.typeParameters[0]).toEqual("E");
+                });
+            });
+
+            it("can parse Field of Generic Class", function () {
+                runs(function () {
+                    var _class = ast.types[0];
+
+                    // private OrderedPair<String, Box<Integer>> p = new OrderedPair<>("primes", new Box<Integer>());
+                    expect(_class.body[0].node).toEqual("Field");
+                    expect(_class.body[0].modifiers[0]).toEqual("private");
+                    expect(_class.body[0].type.node).toEqual("Type");
+                    expect(_class.body[0].type.qualifiedName.name).toEqual("OrderedPair");
+                    expect(_class.body[0].type.qualifiedName.typeParameters[0]).toEqual("String");
+                    expect(_class.body[0].type.qualifiedName.typeParameters[1]).toEqual("Box<Integer>");
+                    expect(_class.body[0].variables.length).toEqual(1);
+                    expect(_class.body[0].variables[0].node).toEqual("Variable");
+                    expect(_class.body[0].variables[0].name).toEqual("p");
+                });
+            });
+
+            it("can parse Methods of Generic Class", function () {
+                runs(function () {
+                    var _op;
+
+                    // Constructor
+                    // public Vector(Collection<? extends E> c) {}
+                    _op = ast.types[0].body[1];
+                    expect(_op.node).toEqual("Constructor");
+                    expect(_op.name).toEqual("Vector");
+                    expect(_op.modifiers[0]).toEqual("public");
+                    expect(_op.parameters[0].type.qualifiedName.name).toEqual("Collection");
+                    expect(_op.parameters[0].type.qualifiedName.typeParameters[0]).toEqual("? extends E");
+                    expect(_op.parameters[0].variable.name).toEqual("c");
+
+                    // public Enumeration<E> elements() {}
+                    _op = ast.types[0].body[2];
+                    expect(_op.name).toEqual("elements");
+                    expect(_op.type.qualifiedName.name).toEqual("Enumeration");
+                    expect(_op.type.qualifiedName.typeParameters[0]).toEqual("E");
+                });
+            });
+        });
+
         describe("Java Parser (Interface)", function () {
             var parseComplete = false,
                 ast;
@@ -352,36 +445,156 @@ define(function (require, exports, module) {
                     expect(_interface["extends"][0].qualifiedName.name).toEqual("java.lang.Runnable");
                     expect(_interface["extends"][1].node).toEqual("Type");
                     expect(_interface["extends"][1].qualifiedName.name).toEqual("java.lang.Serializable");
+                });
+            });
 
-                    console.log(ast);
-                    // console.log(JSON.stringify(ast, null, 4));
+            it("can parse Field of Interface", function () {
+                runs(function () {
+                    var _class = ast.types[0];
+
+                    // public static final int interfaceStaticField = 100;
+                    expect(_class.body[0].node).toEqual("Field");
+                    expect(_.contains(_class.body[0].modifiers, "public")).toBe(true);
+                    expect(_.contains(_class.body[0].modifiers, "static")).toBe(true);
+                    expect(_.contains(_class.body[0].modifiers, "final")).toBe(true);
+                    expect(_class.body[0].type.node).toEqual("Type");
+                    expect(_class.body[0].type.qualifiedName.name).toEqual("int");
+                    expect(_class.body[0].variables.length).toEqual(1);
+                    expect(_class.body[0].variables[0].node).toEqual("Variable");
+                    expect(_class.body[0].variables[0].name).toEqual("interfaceStaticField");
+                    expect(_class.body[0].variables[0].initializer).toEqual("100");
+                });
+            });
+
+            it("can parse Operation of Interface", function () {
+                runs(function () {
+                    // public CompositeContext createContext(ColorModel srcColorModel, ColorModel dstColorModel);
+                    var _op = ast.types[0].body[1];
+                    expect(_op.node).toEqual("Method");
+                    expect(_op.name).toEqual("createContext");
+                    expect(_op.modifiers[0]).toEqual("public");
+                    expect(_op.type.qualifiedName.name).toEqual("CompositeContext");
+                    expect(_op.parameters[0].type.qualifiedName.name).toEqual("ColorModel");
+                    expect(_op.parameters[0].variable.name).toEqual("srcColorModel");
+                    expect(_op.parameters[1].type.qualifiedName.name).toEqual("ColorModel");
+                    expect(_op.parameters[1].variable.name).toEqual("dstColorModel");
                 });
             });
         });
 
-        it("can parse Enum", function () {
+        describe("Java Parser (Enum)", function () {
+            var parseComplete = false,
+                ast;
 
+            beforeEach(function () {
+                runs(function () {
+                    var path = ExtensionUtils.getModulePath(module) + "unittest-files/EnumTest.java";
+                    var file = FileSystem.getFileForPath(path);
+                    file.read({}, function (err, data, stat) {
+                        if (!err) {
+                            ast = java7.parse(data);
+                            parseComplete = true;
+                        }
+                    });
+                });
+
+                waitsFor(
+                    function () { return parseComplete; },
+                    "Waiting for parsing",
+                    3000
+                );
+            });
+
+            afterEach(function () {
+                parseComplete = false;
+                ast = null;
+            });
+
+            it("can parse Enum", function () {
+                runs(function () {
+                    var _enum = ast.types[0];
+
+                    // public enum RetryType
+                    expect(_enum.node).toEqual("Enum");
+                    expect(_enum.name).toEqual("RetryType");
+                    expect(_enum.modifiers[0]).toEqual("public");
+
+                    // NONE( false ),
+                    expect(_enum.body[0].node).toEqual("EnumConstant");
+                    expect(_enum.body[0].name).toEqual("NONE");
+                    expect(_enum.body[0]["arguments"][0]).toEqual("false");
+
+                    // BEFORE_RESPONSE( true ),
+                    expect(_enum.body[1].node).toEqual("EnumConstant");
+                    expect(_enum.body[1].name).toEqual("BEFORE_RESPONSE");
+                    expect(_enum.body[1]["arguments"][0]).toEqual("true");
+
+                    // AFTER_RESPONSE( true ) ;
+                    expect(_enum.body[2].node).toEqual("EnumConstant");
+                    expect(_enum.body[2].name).toEqual("AFTER_RESPONSE");
+                    expect(_enum.body[2]["arguments"][0]).toEqual("true");
+
+                    console.log(JSON.stringify(ast, null, 4));
+                });
+            });
         });
 
-        it("can parse AnnotationType", function () {
+        describe("Java Parser (AnnotationType)", function () {
+            var parseComplete = false,
+                ast;
 
+            beforeEach(function () {
+                runs(function () {
+                    var path = ExtensionUtils.getModulePath(module) + "unittest-files/AnnotationTypeTest.java";
+                    var file = FileSystem.getFileForPath(path);
+                    file.read({}, function (err, data, stat) {
+                        if (!err) {
+                            ast = java7.parse(data);
+                            parseComplete = true;
+                        }
+                    });
+                });
+
+                waitsFor(
+                    function () { return parseComplete; },
+                    "Waiting for parsing",
+                    3000
+                );
+            });
+
+            afterEach(function () {
+                parseComplete = false;
+                ast = null;
+            });
+
+            it("can parse AnnotationType", function () {
+                runs(function () {
+                    var _annotationType = ast.types[0];
+
+                    // @interface ClassPreamble
+                    expect(_annotationType.node).toEqual("AnnotationType");
+                    expect(_annotationType.name).toEqual("ClassPreamble");
+
+                    // int _annotationConstant;
+                    expect(_annotationType.body[0].node).toEqual("AnnotationConstant");
+                    expect(_annotationType.body[0].type.qualifiedName.name).toEqual("int");
+                    expect(_annotationType.body[0].variables[0].name).toEqual("_annotationConstant");
+
+                    // String author();
+                    expect(_annotationType.body[1].node).toEqual("AnnotationMethod");
+                    expect(_annotationType.body[1].name).toEqual("author");
+                    expect(_annotationType.body[1].type.qualifiedName.name).toEqual("String");
+
+                    // String lastModified() default "N/A";
+                    expect(_annotationType.body[2].node).toEqual("AnnotationMethod");
+                    expect(_annotationType.body[2].name).toEqual("lastModified");
+                    expect(_annotationType.body[2].type.qualifiedName.name).toEqual("String");
+                    expect(_annotationType.body[2].defaultValue).toEqual("\"N/A\"");
+
+                    console.log(JSON.stringify(ast, null, 4));
+                });
+            });
         });
-
     });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 });

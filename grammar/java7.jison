@@ -259,7 +259,15 @@ interfaceImplentation
 typeParameters
     :   TEMPLATE
         {
-            $$ = $1;
+            $$ = [];
+            if ($1[0] === "<" && $1[$1.length-1] === ">") {
+                var i, _temp;
+                $1 = $1.substring(1, $1.length-1);
+                _temp = $1.split(",");
+                for (i = 0; i < _temp.length; i++) {
+                    $$.push(_temp[i].trim());
+                }
+            }
         }
     ;
 
@@ -1830,7 +1838,14 @@ parExpression
 
 expressionList
     :   expression
+        {
+            $$ = [ $1 ];
+        }
     |   expressionList COMMA expression
+        {
+            $1.push($3);
+            $$ = $1;
+        }
     ;
 
 optionalExpressionList
@@ -2260,7 +2275,13 @@ explicitGenericInvocationSuffix
 
 arguments
     :   LPAREN RPAREN
+        {
+            $$ = [];
+        }
     |   LPAREN expressionList RPAREN
+        {
+            $$ = $2;
+        }
     ;
 
 optionalCOMMA

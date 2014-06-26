@@ -261,7 +261,15 @@ case 34:
         
 break;
 case 35:
-            this.$ = $$[$0];
+            this.$ = [];
+            if ($$[$0][0] === "<" && $$[$0][$$[$0].length-1] === ">") {
+                var i, _temp;
+                $$[$0] = $$[$0].substring(1, $$[$0].length-1);
+                _temp = $$[$0].split(",");
+                for (i = 0; i < _temp.length; i++) {
+                    this.$.push(_temp[i].trim());
+                }
+            }
         
 break;
 case 36:
@@ -1275,6 +1283,15 @@ case 282:
             this.$ = $$[$0];
         
 break;
+case 375:
+            this.$ = [ $$[$0] ];
+        
+break;
+case 376:
+            $$[$0-2].push($$[$0]);
+            this.$ = $$[$0-2];
+        
+break;
 case 418:
             this.$ = null;
         
@@ -1497,6 +1514,14 @@ case 472:
 break;
 case 473:
             this.$ = null;
+        
+break;
+case 512:
+            this.$ = [];
+        
+break;
+case 513:
+            this.$ = $$[$0-1];
         
 break;
 }
