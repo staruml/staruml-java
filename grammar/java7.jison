@@ -1573,7 +1573,7 @@ annotationTypeElementRest
     :   type annotationConstantRest SEMI
         {
             $$ = {
-                "node": "AnnotationConstant",
+                "node": "Field",
                 "type": $1,
                 "variables": $2
             };
@@ -1604,7 +1604,7 @@ annotationMethodRest
     :   Identifier LPAREN RPAREN defaultValue
         {
             $$ = {
-                "node": "AnnotationMethod",
+                "node": "Method",
                 "name": $1,
                 "defaultValue": $4
             };
@@ -1612,7 +1612,7 @@ annotationMethodRest
     |   Identifier LPAREN RPAREN
         {
             $$ = {
-                "node": "AnnotationMethod",
+                "node": "Method",
                 "name": $1
             };
         }

@@ -1251,7 +1251,7 @@ case 266:
 break;
 case 268:
             this.$ = {
-                "node": "AnnotationConstant",
+                "node": "Field",
                 "type": $$[$0-2],
                 "variables": $$[$0-1]
             };
@@ -1270,7 +1270,7 @@ case 270:
 break;
 case 277:
             this.$ = {
-                "node": "AnnotationMethod",
+                "node": "Method",
                 "name": $$[$0-3],
                 "defaultValue": $$[$0]
             };
@@ -1278,7 +1278,7 @@ case 277:
 break;
 case 278:
             this.$ = {
-                "node": "AnnotationMethod",
+                "node": "Method",
                 "name": $$[$0-2]
             };
         

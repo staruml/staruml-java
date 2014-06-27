@@ -1,0 +1,57 @@
+{
+    "node": "CompilationUnit",
+    "package": {
+        "node": "Package",
+        "qualifiedName": {
+            "node": "QualifiedName",
+            "name": "com.mycompany.test"
+        }
+    },
+    "types": [
+        {
+            "node": "AnnotationType",
+            "name": "ClassPreamble",
+            "body": [
+                {
+                    "node": "AnnotationConstant",
+                    "type": {
+                        "node": "Type",
+                        "qualifiedName": {
+                            "node": "QualifiedName",
+                            "name": "int"
+                        }
+                    },
+                    "variables": [
+                        {
+                            "node": "Variable",
+                            "name": "_annotationConstant"
+                        }
+                    ]
+                },
+                {
+                    "node": "AnnotationMethod",
+                    "name": "author",
+                    "type": {
+                        "node": "Type",
+                        "qualifiedName": {
+                            "node": "QualifiedName",
+                            "name": "String"
+                        }
+                    }
+                },
+                {
+                    "node": "AnnotationMethod",
+                    "name": "lastModified",
+                    "defaultValue": "\"N/A\"",
+                    "type": {
+                        "node": "Type",
+                        "qualifiedName": {
+                            "node": "QualifiedName",
+                            "name": "String"
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}

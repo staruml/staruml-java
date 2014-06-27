@@ -1,0 +1,103 @@
+{
+    "node": "CompilationUnit",
+    "package": {
+        "node": "Package",
+        "qualifiedName": {
+            "node": "QualifiedName",
+            "name": "com.mycompany.test"
+        }
+    },
+    "types": [
+        {
+            "node": "Interface",
+            "name": "InterfaceTest",
+            "extends": [
+                {
+                    "node": "Type",
+                    "qualifiedName": {
+                        "node": "QualifiedName",
+                        "name": "java.lang.Runnable"
+                    }
+                },
+                {
+                    "node": "Type",
+                    "qualifiedName": {
+                        "node": "QualifiedName",
+                        "name": "java.lang.Serializable"
+                    }
+                }
+            ],
+            "body": [
+                {
+                    "node": "Field",
+                    "type": {
+                        "node": "Type",
+                        "qualifiedName": {
+                            "node": "QualifiedName",
+                            "name": "int"
+                        }
+                    },
+                    "variables": [
+                        {
+                            "node": "Variable",
+                            "name": "interfaceStaticField",
+                            "initializer": "100"
+                        }
+                    ],
+                    "modifiers": [
+                        "public",
+                        "static",
+                        "final"
+                    ]
+                },
+                {
+                    "node": "Method",
+                    "type": {
+                        "node": "Type",
+                        "qualifiedName": {
+                            "node": "QualifiedName",
+                            "name": "CompositeContext"
+                        }
+                    },
+                    "name": "createContext",
+                    "parameters": [
+                        {
+                            "node": "Parameter",
+                            "type": {
+                                "node": "Type",
+                                "qualifiedName": {
+                                    "node": "QualifiedName",
+                                    "name": "ColorModel"
+                                }
+                            },
+                            "variable": {
+                                "node": "Variable",
+                                "name": "srcColorModel"
+                            }
+                        },
+                        {
+                            "node": "Parameter",
+                            "type": {
+                                "node": "Type",
+                                "qualifiedName": {
+                                    "node": "QualifiedName",
+                                    "name": "ColorModel"
+                                }
+                            },
+                            "variable": {
+                                "node": "Variable",
+                                "name": "dstColorModel"
+                            }
+                        }
+                    ],
+                    "modifiers": [
+                        "public"
+                    ]
+                }
+            ],
+            "modifiers": [
+                "public"
+            ]
+        }
+    ]
+}

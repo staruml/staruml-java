@@ -5,7 +5,7 @@ import java.lang.*;
 import static java.awt.Color;
 import static java.lang.Math.*;
 
-public class ClassTest extends java.util.Vector implements java.lang.Runnable, java.lang.Serializable {
+public class ClassTest extends GenericClassTest implements InterfaceTest, java.lang.Serializable {
 
     // Visibility
     private int _privateField;

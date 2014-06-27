@@ -1,0 +1,136 @@
+{
+    "node": "CompilationUnit",
+    "package": {
+        "node": "Package",
+        "qualifiedName": {
+            "node": "QualifiedName",
+            "name": "com.mycompany.test"
+        }
+    },
+    "types": [
+        {
+            "node": "Class",
+            "name": "Vector",
+            "typeParameters": [
+                "E",
+                "T"
+            ],
+            "extends": {
+                "node": "Type",
+                "qualifiedName": {
+                    "node": "QualifiedName",
+                    "name": "AbstractList",
+                    "typeParameters": [
+                        "E"
+                    ]
+                }
+            },
+            "implements": [
+                {
+                    "node": "Type",
+                    "qualifiedName": {
+                        "node": "QualifiedName",
+                        "name": "List",
+                        "typeParameters": [
+                            "E"
+                        ]
+                    }
+                },
+                {
+                    "node": "Type",
+                    "qualifiedName": {
+                        "node": "QualifiedName",
+                        "name": "RandomAccess"
+                    }
+                },
+                {
+                    "node": "Type",
+                    "qualifiedName": {
+                        "node": "QualifiedName",
+                        "name": "Cloneable"
+                    }
+                },
+                {
+                    "node": "Type",
+                    "qualifiedName": {
+                        "node": "QualifiedName",
+                        "name": "java.io.Serializable"
+                    }
+                }
+            ],
+            "body": [
+                {
+                    "node": "Field",
+                    "type": {
+                        "node": "Type",
+                        "qualifiedName": {
+                            "node": "QualifiedName",
+                            "name": "OrderedPair",
+                            "typeParameters": [
+                                "String",
+                                "Box<Integer>"
+                            ]
+                        }
+                    },
+                    "variables": [
+                        {
+                            "node": "Variable",
+                            "name": "p",
+                            "initializer": null
+                        }
+                    ],
+                    "modifiers": [
+                        "private"
+                    ]
+                },
+                {
+                    "node": "Constructor",
+                    "name": "Vector",
+                    "parameters": [
+                        {
+                            "node": "Parameter",
+                            "type": {
+                                "node": "Type",
+                                "qualifiedName": {
+                                    "node": "QualifiedName",
+                                    "name": "Collection",
+                                    "typeParameters": [
+                                        "? extends E"
+                                    ]
+                                }
+                            },
+                            "variable": {
+                                "node": "Variable",
+                                "name": "c"
+                            }
+                        }
+                    ],
+                    "modifiers": [
+                        "public"
+                    ]
+                },
+                {
+                    "node": "Method",
+                    "name": "elements",
+                    "type": {
+                        "node": "Type",
+                        "qualifiedName": {
+                            "node": "QualifiedName",
+                            "name": "Enumeration",
+                            "typeParameters": [
+                                "E"
+                            ]
+                        }
+                    },
+                    "parameters": [],
+                    "modifiers": [
+                        "public"
+                    ]
+                }
+            ],
+            "modifiers": [
+                "public"
+            ]
+        }
+    ]
+}

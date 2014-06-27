@@ -1,0 +1,98 @@
+{
+    "node": "CompilationUnit",
+    "package": {
+        "node": "Package",
+        "qualifiedName": {
+            "node": "QualifiedName",
+            "name": "com.mycompany.test"
+        }
+    },
+    "types": [
+        {
+            "node": "Enum",
+            "name": "RetryType",
+            "implements": [],
+            "body": [
+                {
+                    "node": "EnumConstant",
+                    "name": "NONE",
+                    "arguments": [
+                        "false"
+                    ]
+                },
+                {
+                    "node": "EnumConstant",
+                    "name": "BEFORE_RESPONSE",
+                    "arguments": [
+                        "true"
+                    ]
+                },
+                {
+                    "node": "EnumConstant",
+                    "name": "AFTER_RESPONSE",
+                    "arguments": [
+                        "true"
+                    ]
+                },
+                {
+                    "node": "Field",
+                    "type": {
+                        "node": "Type",
+                        "qualifiedName": {
+                            "node": "QualifiedName",
+                            "name": "boolean"
+                        }
+                    },
+                    "variables": [
+                        {
+                            "node": "Variable",
+                            "name": "isRetry"
+                        }
+                    ],
+                    "modifiers": [
+                        "private",
+                        "final"
+                    ]
+                },
+                {
+                    "node": "Constructor",
+                    "name": "RetryType",
+                    "parameters": [
+                        {
+                            "node": "Parameter",
+                            "type": {
+                                "node": "Type",
+                                "qualifiedName": {
+                                    "node": "QualifiedName",
+                                    "name": "boolean"
+                                }
+                            },
+                            "variable": {
+                                "node": "Variable",
+                                "name": "isRetry"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "node": "Method",
+                    "name": "isRetry",
+                    "type": {
+                        "node": "Type",
+                        "qualifiedName": {
+                            "node": "QualifiedName",
+                            "name": "boolean"
+                        }
+                    },
+                    "parameters": [],
+                    "modifiers": [
+                        "public"
+                    ]
+                }
+            ],
+            "modifiers": [
+                "public"
+            ]
+        }
+    ]
+}

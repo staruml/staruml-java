@@ -127,12 +127,12 @@ define(function (require, exports, module) {
 
                     // extends java.util.Vector ...
                     expect(_class["extends"].node).toEqual("Type");
-                    expect(_class["extends"].qualifiedName.name).toEqual("java.util.Vector");
+                    expect(_class["extends"].qualifiedName.name).toEqual("GenericClassTest");
 
                     // implements java.lang.Runnable, java.lang.Serializable
                     expect(_class["implements"].length).toEqual(2);
                     expect(_class["implements"][0].node).toEqual("Type");
-                    expect(_class["implements"][0].qualifiedName.name).toEqual("java.lang.Runnable");
+                    expect(_class["implements"][0].qualifiedName.name).toEqual("InterfaceTest");
                     expect(_class["implements"][1].node).toEqual("Type");
                     expect(_class["implements"][1].qualifiedName.name).toEqual("java.lang.Serializable");
 
@@ -357,7 +357,7 @@ define(function (require, exports, module) {
 
                     // public class Vector<E, T>
                     expect(_class.node).toEqual("Class");
-                    expect(_class.name).toEqual("Vector");
+                    expect(_class.name).toEqual("GenericClassTest");
                     expect(_class.modifiers[0]).toEqual("public");
                     expect(_class.typeParameters.length).toEqual(2);
                     expect(_class.typeParameters[0]).toEqual("E");
@@ -588,17 +588,17 @@ define(function (require, exports, module) {
                     expect(_annotationType.name).toEqual("ClassPreamble");
 
                     // int _annotationConstant;
-                    expect(_annotationType.body[0].node).toEqual("AnnotationConstant");
+                    expect(_annotationType.body[0].node).toEqual("Field");
                     expect(_annotationType.body[0].type.qualifiedName.name).toEqual("int");
                     expect(_annotationType.body[0].variables[0].name).toEqual("_annotationConstant");
 
                     // String author();
-                    expect(_annotationType.body[1].node).toEqual("AnnotationMethod");
+                    expect(_annotationType.body[1].node).toEqual("Method");
                     expect(_annotationType.body[1].name).toEqual("author");
                     expect(_annotationType.body[1].type.qualifiedName.name).toEqual("String");
 
                     // String lastModified() default "N/A";
-                    expect(_annotationType.body[2].node).toEqual("AnnotationMethod");
+                    expect(_annotationType.body[2].node).toEqual("Method");
                     expect(_annotationType.body[2].name).toEqual("lastModified");
                     expect(_annotationType.body[2].type.qualifiedName.name).toEqual("String");
                     expect(_annotationType.body[2].defaultValue).toEqual("\"N/A\"");

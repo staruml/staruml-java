@@ -21,6 +21,10 @@
  *
  */
 
+
+// TODO: Field를 Association으로 변환하는 경우, Directional은 쉽지만 Bidirectional은 어떻게 할건지?
+//       무조건 directional로 하든지, 아니면 options의 bidirectional = true 이면 임의로 Bidirectional로 생성하는 방법.
+
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50, regexp: true */
 /*global define, $, _, window, staruml, type, document, java7 */
 define(function (require, exports, module) {
@@ -87,10 +91,24 @@ define(function (require, exports, module) {
 
         this._builder = new ModelBuilder(); // ???
 
-        // For 2nd Phase
-        this._relationships = [];
+        /**
+         * @member {{classifier:type.UMLClassifier, node: Object}}
+         */
+        this._generalizations = [];
 
-        // For 2nd Phase
+        /**
+         * @member {{classifier:type.UMLClassifier, node: Object}}
+         */
+        this._realizations = [];
+
+        /**
+         * @member {{classifier:type.UMLClassifier, node: Object}}
+         */
+        this._fields = [];
+
+        /**
+         * @member {{structuralFeature:type.UMLStructuralFeature, node: Object}}
+         */
         this._types = [];
 
     }
@@ -107,9 +125,10 @@ define(function (require, exports, module) {
      * Analyze all files.
      * @return {$.Promise}
      */
-    JavaAnalyzer.prototype.analyze = function () {
+    JavaAnalyzer.prototype.analyze = function (options) {
         var self = this;
-        // First Phase
+
+        // Perform 1st Phase
         var promise = Async.doSequentially(this._files, function (file) {
             var result = new $.Deferred();
             file.read({}, function (err, data, stat) {
@@ -117,7 +136,7 @@ define(function (require, exports, module) {
                     try {
                         var parent = self._builder.getBaseModel(),
                             ast    = java7.parse(data);
-                        self.translateCompilationUnit(parent, ast);
+                        self.translateCompilationUnit(options, parent, ast);
                     } catch (e) {
                         console.log("[Java] Failed to parse : " + file._path);
                     }
@@ -129,15 +148,38 @@ define(function (require, exports, module) {
             return result.promise();
         }, false);
 
+        // Perform 2nd Phase
+        promise.always(function () {
+            self.perform2ndPhase(options);
+        });
+
+        // Load To Project
         promise.always(function () {
             var json = self._builder.toJson();
-            Repository.importFromJson(Repository.getProject(), json, function (elem) {
-                console.log("[Java] done.");
-            });
+            Repository.importFromJson(Repository.getProject(), json);
+            console.log("[Java] done.");
         });
 
         return promise;
     };
+
+    /**
+     * Perform 2nd Phase
+     * - Create Generalizations
+     * - Create InterfaceRealizations
+     * - Create Fields or Associations
+     * - Resolve Type References
+     */
+    JavaAnalyzer.prototype.perform2ndPhase = function (options) {
+        var i, len;
+        for (i = 0, len = this._generalizations.length; i < len; i++) {
+            var gen = this._generalizations[i];
+            console.log(gen);
+
+            // TODO: 타입을 찾는 함수 필요. (Context에서 찾고(InnerClass?), 동일 패키지에서 찾고, import에서 찾고)
+        }
+    };
+
 
     /**
      * @param {Array.<string>} modifiers
@@ -204,13 +246,13 @@ define(function (require, exports, module) {
      * @param {Element} parent
      * @param {Object} compilationUnitNode
      */
-    JavaAnalyzer.prototype.translateCompilationUnit = function (parent, compilationUnitNode) {
+    JavaAnalyzer.prototype.translateCompilationUnit = function (options, parent, compilationUnitNode) {
         var _namespace = parent,
             i,
             len;
 
         if (compilationUnitNode["package"]) {
-            var _package = this.translatePackage(parent, compilationUnitNode["package"]);
+            var _package = this.translatePackage(options, parent, compilationUnitNode["package"]);
             if (_package !== null) {
                 _namespace = _package;
             }
@@ -218,19 +260,19 @@ define(function (require, exports, module) {
 
         if (compilationUnitNode.types && compilationUnitNode.types.length > 0) {
             for (i = 0, len = compilationUnitNode.types.length; i < len; i++) {
-                var type = compilationUnitNode.types[i];
-                switch (type.node) {
+                var typeNode = compilationUnitNode.types[i];
+                switch (typeNode.node) {
                 case "Class":
-                    this.translateClass(_namespace, type);
+                    this.translateClass(options, _namespace, typeNode);
                     break;
                 case "Interface":
-                    this.translateInterface(_namespace, type);
+                    this.translateInterface(options, _namespace, typeNode);
                     break;
                 case "Enum":
-                    this.translateEnum(_namespace, type);
+                    this.translateEnum(options, _namespace, typeNode);
                     break;
                 case "AnnotationType":
-                    this.translateAnnotationType(_namespace, type);
+                    this.translateAnnotationType(options, _namespace, typeNode);
                     break;
                 }
             }
@@ -242,7 +284,7 @@ define(function (require, exports, module) {
      * @param {Element} parent
      * @param {Object} compilationUnitNode
      */
-    JavaAnalyzer.prototype.translatePackage = function (parent, packageNode) {
+    JavaAnalyzer.prototype.translatePackage = function (options, parent, packageNode) {
         if (packageNode && packageNode.qualifiedName && packageNode.qualifiedName.name) {
             var pathNames = packageNode.qualifiedName.name.split(".");
             return this.ensurePackage(parent, pathNames);
@@ -250,12 +292,38 @@ define(function (require, exports, module) {
         return null;
     };
 
+
+    /**
+     * Translate Members Nodes
+     * @param {Element} parent
+     * @param {Array.<Object>} memberNodeArray
+     */
+    JavaAnalyzer.prototype.translateMembers = function (options, parent, memberNodeArray) {
+        var i, len;
+        if (memberNodeArray.length > 0) {
+            for (i = 0, len = memberNodeArray.length; i < len; i++) {
+                var memberNode = memberNodeArray[i];
+                switch (memberNode.node) {
+                case "Field":
+                    this.translateField(options, parent, memberNode);
+                    break;
+                case "Method":
+                    this.translateMethod(options, parent, memberNode);
+                    break;
+                case "EnumConstant":
+                    this.translateEnumConstant(options, parent, memberNode);
+                    break;
+                }
+            }
+        }
+    };
+
     /**
      * Translate Java Class Node.
      * @param {Element} parent
      * @param {Object} compilationUnitNode
      */
-    JavaAnalyzer.prototype.translateClass = function (parent, classNode) {
+    JavaAnalyzer.prototype.translateClass = function (options, parent, classNode) {
         var i,
             len,
             _class = new type.UMLClass();
@@ -264,45 +332,68 @@ define(function (require, exports, module) {
         _class.visibility = this._getVisibility(classNode.modifiers);
         parent.ownedElements.push(_class);
 
-        // TODO: Translate Extends
+        // Register Extends for 2nd Phase Translation
+        if (classNode["extends"]) {
+            this._generalizations.push({
+                classifier: _class,
+                node: classNode["extends"]
+            });
+        }
+
         // - 1) 타입이 소스에 있는 경우 --> 해당 타입으로 Generalization 생성
         // - 2) 타입이 소스에 없는 경우 (e.g. java.util.ArrayList) --> 타입을 생성(어디에?)한 뒤 Generalization 생성
         // 모든 타입이 생성된 다음에 Generalization (혹은 기타 Relationships)이 연결되어야 하므로, 어딘가에 등록한 다음이 2nd Phase에서 처리.
 
-        // TODO: Translate Implements
-        // - ...
-
-        // Translate Body
-        if (classNode.body && classNode.body.length > 0) {
-            for (i = 0, len = classNode.body.length; i < len; i++) {
-                var memberNode = classNode.body[i];
-                switch (memberNode.node) {
-                case "Field":
-                    this.translateField(_class, memberNode);
-                    break;
-                case "Method":
-                    this.translateMethod(_class, memberNode);
-                    break;
-                }
+        // Register Implements for 2nd Phase Translation
+        if (classNode["implements"]) {
+            for (i = 0, len = classNode["implements"].length; i < len; i++) {
+                var _impl = classNode["implements"][i];
+                this._realizations.push({
+                    classifier: _class,
+                    node: _impl
+                });
             }
         }
+
+        // Translate Members
+        this.translateMembers(options, _class, classNode.body);
     };
 
-    JavaAnalyzer.prototype.translateInterface = function (parent, interfaceNode) {
+    JavaAnalyzer.prototype.translateInterface = function (options, parent, interfaceNode) {
         var _interface = new type.UMLInterface();
         _interface._parent = parent;
         _interface.name = interfaceNode.name;
         _interface.visibility = this._getVisibility(interfaceNode.modifiers);
         parent.ownedElements.push(_interface);
+
+        // Translate Members
+        this.translateMembers(options, _interface, interfaceNode.body);
     };
 
-    JavaAnalyzer.prototype.translateEnum = function (parent, enumNode) {
+    JavaAnalyzer.prototype.translateEnum = function (options, parent, enumNode) {
+        var _enum = new type.UMLEnumeration();
+        _enum._parent = parent;
+        _enum.name = enumNode.name;
+        _enum.visibility = this._getVisibility(enumNode.modifiers);
+        parent.ownedElements.push(_enum);
+
+        // Translate Members
+        this.translateMembers(options, _enum, enumNode.body);
     };
 
-    JavaAnalyzer.prototype.translateAnnotationType = function (parent, annotationTypeNode) {
+    JavaAnalyzer.prototype.translateAnnotationType = function (options, parent, annotationTypeNode) {
+        var _annotationType = new type.UMLClass();
+        _annotationType._parent = parent;
+        _annotationType.name = annotationTypeNode.name;
+        _annotationType.stereotype = "annotationType";
+        _annotationType.visibility = this._getVisibility(annotationTypeNode.modifiers);
+        parent.ownedElements.push(_annotationType);
+
+        // Translate Members
+        this.translateMembers(options, _annotationType, annotationTypeNode.body);
     };
 
-    JavaAnalyzer.prototype.translateField = function (parent, fieldNode) {
+    JavaAnalyzer.prototype.translateField = function (options, parent, fieldNode) {
         var i, len;
         if (fieldNode.variables && fieldNode.variables.length > 0) {
             for (i = 0, len = fieldNode.variables.length; i < len; i++) {
@@ -324,7 +415,7 @@ define(function (require, exports, module) {
         }
     };
 
-    JavaAnalyzer.prototype.translateMethod = function (parent, methodNode) {
+    JavaAnalyzer.prototype.translateMethod = function (options, parent, methodNode) {
         var i, len,
             _operation = new type.UMLOperation();
         _operation._parent = parent;
@@ -334,7 +425,7 @@ define(function (require, exports, module) {
         if (methodNode.parameters && methodNode.parameters.length > 0) {
             for (i = 0, len = methodNode.parameters.length; i < len; i++) {
                 var parameterNode = methodNode.parameters[i];
-                this.translateParameter(_operation, parameterNode);
+                this.translateParameter(options, _operation, parameterNode);
             }
         }
         // TODO: ReturnType
@@ -342,7 +433,15 @@ define(function (require, exports, module) {
         parent.operations.push(_operation);
     };
 
-    JavaAnalyzer.prototype.translateParameter = function (parent, parameterNode) {
+    JavaAnalyzer.prototype.translateEnumConstant = function (options, parent, enumConstantNode) {
+        var _literal = new type.UMLEnumerationLiteral();
+        _literal._parent = parent;
+        _literal.name = enumConstantNode.name;
+        parent.literals.push(_literal);
+    };
+
+
+    JavaAnalyzer.prototype.translateParameter = function (options, parent, parameterNode) {
         var _parameter = new type.UMLParameter();
         _parameter._parent = parent;
         _parameter.name = parameterNode.variable.name;
@@ -382,7 +481,7 @@ define(function (require, exports, module) {
         var dir = FileSystem.getDirectoryForPath(options.path);
         dir.visit(visitEntry, {}, function (err) {
             if (!err) {
-                javaAnalyzer.analyze().then(result.resolve, result.reject);
+                javaAnalyzer.analyze(options).then(result.resolve, result.reject);
             } else {
                 result.reject(err);
             }

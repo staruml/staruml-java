@@ -1,0 +1,489 @@
+{
+    "node": "CompilationUnit",
+    "package": {
+        "node": "Package",
+        "qualifiedName": {
+            "node": "QualifiedName",
+            "name": "com.mycompany.test"
+        }
+    },
+    "imports": [
+        {
+            "node": "Import",
+            "qualifiedName": {
+                "node": "QualifiedName",
+                "name": "java.util.ArrayList"
+            }
+        },
+        {
+            "node": "Import",
+            "qualifiedName": {
+                "node": "QualifiedName",
+                "name": "java.lang"
+            },
+            "wildcard": true
+        },
+        {
+            "node": "Import",
+            "qualifiedName": {
+                "node": "QualifiedName",
+                "name": "java.awt.Color"
+            },
+            "isStatic": true
+        },
+        {
+            "node": "Import",
+            "qualifiedName": {
+                "node": "QualifiedName",
+                "name": "java.lang.Math"
+            },
+            "wildcard": true,
+            "isStatic": true
+        }
+    ],
+    "types": [
+        {
+            "node": "Class",
+            "name": "ClassTest",
+            "extends": {
+                "node": "Type",
+                "qualifiedName": {
+                    "node": "QualifiedName",
+                    "name": "java.util.Vector"
+                }
+            },
+            "implements": [
+                {
+                    "node": "Type",
+                    "qualifiedName": {
+                        "node": "QualifiedName",
+                        "name": "java.lang.Runnable"
+                    }
+                },
+                {
+                    "node": "Type",
+                    "qualifiedName": {
+                        "node": "QualifiedName",
+                        "name": "java.lang.Serializable"
+                    }
+                }
+            ],
+            "body": [
+                {
+                    "node": "Field",
+                    "type": {
+                        "node": "Type",
+                        "qualifiedName": {
+                            "node": "QualifiedName",
+                            "name": "int"
+                        }
+                    },
+                    "variables": [
+                        {
+                            "node": "Variable",
+                            "name": "_privateField"
+                        }
+                    ],
+                    "modifiers": [
+                        "private"
+                    ]
+                },
+                {
+                    "node": "Field",
+                    "type": {
+                        "node": "Type",
+                        "qualifiedName": {
+                            "node": "QualifiedName",
+                            "name": "int"
+                        }
+                    },
+                    "variables": [
+                        {
+                            "node": "Variable",
+                            "name": "_protectedField"
+                        }
+                    ],
+                    "modifiers": [
+                        "protected"
+                    ]
+                },
+                {
+                    "node": "Field",
+                    "type": {
+                        "node": "Type",
+                        "qualifiedName": {
+                            "node": "QualifiedName",
+                            "name": "int"
+                        }
+                    },
+                    "variables": [
+                        {
+                            "node": "Variable",
+                            "name": "_publicField"
+                        }
+                    ],
+                    "modifiers": [
+                        "public"
+                    ]
+                },
+                {
+                    "node": "Field",
+                    "type": {
+                        "node": "Type",
+                        "qualifiedName": {
+                            "node": "QualifiedName",
+                            "name": "int"
+                        }
+                    },
+                    "variables": [
+                        {
+                            "node": "Variable",
+                            "name": "_packageField"
+                        }
+                    ]
+                },
+                {
+                    "node": "Field",
+                    "type": {
+                        "node": "Type",
+                        "qualifiedName": {
+                            "node": "QualifiedName",
+                            "name": "String"
+                        },
+                        "arrayDimension": [
+                            "[]"
+                        ]
+                    },
+                    "variables": [
+                        {
+                            "node": "Variable",
+                            "name": "StringArray"
+                        }
+                    ]
+                },
+                {
+                    "node": "Field",
+                    "type": {
+                        "node": "Type",
+                        "qualifiedName": {
+                            "node": "QualifiedName",
+                            "name": "int"
+                        },
+                        "arrayDimension": [
+                            "[]",
+                            "[]"
+                        ]
+                    },
+                    "variables": [
+                        {
+                            "node": "Variable",
+                            "name": "int2DimentionalArray"
+                        }
+                    ]
+                },
+                {
+                    "node": "Field",
+                    "type": {
+                        "node": "Type",
+                        "qualifiedName": {
+                            "node": "QualifiedName",
+                            "name": "int"
+                        }
+                    },
+                    "variables": [
+                        {
+                            "node": "Variable",
+                            "name": "a"
+                        },
+                        {
+                            "node": "Variable",
+                            "name": "b"
+                        },
+                        {
+                            "node": "Variable",
+                            "name": "c"
+                        },
+                        {
+                            "node": "Variable",
+                            "name": "d"
+                        }
+                    ]
+                },
+                {
+                    "node": "Field",
+                    "type": {
+                        "node": "Type",
+                        "qualifiedName": {
+                            "node": "QualifiedName",
+                            "name": "int"
+                        }
+                    },
+                    "variables": [
+                        {
+                            "node": "Variable",
+                            "name": "_field"
+                        }
+                    ],
+                    "modifiers": [
+                        "static",
+                        "final",
+                        "transient",
+                        "volatile"
+                    ]
+                },
+                {
+                    "node": "Field",
+                    "type": {
+                        "node": "Type",
+                        "qualifiedName": {
+                            "node": "QualifiedName",
+                            "name": "int"
+                        }
+                    },
+                    "variables": [
+                        {
+                            "node": "Variable",
+                            "name": "_fieldInt",
+                            "initializer": "10"
+                        }
+                    ]
+                },
+                {
+                    "node": "Field",
+                    "type": {
+                        "node": "Type",
+                        "qualifiedName": {
+                            "node": "QualifiedName",
+                            "name": "String"
+                        }
+                    },
+                    "variables": [
+                        {
+                            "node": "Variable",
+                            "name": "_fieldString",
+                            "initializer": "\"String Literal\""
+                        }
+                    ]
+                },
+                {
+                    "node": "Field",
+                    "type": {
+                        "node": "Type",
+                        "qualifiedName": {
+                            "node": "QualifiedName",
+                            "name": "char"
+                        }
+                    },
+                    "variables": [
+                        {
+                            "node": "Variable",
+                            "name": "_fieldChar",
+                            "initializer": "'c'"
+                        }
+                    ]
+                },
+                {
+                    "node": "Field",
+                    "type": {
+                        "node": "Type",
+                        "qualifiedName": {
+                            "node": "QualifiedName",
+                            "name": "boolean"
+                        }
+                    },
+                    "variables": [
+                        {
+                            "node": "Variable",
+                            "name": "_fieldBoolean",
+                            "initializer": "true"
+                        }
+                    ]
+                },
+                {
+                    "node": "Field",
+                    "type": {
+                        "node": "Type",
+                        "qualifiedName": {
+                            "node": "QualifiedName",
+                            "name": "Object"
+                        }
+                    },
+                    "variables": [
+                        {
+                            "node": "Variable",
+                            "name": "_fieldNull",
+                            "initializer": "null"
+                        }
+                    ]
+                },
+                {
+                    "node": "Method",
+                    "name": "test",
+                    "type": {
+                        "node": "Type",
+                        "qualifiedName": {
+                            "node": "QualifiedName",
+                            "name": "void"
+                        }
+                    },
+                    "parameters": [
+                        {
+                            "node": "Parameter",
+                            "type": {
+                                "node": "Type",
+                                "qualifiedName": {
+                                    "node": "QualifiedName",
+                                    "name": "int"
+                                }
+                            },
+                            "variable": {
+                                "node": "Variable",
+                                "name": "arg1"
+                            }
+                        },
+                        {
+                            "node": "Parameter",
+                            "type": {
+                                "node": "Type",
+                                "qualifiedName": {
+                                    "node": "QualifiedName",
+                                    "name": "String"
+                                }
+                            },
+                            "variable": {
+                                "node": "Variable",
+                                "name": "arg2"
+                            },
+                            "modifiers": [
+                                "final"
+                            ]
+                        }
+                    ],
+                    "throws": [
+                        {
+                            "node": "QualifiedName",
+                            "name": "IllegalAccess"
+                        },
+                        {
+                            "node": "QualifiedName",
+                            "name": "java.lang.Exception"
+                        }
+                    ],
+                    "modifiers": [
+                        "public"
+                    ]
+                },
+                {
+                    "node": "Method",
+                    "name": "test2",
+                    "type": {
+                        "node": "Type",
+                        "qualifiedName": {
+                            "node": "QualifiedName",
+                            "name": "void"
+                        }
+                    },
+                    "parameters": [],
+                    "modifiers": [
+                        "static",
+                        "final",
+                        "synchronized",
+                        "native",
+                        "strictfp"
+                    ]
+                },
+                {
+                    "node": "Method",
+                    "name": "test3",
+                    "type": {
+                        "node": "Type",
+                        "qualifiedName": {
+                            "node": "QualifiedName",
+                            "name": "int"
+                        }
+                    },
+                    "parameters": [],
+                    "modifiers": [
+                        "abstract"
+                    ]
+                },
+                {
+                    "node": "Method",
+                    "name": "annotatedMethod",
+                    "type": {
+                        "node": "Type",
+                        "qualifiedName": {
+                            "node": "QualifiedName",
+                            "name": "void"
+                        }
+                    },
+                    "parameters": [],
+                    "annotations": [
+                        {
+                            "node": "Annotation",
+                            "qualifiedName": {
+                                "node": "QualifiedName",
+                                "name": "Deprecated"
+                            }
+                        },
+                        {
+                            "node": "Annotation",
+                            "qualifiedName": {
+                                "node": "QualifiedName",
+                                "name": "SuppressWarnings"
+                            },
+                            "valueList": [
+                                [
+                                    "\"unchecked\"",
+                                    "\"deprecation\""
+                                ]
+                            ]
+                        },
+                        {
+                            "node": "Annotation",
+                            "qualifiedName": {
+                                "node": "QualifiedName",
+                                "name": "MethodInfo"
+                            },
+                            "valuePairs": [
+                                {
+                                    "node": "ValuePair",
+                                    "name": "author",
+                                    "value": "\"Pankaj\""
+                                },
+                                {
+                                    "node": "ValuePair",
+                                    "name": "comments",
+                                    "value": "\"Main method\""
+                                },
+                                {
+                                    "node": "ValuePair",
+                                    "name": "date",
+                                    "value": "\"Nov 17 2012\""
+                                },
+                                {
+                                    "node": "ValuePair",
+                                    "name": "revision",
+                                    "value": "10"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "node": "Class",
+                    "name": "InnerClass",
+                    "extends": null,
+                    "implements": [],
+                    "body": [],
+                    "modifiers": [
+                        "static"
+                    ]
+                }
+            ],
+            "modifiers": [
+                "public"
+            ]
+        }
+    ]
+} 
