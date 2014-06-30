@@ -125,16 +125,16 @@ define(function (require, exports, module) {
                     expect(_class.name).toEqual("ClassTest");
                     expect(_class.modifiers[0]).toEqual("public");
 
-                    // extends java.util.Vector ...
+                    // extends GenericClassTest
                     expect(_class["extends"].node).toEqual("Type");
                     expect(_class["extends"].qualifiedName.name).toEqual("GenericClassTest");
 
-                    // implements java.lang.Runnable, java.lang.Serializable
+                    // implements com.mycompany.test.InterfaceTest, java.lang.Runnable
                     expect(_class["implements"].length).toEqual(2);
                     expect(_class["implements"][0].node).toEqual("Type");
-                    expect(_class["implements"][0].qualifiedName.name).toEqual("InterfaceTest");
+                    expect(_class["implements"][0].qualifiedName.name).toEqual("com.mycompany.test.InterfaceTest");
                     expect(_class["implements"][1].node).toEqual("Type");
-                    expect(_class["implements"][1].qualifiedName.name).toEqual("java.lang.Serializable");
+                    expect(_class["implements"][1].qualifiedName.name).toEqual("java.lang.Runnable");
 
                 });
             });
@@ -639,6 +639,64 @@ define(function (require, exports, module) {
                 });
             });
 
+            it("can reverse Fields of Java Class", function () {
+                runs(function () {
+                    var _model = Repository.getProject().ownedElements[0],
+                        _class = _model.ownedElements[0].ownedElements[0].ownedElements[0].findByName("ClassTest");
+
+                    // Total 16 Attributes
+                    expect(_class.attributes.length).toEqual(16);
+
+                    // Visibility
+                    expect(_class.findByName("_privateField").visibility).toEqual(UML.VK_PRIVATE);
+                    expect(_class.findByName("_protectedField").visibility).toEqual(UML.VK_PROTECTED);
+                    expect(_class.findByName("_publicField").visibility).toEqual(UML.VK_PUBLIC);
+                    expect(_class.findByName("_packageField").visibility).toEqual(UML.VK_PACKAGE);
+
+                    // Arrays
+                    expect(_class.findByName("StringArray").multiplicity).toEqual("*");
+                    expect(_class.findByName("int2DimentionalArray").multiplicity).toEqual("*,*");
+
+                    // Modifiers
+                    expect(_class.findByName("_field").isStatic).toBe(true);
+                    expect(_class.findByName("_field").isReadOnly).toBe(true);
+
+                    // Initializers
+                    expect(_class.findByName("_fieldInt").defaultValue).toBe("10");
+                    expect(_class.findByName("_fieldString").defaultValue).toBe('"String Literal"');
+                    expect(_class.findByName("_fieldChar").defaultValue).toBe("'c'");
+                    expect(_class.findByName("_fieldBoolean").defaultValue).toBe("true");
+                    expect(_class.findByName("_fieldNull").defaultValue).toBe("null");
+
+                    // can resolve type inner interface types
+                    expect(_class.attributes[15].type === _class.findByName("InterfaceTest")).toBe(true);
+                });
+            });
+
+            it("can reverse Methods of Java Class", function () {
+                runs(function () {
+                    var _model = Repository.getProject().ownedElements[0],
+                        _class = _model.ownedElements[0].ownedElements[0].ownedElements[0].findByName("ClassTest");
+
+                    // Total 4 Operations
+                    expect(_class.operations.length).toEqual(4);
+
+                    // Parameters
+                    expect(_class.findByName("test").parameters.length).toEqual(3);
+                    expect(_class.findByName("test").parameters[0].name).toEqual("arg1");
+                    expect(_class.findByName("test").parameters[0].direction).toEqual(UML.DK_IN);
+                    expect(_class.findByName("test").parameters[1].name).toEqual("arg2");
+                    expect(_class.findByName("test").parameters[1].direction).toEqual(UML.DK_IN);
+                    expect(_class.findByName("test").parameters[2].direction).toEqual(UML.DK_RETURN);
+
+                    // Modifiers
+                    expect(_class.findByName("test2").isStatic).toBe(true);
+                    expect(_class.findByName("test2").isLeaf).toBe(true);
+                    expect(_class.findByName("test3").isAbstract).toBe(true);
+
+                });
+            });
+
             it("can reverse Generalization of Java Class", function () {
                 runs(function () {
                     // extends GenericClassTest
@@ -652,16 +710,6 @@ define(function (require, exports, module) {
             });
 
             it("can reverse Associations of Java Class", function () {
-                runs(function () {
-                });
-            });
-
-            it("can reverse Fields of Java Class", function () {
-                runs(function () {
-                });
-            });
-
-            it("can reverse Methods of Java Class", function () {
                 runs(function () {
                 });
             });

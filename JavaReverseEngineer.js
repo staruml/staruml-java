@@ -40,20 +40,34 @@ define(function (require, exports, module) {
 
     require("grammar/java7");
 
-    /*
-    var p1 = "/Users/niklaus/Library/Application Support/StarUML/extensions/user/JavaCodeEng/test/src-jdk/java/applet/Applet.java",
-        p2 = "/Users/niklaus/Library/Application Support/StarUML/extensions/user/JavaCodeEng/test/src-jdk/java/awt/Canvas.java",
-        p3 = "/Users/niklaus/Library/Application Support/StarUML/extensions/user/JavaCodeEng/test/src-jdk/java/util/Collection.java",
-        p4 = "/Users/niklaus/Library/Application Support/StarUML/extensions/user/JavaCodeEng/test/src-jdk/com/sun/corba/se/spi/protocol/RetryType.java",
-        p5 = "/Users/niklaus/Library/Application Support/StarUML/extensions/user/JavaCodeEng/test/src-jdk/com/sun/org/glassfish/external/arc/Taxonomy.java";
 
-    var x = FileSystem.readFile(p1, "utf8", function (err, data) {
-        console.log(err);
-        console.log(data);
-        var r = java7.parse(data);
-        console.log(JSON.stringify(r, null, "\t"));
-    });
-    */
+    var javaPrimitiveTypes = [
+        "void",
+        "byte",
+        "short",
+        "int",
+        "long",
+        "float",
+        "double",
+        "boolean",
+        "char",
+        "Byte",
+        "Double",
+        "Float",
+        "Integer",
+        "Long",
+        "Short",
+        "String",
+        "Character",
+        "java.lang.Byte",
+        "java.lang.Double",
+        "java.lang.Float",
+        "java.lang.Integer",
+        "java.lang.Long",
+        "java.lang.Short",
+        "java.lang.String",
+        "java.lang.Character"
+    ];
 
     /**
      * CodeWriter
@@ -86,31 +100,36 @@ define(function (require, exports, module) {
      */
     function JavaAnalyzer() {
 
+        this._builder = new ModelBuilder(); // ???
+
+        /** @member {Array.<File>} */
+        this._root = null;
+
         /** @member {Array.<File>} */
         this._files = [];
 
-        this._builder = new ModelBuilder(); // ???
+        /** @member {Object} */
+        this._currentCompilationUnit = null;
+
+        /**
+         * @member {{classifier:type.UMLClassifier, node: Object, kind:string}}
+         */
+        this._extendPendings = [];
 
         /**
          * @member {{classifier:type.UMLClassifier, node: Object}}
          */
-        this._generalizations = [];
+        this._implementPendings = [];
 
         /**
          * @member {{classifier:type.UMLClassifier, node: Object}}
          */
-        this._realizations = [];
+        this._fieldPendings = [];
 
         /**
-         * @member {{classifier:type.UMLClassifier, node: Object}}
+         * @member {{namespace:type.UMLModelElement, feature:type.UMLStructuralFeature, node: Object}}
          */
-        this._fields = [];
-
-        /**
-         * @member {{structuralFeature:type.UMLStructuralFeature, node: Object}}
-         */
-        this._types = [];
-
+        this._typedFeaturePendings = [];
     }
 
     /**
@@ -133,13 +152,10 @@ define(function (require, exports, module) {
             var result = new $.Deferred();
             file.read({}, function (err, data, stat) {
                 if (!err) {
-                    try {
-                        var parent = self._builder.getBaseModel(),
-                            ast    = java7.parse(data);
-                        self.translateCompilationUnit(options, parent, ast);
-                    } catch (e) {
-                        console.log("[Java] Failed to parse : " + file._path);
-                    }
+                    var ast = java7.parse(data);
+                    self._root = self._builder.getBaseModel();
+                    self._currentCompilationUnit = ast;
+                    self.translateCompilationUnit(options, self._root, ast);
                     result.resolve();
                 } else {
                     result.reject(err);
@@ -171,72 +187,158 @@ define(function (require, exports, module) {
      * - Resolve Type References
      */
     JavaAnalyzer.prototype.perform2ndPhase = function (options) {
-        var i, len, _type;
+        var i, len, _typeName, _type, _pathName;
 
         // Create Generalizations
-        for (i = 0, len = this._generalizations.length; i < len; i++) {
-            var _gen = this._generalizations[i];
-            _type = this._findType(_gen.classifier, _gen.node.qualifiedName.name);
-            if (_type) {
-                var gen = new type.UMLGeneralization();
-                gen._parent = _gen.classifier;
-                gen.source = _gen.classifier;
-                gen.target = _type;
-                _gen.classifier.ownedElements.push(gen);
+        //     if super type not found, create a Class correspond to the super type.
+        for (i = 0, len = this._extendPendings.length; i < len; i++) {
+            var _extend = this._extendPendings[i];
+            _typeName = _extend.node.qualifiedName.name;
+            _type = this._findType(_extend.classifier, _typeName);
+            if (!_type) {
+                _pathName = this._toPathName(_typeName);
+                if (_extend.node.kind === "class") {
+                    _type = this._ensureClass(this._root, _pathName);
+                } else if (_extend.node.kind === "interface") {
+                    _type = this._ensureInterface(this._root, _pathName);
+                }
             }
+            var generalization = new type.UMLGeneralization();
+            generalization._parent = _extend.classifier;
+            generalization.source = _extend.classifier;
+            generalization.target = _type;
+            _extend.classifier.ownedElements.push(generalization);
+
         }
 
         // Create InterfaceRealizations
-        for (i = 0, len = this._realizations.length; i < len; i++) {
-            var _real = this._realizations[i];
-            _type = this._findType(_real.classifier, _real.node.qualifiedName.name);
+        //     if super interface not found, create a Interface correspond to the super interface
+        for (i = 0, len = this._implementPendings.length; i < len; i++) {
+            var _implement = this._implementPendings[i];
+            _typeName = _implement.node.qualifiedName.name;
+            _type = this._findType(_implement.classifier, _typeName);
+            if (!_type) {
+                _pathName = this._toPathName(_typeName);
+                _type = this._ensureInterface(this._root, _pathName);
+            }
+            var realization = new type.UMLInterfaceRealization();
+            realization._parent = _implement.classifier;
+            realization.source = _implement.classifier;
+            realization.target = _type;
+            _implement.classifier.ownedElements.push(realization);
+        }
+
+        // Resolve Type References
+        for (i = 0, len = this._typedFeaturePendings.length; i < len; i++) {
+            var _typedFeature = this._typedFeaturePendings[i];
+            _typeName = _typedFeature.node.qualifiedName.name;
+
+            // Find type and assign
+            _type = this._findType(_typedFeature.namespace, _typeName);
+            // if type is exists
             if (_type) {
-                var real = new type.UMLInterfaceRealization();
-                real._parent = _real.classifier;
-                real.source = _real.classifier;
-                real.target = _type;
-                _real.classifier.ownedElements.push(real);
+                _typedFeature.feature.type = _type;
+            // if type is not exists
+            } else {
+                // if type is primitive type
+                if (_.contains(javaPrimitiveTypes, _typeName)) {
+                    _typedFeature.feature.type = _typeName;
+                // otherwise
+                } else {
+                    _pathName = this._toPathName(_typeName);
+                    var _newClass = this._ensureClass(this._builder.getBaseModel(), _pathName);
+                    _typedFeature.feature.type = _newClass;
+                }
+            }
+
+            // Translate type's arrayDimension to multiplicity
+            if (_typedFeature.node.arrayDimension && _typedFeature.node.arrayDimension.length > 0) {
+                var j, len2, _dim = [];
+                for (j = 0, len2 = _typedFeature.node.arrayDimension.length; j < len2; j++) {
+                    _dim.push("*");
+                }
+                _typedFeature.feature.multiplicity = _dim.join(",");
             }
         }
 
     };
 
+
+    /**
+     * Convert string type name to path name (Array of string)
+     * @param {string} typeName
+     * @return {Array.<string>} pathName
+     */
+    JavaAnalyzer.prototype._toPathName = function (typeName) {
+        var pathName = (typeName.indexOf(".") > 0 ? typeName.trim().split(".") : null);
+        if (!pathName) {
+            pathName = [ typeName ];
+        }
+        return pathName;
+    };
+
+
     /**
      * Find Type.
      *
-     * @param {Element} context
-     * @param {string} typeName
+     * @param {Element} namespace
+     * @param {string|Object} type - Type name string or type node.
+     * @return {Element} element correspond to the type.
      */
-    JavaAnalyzer.prototype._findType = function (context, typeName) {
-        var root = this._builder.getBaseModel(),
-            pathName = (typeName.indexOf(".") > 0 ? typeName.trim().split(".") : []),
+    JavaAnalyzer.prototype._findType = function (namespace, type) {
+        var typeName,
+            pathName,
             _type = null;
+
+        if (type.node === "Type") {
+            typeName = type.qualifiedName.name;
+        } else if (_.isString(type)) {
+            typeName = type;
+        }
+
+        pathName = this._toPathName(typeName);
 
         // 1. Lookdown from context
         if (pathName.length > 1) {
-            _type = context.lookdown(pathName);
+            _type = namespace.lookdown(pathName);
         } else {
-            _type = context.findByName(typeName);
+            _type = namespace.findByName(typeName);
         }
 
         // 2. Lookup from context
         if (!_type) {
-            _type = context.lookup(typeName, null, root);
+            _type = namespace.lookup(typeName, null, this._root);
         }
 
         // 3. Find from imported namespaces
         if (!_type) {
-            // TODO: import에서 찾기.
+            if (this._currentCompilationUnit.imports) {
+                var i, len;
+                for (i = 0, len = this._currentCompilationUnit.imports.length; i < len; i++) {
+                    var _import = this._currentCompilationUnit.imports[i];
+                    // Find in wildcard imports (e.g. import java.lang.*)
+                    if (_import.wildcard) {
+                        var _namespace = this._root.lookdown(_import.qualifiedName.name);
+                        if (_namespace) {
+                            _type = _namespace.findByName(typeName);
+                        }
+                    // Find in import exact matches (e.g. import java.lang.String)
+                    } else {
+                        _type = this._root.lookdown(_import.qualifiedName.name);
+                    }
+                }
+            }
         }
 
         // 4. Lookdown from Root
         if (!_type) {
             if (pathName.length > 1) {
-                _type = root.lookdown(pathName);
+                _type = this._root.lookdown(pathName);
             } else {
-                _type = root.findByName(typeName);
+                _type = this._root.findByName(typeName);
             }
         }
+
         return _type;
     };
 
@@ -256,83 +358,130 @@ define(function (require, exports, module) {
     };
 
     /**
-     * @param {Object} typeNode
-     */
-    JavaAnalyzer.prototype._getType = function (typeNode) {
-        if (typeNode.qualifiedName && _.isString(typeNode.qualifiedName.name)) {
-            return typeNode.qualifiedName.name;
-        }
-        return null;
-    };
-
-    /**
      * Return the package of a given pathNames. If not exists, create the package.
-     * @param {Element} parent
+     * @param {Element} namespace
      * @param {Array.<string>} pathNames
      * @return {Element} Package element corresponding to the pathNames
      */
-    JavaAnalyzer.prototype.ensurePackage = function (parent, pathNames) {
+    JavaAnalyzer.prototype._ensurePackage = function (namespace, pathNames) {
         if (pathNames.length > 0) {
             var name = pathNames.shift();
             if (name && name.length > 0) {
-                var elem = parent.findByName(name);
+                var elem = namespace.findByName(name);
                 if (elem !== null) {
                     // Package exists
                     if (pathNames.length > 0) {
-                        return this.ensurePackage(elem, pathNames);
+                        return this._ensurePackage(elem, pathNames);
                     } else {
                         return elem;
                     }
                 } else {
                     // Package not exists, then create one.
                     var _package = new type.UMLPackage();
-                    parent.ownedElements.push(_package);
-                    _package._parent = parent;
+                    namespace.ownedElements.push(_package);
+                    _package._parent = namespace;
                     _package.name = name;
                     if (pathNames.length > 0) {
-                        return this.ensurePackage(_package, pathNames);
+                        return this._ensurePackage(_package, pathNames);
                     } else {
                         return _package;
                     }
                 }
             }
         } else {
-            return null;
+            return namespace;
         }
     };
 
     /**
+     * Return the class of a given pathNames. If not exists, create the class.
+     * @param {Element} namespace
+     * @param {Array.<string>} pathNames
+     * @return {Element} Class element corresponding to the pathNames
+     */
+    JavaAnalyzer.prototype._ensureClass = function (namespace, pathNames) {
+        if (pathNames.length > 0) {
+            var _className = pathNames.pop(),
+                _package = this._ensurePackage(namespace, pathNames),
+                _class = _package.findByName(_className);
+            if (!_class) {
+                _class = new type.UMLClass();
+                _class._parent = _package;
+                _class.name = _className;
+                _class.visibility = UML.VK_PUBLIC;
+                _package.ownedElements.push(_class);
+            }
+            return _class;
+        }
+        return null;
+    };
+
+    /**
+     * Return the interface of a given pathNames. If not exists, create the interface.
+     * @param {Element} namespace
+     * @param {Array.<string>} pathNames
+     * @return {Element} Interface element corresponding to the pathNames
+     */
+    JavaAnalyzer.prototype._ensureInterface = function (namespace, pathNames) {
+        if (pathNames.length > 0) {
+            var _interfaceName = pathNames.pop(),
+                _package = this._ensurePackage(namespace, pathNames),
+                _interface = _package.findByName(_interfaceName);
+            if (!_interface) {
+                _interface = new type.UMLInterface();
+                _interface._parent = _package;
+                _interface.name = _interfaceName;
+                _interface.visibility = UML.VK_PUBLIC;
+                _package.ownedElements.push(_interface);
+            }
+            return _interface;
+        }
+        return null;
+    };
+
+    /**
      * Translate Java CompilationUnit Node.
-     * @param {Element} parent
+     * @param {Element} namespace
      * @param {Object} compilationUnitNode
      */
-    JavaAnalyzer.prototype.translateCompilationUnit = function (options, parent, compilationUnitNode) {
-        var _namespace = parent,
+    JavaAnalyzer.prototype.translateCompilationUnit = function (options, namespace, compilationUnitNode) {
+        var _namespace = namespace,
             i,
             len;
 
         if (compilationUnitNode["package"]) {
-            var _package = this.translatePackage(options, parent, compilationUnitNode["package"]);
+            var _package = this.translatePackage(options, namespace, compilationUnitNode["package"]);
             if (_package !== null) {
                 _namespace = _package;
             }
         }
 
-        if (compilationUnitNode.types && compilationUnitNode.types.length > 0) {
-            for (i = 0, len = compilationUnitNode.types.length; i < len; i++) {
-                var typeNode = compilationUnitNode.types[i];
+        // Translate Types
+        this.translateTypes(options, _namespace, compilationUnitNode.types);
+    };
+
+    /**
+     * Translate Type Nodes
+     * @param {Element} namespace
+     * @param {Array.<Object>} typeNodeArray
+     */
+    JavaAnalyzer.prototype.translateTypes = function (options, namespace, typeNodeArray) {
+        var i, len;
+        if (typeNodeArray.length > 0) {
+            for (i = 0, len = typeNodeArray.length; i < len; i++) {
+                var typeNode = typeNodeArray[i];
                 switch (typeNode.node) {
                 case "Class":
-                    this.translateClass(options, _namespace, typeNode);
+                    this.translateClass(options, namespace, typeNode);
                     break;
                 case "Interface":
-                    this.translateInterface(options, _namespace, typeNode);
+                    this.translateInterface(options, namespace, typeNode);
                     break;
                 case "Enum":
-                    this.translateEnum(options, _namespace, typeNode);
+                    this.translateEnum(options, namespace, typeNode);
                     break;
                 case "AnnotationType":
-                    this.translateAnnotationType(options, _namespace, typeNode);
+                    this.translateAnnotationType(options, namespace, typeNode);
                     break;
                 }
             }
@@ -341,13 +490,13 @@ define(function (require, exports, module) {
 
     /**
      * Translate Java Package Node.
-     * @param {Element} parent
+     * @param {Element} namespace
      * @param {Object} compilationUnitNode
      */
-    JavaAnalyzer.prototype.translatePackage = function (options, parent, packageNode) {
+    JavaAnalyzer.prototype.translatePackage = function (options, namespace, packageNode) {
         if (packageNode && packageNode.qualifiedName && packageNode.qualifiedName.name) {
             var pathNames = packageNode.qualifiedName.name.split(".");
-            return this.ensurePackage(parent, pathNames);
+            return this._ensurePackage(namespace, pathNames);
         }
         return null;
     };
@@ -355,23 +504,23 @@ define(function (require, exports, module) {
 
     /**
      * Translate Members Nodes
-     * @param {Element} parent
+     * @param {Element} namespace
      * @param {Array.<Object>} memberNodeArray
      */
-    JavaAnalyzer.prototype.translateMembers = function (options, parent, memberNodeArray) {
+    JavaAnalyzer.prototype.translateMembers = function (options, namespace, memberNodeArray) {
         var i, len;
         if (memberNodeArray.length > 0) {
             for (i = 0, len = memberNodeArray.length; i < len; i++) {
                 var memberNode = memberNodeArray[i];
                 switch (memberNode.node) {
                 case "Field":
-                    this.translateField(options, parent, memberNode);
+                    this.translateField(options, namespace, memberNode);
                     break;
                 case "Method":
-                    this.translateMethod(options, parent, memberNode);
+                    this.translateMethod(options, namespace, memberNode);
                     break;
                 case "EnumConstant":
-                    this.translateEnumConstant(options, parent, memberNode);
+                    this.translateEnumConstant(options, namespace, memberNode);
                     break;
                 }
             }
@@ -380,24 +529,25 @@ define(function (require, exports, module) {
 
     /**
      * Translate Java Class Node.
-     * @param {Element} parent
+     * @param {Element} namespace
      * @param {Object} compilationUnitNode
      */
-    JavaAnalyzer.prototype.translateClass = function (options, parent, classNode) {
+    JavaAnalyzer.prototype.translateClass = function (options, namespace, classNode) {
         var i, len, _class;
 
         // Create Class
         _class = new type.UMLClass();
-        _class._parent = parent;
+        _class._parent = namespace;
         _class.name = classNode.name;
         _class.visibility = this._getVisibility(classNode.modifiers);
-        parent.ownedElements.push(_class);
+        namespace.ownedElements.push(_class);
 
         // Register Extends for 2nd Phase Translation
         if (classNode["extends"]) {
-            this._generalizations.push({
+            this._extendPendings.push({
                 classifier: _class,
-                node: classNode["extends"]
+                node: classNode["extends"],
+                kind: "class"
             });
         }
 
@@ -409,89 +559,134 @@ define(function (require, exports, module) {
         if (classNode["implements"]) {
             for (i = 0, len = classNode["implements"].length; i < len; i++) {
                 var _impl = classNode["implements"][i];
-                this._realizations.push({
+                this._implementPendings.push({
                     classifier: _class,
                     node: _impl
                 });
             }
         }
 
+        // Translate Types
+        this.translateTypes(options, _class, classNode.body);
         // Translate Members
         this.translateMembers(options, _class, classNode.body);
     };
 
-    JavaAnalyzer.prototype.translateInterface = function (options, parent, interfaceNode) {
+    /**
+     * Translate Java Interface Node.
+     * @param {Element} namespace
+     * @param {Object} interfaceNode
+     */
+    JavaAnalyzer.prototype.translateInterface = function (options, namespace, interfaceNode) {
         var i, len, _interface;
 
         // Create Interface
         _interface = new type.UMLInterface();
-        _interface._parent = parent;
+        _interface._parent = namespace;
         _interface.name = interfaceNode.name;
         _interface.visibility = this._getVisibility(interfaceNode.modifiers);
-        parent.ownedElements.push(_interface);
+        namespace.ownedElements.push(_interface);
 
         // Register Extends for 2nd Phase Translation
         if (interfaceNode["extends"]) {
             for (i = 0, len = interfaceNode["extends"].length; i < len; i++) {
-                var _ext = interfaceNode["extends"][i];
-                this._generalizations.push({
+                var _extend = interfaceNode["extends"][i];
+                this._extendPendings.push({
                     classifier: _interface,
-                    node: _ext
+                    node: _extend,
+                    kind: "interface"
                 });
             }
         }
 
+        // Translate Types
+        this.translateTypes(options, _interface, interfaceNode.body);
         // Translate Members
         this.translateMembers(options, _interface, interfaceNode.body);
     };
 
-    JavaAnalyzer.prototype.translateEnum = function (options, parent, enumNode) {
+    /**
+     * Translate Java Enum Node.
+     * @param {Element} namespace
+     * @param {Object} enumNode
+     */
+    JavaAnalyzer.prototype.translateEnum = function (options, namespace, enumNode) {
         var _enum;
 
         // Create Enumeration
         _enum = new type.UMLEnumeration();
-        _enum._parent = parent;
+        _enum._parent = namespace;
         _enum.name = enumNode.name;
         _enum.visibility = this._getVisibility(enumNode.modifiers);
-        parent.ownedElements.push(_enum);
+        namespace.ownedElements.push(_enum);
 
+        // Translate Types
+        this.translateTypes(options, _enum, enumNode.body);
         // Translate Members
         this.translateMembers(options, _enum, enumNode.body);
     };
 
-    JavaAnalyzer.prototype.translateAnnotationType = function (options, parent, annotationTypeNode) {
+    /**
+     * Translate Java AnnotationType Node.
+     * @param {Element} namespace
+     * @param {Object} annotationTypeNode
+     */
+    JavaAnalyzer.prototype.translateAnnotationType = function (options, namespace, annotationTypeNode) {
         var _annotationType;
 
         // Create Class <<annotationType>>
         _annotationType = new type.UMLClass();
-        _annotationType._parent = parent;
+        _annotationType._parent = namespace;
         _annotationType.name = annotationTypeNode.name;
         _annotationType.stereotype = "annotationType";
         _annotationType.visibility = this._getVisibility(annotationTypeNode.modifiers);
-        parent.ownedElements.push(_annotationType);
+        namespace.ownedElements.push(_annotationType);
 
+        // Translate Types
+        this.translateTypes(options, _annotationType, annotationTypeNode.body);
         // Translate Members
         this.translateMembers(options, _annotationType, annotationTypeNode.body);
     };
 
-    JavaAnalyzer.prototype.translateField = function (options, parent, fieldNode) {
+    /**
+     * Translate Java Field Node.
+     * @param {Element} namespace
+     * @param {Object} fieldNode
+     */
+    JavaAnalyzer.prototype.translateField = function (options, namespace, fieldNode) {
         var i, len;
         if (fieldNode.variables && fieldNode.variables.length > 0) {
             for (i = 0, len = fieldNode.variables.length; i < len; i++) {
                 var variableNode = fieldNode.variables[i];
                 var _attribute = new type.UMLAttribute();
-                _attribute._parent = parent;
+                _attribute._parent = namespace;
                 _attribute.name = variableNode.name;
+
+                // Modifiers
                 _attribute.visibility = this._getVisibility(fieldNode.modifiers);
-                // TODO: type, type.arrayDimension
-                _attribute.type = this._getType(fieldNode.type);
-                // TODO: arrayDimension
-                // TODO: initializer
-                // TODO: static, ..., other modifiers...
-                // TODO: 타입?이 2nd Phase에서 Resolve될 수 있도록 해야 함.
+                _attribute.type = this._findType(namespace, fieldNode.type);
+                if (variableNode.initializer) {
+                    _attribute.defaultValue = variableNode.initializer;
+                }
+                if (_.contains(fieldNode.modifiers, "static")) {
+                    _attribute.isStatic = true;
+                }
+                if (_.contains(fieldNode.modifiers, "final")) {
+                    _attribute.isLeaf = true;
+                    _attribute.isReadOnly = true;
+                }
+                // TODO: volatile, transient
+
                 // TODO: Attribute? or Assocation?
 
-                parent.attributes.push(_attribute);
+                namespace.attributes.push(_attribute);
+
+                // Add to _typedFeaturePendings
+                this._typedFeaturePendings.push({
+                    namespace: namespace,
+                    feature: _attribute,
+                    node: fieldNode.type
+                });
             }
         }
     };
@@ -499,45 +694,82 @@ define(function (require, exports, module) {
     /**
      * Translate Method
      */
-    JavaAnalyzer.prototype.translateMethod = function (options, parent, methodNode) {
+    JavaAnalyzer.prototype.translateMethod = function (options, namespace, methodNode) {
         var i, len,
             _operation = new type.UMLOperation();
-        _operation._parent = parent;
+        _operation._parent = namespace;
         _operation.name = methodNode.name;
-        _operation.visibility = this._getVisibility(methodNode.modifiers);
 
+        // Modifiers
+        _operation.visibility = this._getVisibility(methodNode.modifiers);
+        if (_.contains(methodNode.modifiers, "static")) {
+            _operation.isStatic = true;
+        }
+        if (_.contains(methodNode.modifiers, "abstract")) {
+            _operation.isAbstract = true;
+        }
+        if (_.contains(methodNode.modifiers, "final")) {
+            _operation.isLeaf = true;
+        }
+        if (_.contains(methodNode.modifiers, "synchronized")) {
+            _operation.concurrency = UML.CCK_CONCURRENT;
+        }
+        // TODO: modifiers: native, strictfp
+
+        // Formal Parameters
         if (methodNode.parameters && methodNode.parameters.length > 0) {
             for (i = 0, len = methodNode.parameters.length; i < len; i++) {
                 var parameterNode = methodNode.parameters[i];
                 this.translateParameter(options, _operation, parameterNode);
             }
         }
-        // TODO: ReturnType
 
-        parent.operations.push(_operation);
+        // Return Type
+        if (methodNode.type) {
+            var _returnParam = new type.UMLParameter();
+            _returnParam._parent = _operation;
+            _returnParam.name = "";
+            _returnParam.direction = UML.DK_RETURN;
+            // Add to _typedFeaturePendings
+            this._typedFeaturePendings.push({
+                namespace: namespace,
+                feature: _returnParam,
+                node: methodNode.type
+            });
+            _operation.parameters.push(_returnParam);
+        }
+
+        // TODO: throw exceptions
+
+        namespace.operations.push(_operation);
     };
 
     /**
      * Translate Enumeration Constant
      */
-    JavaAnalyzer.prototype.translateEnumConstant = function (options, parent, enumConstantNode) {
+    JavaAnalyzer.prototype.translateEnumConstant = function (options, namespace, enumConstantNode) {
         var _literal = new type.UMLEnumerationLiteral();
-        _literal._parent = parent;
+        _literal._parent = namespace;
         _literal.name = enumConstantNode.name;
-        parent.literals.push(_literal);
+        namespace.literals.push(_literal);
     };
 
 
     /**
      * Translate Method Parameters
      */
-    JavaAnalyzer.prototype.translateParameter = function (options, parent, parameterNode) {
+    JavaAnalyzer.prototype.translateParameter = function (options, namespace, parameterNode) {
         var _parameter = new type.UMLParameter();
-        _parameter._parent = parent;
+        _parameter._parent = namespace;
         _parameter.name = parameterNode.variable.name;
-        _parameter.type = this._getType(parameterNode.type);
+        namespace.parameters.push(_parameter);
 
-        parent.parameters.push(_parameter);
+        // Add to _typedFeaturePendings
+        this._typedFeaturePendings.push({
+            namespace: namespace._parent,
+            feature: _parameter,
+            node: parameterNode.type
+        });
     };
 
     /**

@@ -5,7 +5,7 @@ import java.lang.*;
 import static java.awt.Color;
 import static java.lang.Math.*;
 
-public class ClassTest extends GenericClassTest implements InterfaceTest, java.lang.Serializable {
+public class ClassTest extends GenericClassTest implements com.mycompany.test.InterfaceTest, java.lang.Runnable {
 
     // Visibility
     private int _privateField;
@@ -28,7 +28,7 @@ public class ClassTest extends GenericClassTest implements InterfaceTest, java.l
     String _fieldString = "String Literal";
     char _fieldChar = 'c';
     boolean _fieldBoolean = true;
-    Object _fieldNull = null;
+    InterfaceTest _fieldNull = null; // Refer to inner interface
 
     // Method
     public void test(int arg1, final String arg2) throws IllegalAccess, java.lang.Exception {}
@@ -43,6 +43,10 @@ public class ClassTest extends GenericClassTest implements InterfaceTest, java.l
 
     // Inner Class
     static class InnerClass {
+    }
+
+    // Inner Interface (same name with outer-scope InterfaceTest interface)
+    static interface InterfaceTest {
     }
 
 }
