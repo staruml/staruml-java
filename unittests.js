@@ -641,13 +641,13 @@ define(function (require, exports, module) {
 
             it("can reverse Generalization of Java Class", function () {
                 runs(function () {
-                    // extends java.util.Vector
+                    // extends GenericClassTest
                 });
             });
 
             it("can reverse Interface Realization of Java Class", function () {
                 runs(function () {
-                    // implements java.lang.Runnable, java.lang.Serializable
+                    // implements InterfaceTest, java.lang.Serializable
                 });
             });
 

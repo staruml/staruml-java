@@ -171,13 +171,73 @@ define(function (require, exports, module) {
      * - Resolve Type References
      */
     JavaAnalyzer.prototype.perform2ndPhase = function (options) {
-        var i, len;
-        for (i = 0, len = this._generalizations.length; i < len; i++) {
-            var gen = this._generalizations[i];
-            console.log(gen);
+        var i, len, _type;
 
-            // TODO: 타입을 찾는 함수 필요. (Context에서 찾고(InnerClass?), 동일 패키지에서 찾고, import에서 찾고)
+        // Create Generalizations
+        for (i = 0, len = this._generalizations.length; i < len; i++) {
+            var _gen = this._generalizations[i];
+            _type = this._findType(_gen.classifier, _gen.node.qualifiedName.name);
+            if (_type) {
+                var gen = new type.UMLGeneralization();
+                gen._parent = _gen.classifier;
+                gen.source = _gen.classifier;
+                gen.target = _type;
+                _gen.classifier.ownedElements.push(gen);
+            }
         }
+
+        // Create InterfaceRealizations
+        for (i = 0, len = this._realizations.length; i < len; i++) {
+            var _real = this._realizations[i];
+            _type = this._findType(_real.classifier, _real.node.qualifiedName.name);
+            if (_type) {
+                var real = new type.UMLInterfaceRealization();
+                real._parent = _real.classifier;
+                real.source = _real.classifier;
+                real.target = _type;
+                _real.classifier.ownedElements.push(real);
+            }
+        }
+
+    };
+
+    /**
+     * Find Type.
+     *
+     * @param {Element} context
+     * @param {string} typeName
+     */
+    JavaAnalyzer.prototype._findType = function (context, typeName) {
+        var root = this._builder.getBaseModel(),
+            pathName = (typeName.indexOf(".") > 0 ? typeName.trim().split(".") : []),
+            _type = null;
+
+        // 1. Lookdown from context
+        if (pathName.length > 1) {
+            _type = context.lookdown(pathName);
+        } else {
+            _type = context.findByName(typeName);
+        }
+
+        // 2. Lookup from context
+        if (!_type) {
+            _type = context.lookup(typeName, null, root);
+        }
+
+        // 3. Find from imported namespaces
+        if (!_type) {
+            // TODO: import에서 찾기.
+        }
+
+        // 4. Lookdown from Root
+        if (!_type) {
+            if (pathName.length > 1) {
+                _type = root.lookdown(pathName);
+            } else {
+                _type = root.findByName(typeName);
+            }
+        }
+        return _type;
     };
 
 
@@ -324,9 +384,10 @@ define(function (require, exports, module) {
      * @param {Object} compilationUnitNode
      */
     JavaAnalyzer.prototype.translateClass = function (options, parent, classNode) {
-        var i,
-            len,
-            _class = new type.UMLClass();
+        var i, len, _class;
+
+        // Create Class
+        _class = new type.UMLClass();
         _class._parent = parent;
         _class.name = classNode.name;
         _class.visibility = this._getVisibility(classNode.modifiers);
@@ -360,18 +421,35 @@ define(function (require, exports, module) {
     };
 
     JavaAnalyzer.prototype.translateInterface = function (options, parent, interfaceNode) {
-        var _interface = new type.UMLInterface();
+        var i, len, _interface;
+
+        // Create Interface
+        _interface = new type.UMLInterface();
         _interface._parent = parent;
         _interface.name = interfaceNode.name;
         _interface.visibility = this._getVisibility(interfaceNode.modifiers);
         parent.ownedElements.push(_interface);
+
+        // Register Extends for 2nd Phase Translation
+        if (interfaceNode["extends"]) {
+            for (i = 0, len = interfaceNode["extends"].length; i < len; i++) {
+                var _ext = interfaceNode["extends"][i];
+                this._generalizations.push({
+                    classifier: _interface,
+                    node: _ext
+                });
+            }
+        }
 
         // Translate Members
         this.translateMembers(options, _interface, interfaceNode.body);
     };
 
     JavaAnalyzer.prototype.translateEnum = function (options, parent, enumNode) {
-        var _enum = new type.UMLEnumeration();
+        var _enum;
+
+        // Create Enumeration
+        _enum = new type.UMLEnumeration();
         _enum._parent = parent;
         _enum.name = enumNode.name;
         _enum.visibility = this._getVisibility(enumNode.modifiers);
@@ -382,7 +460,10 @@ define(function (require, exports, module) {
     };
 
     JavaAnalyzer.prototype.translateAnnotationType = function (options, parent, annotationTypeNode) {
-        var _annotationType = new type.UMLClass();
+        var _annotationType;
+
+        // Create Class <<annotationType>>
+        _annotationType = new type.UMLClass();
         _annotationType._parent = parent;
         _annotationType.name = annotationTypeNode.name;
         _annotationType.stereotype = "annotationType";
@@ -415,6 +496,9 @@ define(function (require, exports, module) {
         }
     };
 
+    /**
+     * Translate Method
+     */
     JavaAnalyzer.prototype.translateMethod = function (options, parent, methodNode) {
         var i, len,
             _operation = new type.UMLOperation();
@@ -433,6 +517,9 @@ define(function (require, exports, module) {
         parent.operations.push(_operation);
     };
 
+    /**
+     * Translate Enumeration Constant
+     */
     JavaAnalyzer.prototype.translateEnumConstant = function (options, parent, enumConstantNode) {
         var _literal = new type.UMLEnumerationLiteral();
         _literal._parent = parent;
@@ -441,6 +528,9 @@ define(function (require, exports, module) {
     };
 
 
+    /**
+     * Translate Method Parameters
+     */
     JavaAnalyzer.prototype.translateParameter = function (options, parent, parameterNode) {
         var _parameter = new type.UMLParameter();
         _parameter._parent = parent;
