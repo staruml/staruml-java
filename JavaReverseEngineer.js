@@ -40,7 +40,6 @@ define(function (require, exports, module) {
 
     require("grammar/java7");
 
-
     var javaPrimitiveTypes = [
         "void",
         "byte",
@@ -122,9 +121,14 @@ define(function (require, exports, module) {
         this._implementPendings = [];
 
         /**
-         * @member {{classifier:type.UMLClassifier, node: Object}}
+         * @member {{classifier:type.UMLClassifier, association: type.UMLAssociation, node: Object}}
          */
-        this._fieldPendings = [];
+        this._associationPendings = [];
+
+        /**
+         * @member {{operation:type.UMLOperation, node: Object}}
+         */
+        this._throwPendings = [];
 
         /**
          * @member {{namespace:type.UMLModelElement, feature:type.UMLStructuralFeature, node: Object}}
@@ -187,7 +191,7 @@ define(function (require, exports, module) {
      * - Resolve Type References
      */
     JavaAnalyzer.prototype.perform2ndPhase = function (options) {
-        var i, len, _typeName, _type, _pathName;
+        var i, len, j, len2, _typeName, _type, _pathName;
 
         // Create Generalizations
         //     if super type not found, create a Class correspond to the super type.
@@ -197,12 +201,13 @@ define(function (require, exports, module) {
             _type = this._findType(_extend.classifier, _typeName);
             if (!_type) {
                 _pathName = this._toPathName(_typeName);
-                if (_extend.node.kind === "class") {
-                    _type = this._ensureClass(this._root, _pathName);
-                } else if (_extend.node.kind === "interface") {
+                if (_extend.kind === "interface") {
                     _type = this._ensureInterface(this._root, _pathName);
+                } else {
+                    _type = this._ensureClass(this._root, _pathName);
                 }
             }
+
             var generalization = new type.UMLGeneralization();
             generalization._parent = _extend.classifier;
             generalization.source = _extend.classifier;
@@ -228,6 +233,53 @@ define(function (require, exports, module) {
             _implement.classifier.ownedElements.push(realization);
         }
 
+        // Create Associations
+        for (i = 0, len = this._associationPendings.length; i < len; i++) {
+            var _asso = this._associationPendings[i];
+            _typeName = _asso.node.type.qualifiedName.name;
+            _type = this._findType(_asso.classifier, _typeName);
+            // if type found, add as Association
+            if (_type) {
+                for (j = 0, len2 = _asso.node.variables.length; j < len2; j++) {
+                    var variableNode = _asso.node.variables[j];
+                    // Create Association
+                    var association = new type.UMLAssociation();
+                    association._parent = _asso.classifier;
+                    _asso.classifier.ownedElements.push(association);
+                    // Set End1
+                    association.end1.reference = _asso.classifier;
+                    association.end1.name = "";
+                    association.end1.visibility = UML.VK_PACKAGE;
+                    association.end1.navigable = false;
+                    // TODO: Multiplicity
+                    // TODO: Aggregation?
+                    // Set End2
+                    association.end2.reference = _type;
+                    association.end2.name = variableNode.name;
+                    association.end2.visibility = this._getVisibility(_asso.node.modifiers);
+                    association.end2.navigable = true;
+                }
+            // if type not found, add as Attribute
+            } else {
+                this.translateFieldAsAttribute(options, _asso.classifier, _asso.node);
+            }
+        }
+
+        // Assign Throws to Operations
+        for (i = 0, len = this._throwPendings.length; i < len; i++) {
+            var _throw = this._throwPendings[i];
+            _typeName = _throw.node.name;
+            _type = this._findType(_throw.operation, _typeName);
+            if (!_type) {
+                _pathName = this._toPathName(_typeName);
+                _type = this._ensureClass(this._root, _pathName);
+            }
+
+            console.log(_type);
+
+            _throw.operation.raisedExceptions.push(_type);
+        }
+
         // Resolve Type References
         for (i = 0, len = this._typedFeaturePendings.length; i < len; i++) {
             var _typedFeature = this._typedFeaturePendings[i];
@@ -246,14 +298,14 @@ define(function (require, exports, module) {
                 // otherwise
                 } else {
                     _pathName = this._toPathName(_typeName);
-                    var _newClass = this._ensureClass(this._builder.getBaseModel(), _pathName);
+                    var _newClass = this._ensureClass(this._root, _pathName);
                     _typedFeature.feature.type = _newClass;
                 }
             }
 
             // Translate type's arrayDimension to multiplicity
             if (_typedFeature.node.arrayDimension && _typedFeature.node.arrayDimension.length > 0) {
-                var j, len2, _dim = [];
+                var _dim = [];
                 for (j = 0, len2 = _typedFeature.node.arrayDimension.length; j < len2; j++) {
                     _dim.push("*");
                 }
@@ -514,7 +566,14 @@ define(function (require, exports, module) {
                 var memberNode = memberNodeArray[i];
                 switch (memberNode.node) {
                 case "Field":
-                    this.translateField(options, namespace, memberNode);
+                    if (options.association) {
+                        this.translateFieldAsAssociation(options, namespace, memberNode);
+                    } else {
+                        this.translateFieldAsAttribute(options, namespace, memberNode);
+                    }
+                    break;
+                case "Constructor":
+                    this.translateMethod(options, namespace, memberNode);
                     break;
                 case "Method":
                     this.translateMethod(options, namespace, memberNode);
@@ -526,6 +585,31 @@ define(function (require, exports, module) {
             }
         }
     };
+
+
+    /**
+     * Translate Java Type Parameter Nodes.
+     * @param {Element} namespace
+     * @param {Object} typeParameterNodeArray
+     */
+    JavaAnalyzer.prototype.translateTypeParameters = function (options, namespace, typeParameterNodeArray) {
+        if (typeParameterNodeArray) {
+            var i, len, _typeParam;
+            for (i = 0, len = typeParameterNodeArray.length; i < len; i++) {
+                _typeParam = typeParameterNodeArray[i];
+                if (_typeParam.node === "TypeParameter") {
+                    var _templateParameter = new type.UMLTemplateParameter();
+                    _templateParameter._parent = namespace;
+                    _templateParameter.name = _typeParam.name;
+                    if (_typeParam.type) {
+                        _templateParameter.parameterType = _typeParam.type;
+                    }
+                    namespace.templateParameters.push(_templateParameter);
+                }
+            }
+        }
+    };
+
 
     /**
      * Translate Java Class Node.
@@ -565,7 +649,8 @@ define(function (require, exports, module) {
                 });
             }
         }
-
+        // Translate Type Parameters
+        this.translateTypeParameters(options, _class, classNode.typeParameters);
         // Translate Types
         this.translateTypes(options, _class, classNode.body);
         // Translate Members
@@ -599,6 +684,8 @@ define(function (require, exports, module) {
             }
         }
 
+        // Translate Type Parameters
+        this.translateTypeParameters(options, _interface, interfaceNode.typeParameters);
         // Translate Types
         this.translateTypes(options, _interface, interfaceNode.body);
         // Translate Members
@@ -620,6 +707,8 @@ define(function (require, exports, module) {
         _enum.visibility = this._getVisibility(enumNode.modifiers);
         namespace.ownedElements.push(_enum);
 
+        // Translate Type Parameters
+        this.translateTypeParameters(options, _enum, enumNode.typeParameters);
         // Translate Types
         this.translateTypes(options, _enum, enumNode.body);
         // Translate Members
@@ -642,6 +731,8 @@ define(function (require, exports, module) {
         _annotationType.visibility = this._getVisibility(annotationTypeNode.modifiers);
         namespace.ownedElements.push(_annotationType);
 
+        // Translate Type Parameters
+        this.translateTypeParameters(options, _annotationType, annotationTypeNode.typeParameters);
         // Translate Types
         this.translateTypes(options, _annotationType, annotationTypeNode.body);
         // Translate Members
@@ -649,22 +740,39 @@ define(function (require, exports, module) {
     };
 
     /**
-     * Translate Java Field Node.
+     * Translate Java Field Node as UMLAssociation.
      * @param {Element} namespace
      * @param {Object} fieldNode
      */
-    JavaAnalyzer.prototype.translateField = function (options, namespace, fieldNode) {
+    JavaAnalyzer.prototype.translateFieldAsAssociation = function (options, namespace, fieldNode) {
+        var i, len;
+        if (fieldNode.variables && fieldNode.variables.length > 0) {
+            // Add to _associationPendings
+            this._associationPendings.push({
+                classifier: namespace,
+                node: fieldNode
+            });
+        }
+    };
+
+    /**
+     * Translate Java Field Node as UMLAttribute.
+     * @param {Element} namespace
+     * @param {Object} fieldNode
+     */
+    JavaAnalyzer.prototype.translateFieldAsAttribute = function (options, namespace, fieldNode) {
         var i, len;
         if (fieldNode.variables && fieldNode.variables.length > 0) {
             for (i = 0, len = fieldNode.variables.length; i < len; i++) {
                 var variableNode = fieldNode.variables[i];
+
+                // Create Attribute
                 var _attribute = new type.UMLAttribute();
                 _attribute._parent = namespace;
                 _attribute.name = variableNode.name;
 
                 // Modifiers
                 _attribute.visibility = this._getVisibility(fieldNode.modifiers);
-                _attribute.type = this._findType(namespace, fieldNode.type);
                 if (variableNode.initializer) {
                     _attribute.defaultValue = variableNode.initializer;
                 }
@@ -676,9 +784,6 @@ define(function (require, exports, module) {
                     _attribute.isReadOnly = true;
                 }
                 // TODO: volatile, transient
-
-                // TODO: Attribute? or Assocation?
-
                 namespace.attributes.push(_attribute);
 
                 // Add to _typedFeaturePendings
@@ -687,9 +792,11 @@ define(function (require, exports, module) {
                     feature: _attribute,
                     node: fieldNode.type
                 });
+
             }
         }
     };
+
 
     /**
      * Translate Method
@@ -699,6 +806,7 @@ define(function (require, exports, module) {
             _operation = new type.UMLOperation();
         _operation._parent = namespace;
         _operation.name = methodNode.name;
+        namespace.operations.push(_operation);
 
         // Modifiers
         _operation.visibility = this._getVisibility(methodNode.modifiers);
@@ -739,9 +847,19 @@ define(function (require, exports, module) {
             _operation.parameters.push(_returnParam);
         }
 
-        // TODO: throw exceptions
+        // Throws
+        if (methodNode.throws) {
+            for (i = 0, len = methodNode.throws.length; i < len; i++) {
+                var _throwNode = methodNode.throws[i];
+                this._throwPendings.push({
+                    operation: _operation,
+                    node: _throwNode
+                });
+            }
+        }
 
-        namespace.operations.push(_operation);
+        // Translate Type Parameters
+        this.translateTypeParameters(options, _operation, methodNode.typeParameters);
     };
 
     /**

@@ -173,6 +173,7 @@ define(function (require, exports, module) {
             if (!err) {
                 if (files && files.length > 0) {
                     var options = {
+                        association: true,
                         path: files[0]
                     };
                     JavaReverseEngineer.analyze(options).then(result.resolve, result.reject);

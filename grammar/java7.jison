@@ -261,11 +261,31 @@ typeParameters
         {
             $$ = [];
             if ($1[0] === "<" && $1[$1.length-1] === ">") {
-                var i, _temp;
+                var i, _temp, _param, _bounded;
                 $1 = $1.substring(1, $1.length-1);
                 _temp = $1.split(",");
                 for (i = 0; i < _temp.length; i++) {
-                    $$.push(_temp[i].trim());
+                    _param = _temp[i].trim();
+                    if (_param.indexOf(" extends ") > 0) {
+                        _bounded = _param.split("extends");
+                        if (_bounded.length > 1) {
+                            $$.push({
+                                "node": "TypeParameter",
+                                "name": _bounded[0].trim(),
+                                "type": _bounded[1].trim()
+                            });
+                        } else {
+                            $$.push({
+                                "node": "TypeParameter",
+                                "name": _param
+                            });
+                        }
+                    } else {
+                        $$.push({
+                            "node": "TypeParameter",
+                            "name": _param
+                        });
+                    }
                 }
             }
         }

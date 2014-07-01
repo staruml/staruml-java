@@ -1,29 +1,19 @@
 /*
- * Copyright (c) 2013 Adobe Systems Incorporated. All rights reserved.
+ * Copyright (c) 2013-2014 Minkyu Lee. All rights reserved.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the "Software"),
- * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense,
- * and/or sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
+ * NOTICE:  All information contained herein is, and remains the
+ * property of Minkyu Lee. The intellectual and technical concepts
+ * contained herein are proprietary to Minkyu Lee and may be covered
+ * by Republic of Korea and Foreign Patents, patents in process,
+ * and are protected by trade secret or copyright law.
+ * Dissemination of this information or reproduction of this material
+ * is strictly forbidden unless prior written permission is obtained
+ * from Minkyu Lee (niklaus.lee@gmail.com).
  *
  */
 
-
 /*jslint vars: true, plusplus: true, devel: true, browser: true, nomen: true, indent: 4, maxerr: 50 */
-/*global define, describe, _, it, xit, expect, beforeEach, afterEach, waitsFor, runs, $, staruml, waitsForDone, java7 */
+/*global define, describe, _, it, xit, expect, beforeEach, afterEach, waitsFor, runs, $, type, staruml, waitsForDone, java7 */
 
 define(function (require, exports, module) {
     "use strict";
@@ -41,46 +31,50 @@ define(function (require, exports, module) {
 
     require("grammar/java7");
 
+
+    function parse(fileName) {
+        var result = new $.Deferred();
+        var path = ExtensionUtils.getModulePath(module) + "unittest-files/" + fileName;
+        var file = FileSystem.getFileForPath(path);
+        file.read({}, function (err, data, stat) {
+            if (!err) {
+                result.resolve(java7.parse(data));
+            } else {
+                result.reject(err);
+            }
+        });
+        return result.promise();
+    }
+
+    function reverse(partialOptions) {
+        Repository.newProject();
+        var options = {
+            path: ExtensionUtils.getModulePath(module) + "unittest-files"
+        };
+        _.extend(options, partialOptions);
+        var promise = JavaReverseEngineer.analyze(options);
+        return promise;
+    }
+
+    function findOne(name, type) {
+        return Repository.findAll(function (e) {
+            if (type) {
+                return e.name === name && e instanceof type;
+            } else {
+                return e.name === name;
+            }
+        })[0];
+    }
+
     describe("Java Support", function () {
 
-        /**
-         * Java Parser Test Cases
-         *
-         * - Class
-         * - Generic Class
-         * - Interface
-         * - Enum
-         * - AnnotationType
-         */
-        describe("Java Parser (Class)", function () {
-            var parseComplete = false,
-                ast;
-
-            beforeEach(function () {
-                runs(function () {
-                    var path = ExtensionUtils.getModulePath(module) + "unittest-files/ClassTest.java";
-                    var file = FileSystem.getFileForPath(path);
-                    file.read({}, function (err, data, stat) {
-                        if (!err) {
-                            ast = java7.parse(data);
-                            parseComplete = true;
-                        }
-                    });
-                });
-
-                waitsFor(
-                    function () { return parseComplete; },
-                    "Waiting for parsing",
-                    3000
-                );
-            });
-
-            afterEach(function () {
-                parseComplete = false;
-                ast = null;
-            });
+        // Specs for Java Source Code Parsing
+        describe("Java Parsing", function () {
 
             it("can parse CompilationUnit", function () {
+                var ast, promise = parse("ClassTest.java").done(function (_ast) { ast = _ast; });
+                waitsForDone(promise, "Parsing...", 3000);
+
                 runs(function () {
                     // package com.mycompany.test;
                     expect(ast.node).toEqual("CompilationUnit");
@@ -91,6 +85,9 @@ define(function (require, exports, module) {
             });
 
             it("can parse Import", function () {
+                var ast, promise = parse("ClassTest.java").done(function (_ast) { ast = _ast; });
+                waitsForDone(promise, "Parsing...", 3000);
+
                 runs(function () {
                     expect(ast.imports.length).toEqual(4);
 
@@ -117,6 +114,9 @@ define(function (require, exports, module) {
             });
 
             it("can parse Class", function () {
+                var ast, promise = parse("ClassTest.java").done(function (_ast) { ast = _ast; });
+                waitsForDone(promise, "Parsing...", 3000);
+
                 runs(function () {
                     var _class = ast.types[0];
 
@@ -140,6 +140,9 @@ define(function (require, exports, module) {
             });
 
             it("can parse Fields", function () {
+                var ast, promise = parse("ClassTest.java").done(function (_ast) { ast = _ast; });
+                waitsForDone(promise, "Parsing...", 3000);
+
                 runs(function () {
                     var _class = ast.types[0];
 
@@ -167,6 +170,9 @@ define(function (require, exports, module) {
             });
 
             it("can parse Array Fields", function () {
+                var ast, promise = parse("ClassTest.java").done(function (_ast) { ast = _ast; });
+                waitsForDone(promise, "Parsing...", 3000);
+
                 runs(function () {
                     var _class = ast.types[0];
                     // String[] StringArray;
@@ -182,6 +188,9 @@ define(function (require, exports, module) {
             });
 
             it("can parse Multiple Variable Fields", function () {
+                var ast, promise = parse("ClassTest.java").done(function (_ast) { ast = _ast; });
+                waitsForDone(promise, "Parsing...", 3000);
+
                 runs(function () {
                     var _class = ast.types[0];
                     // int a, b, c, d;
@@ -195,6 +204,9 @@ define(function (require, exports, module) {
             });
 
             it("can parse Field Modifiers", function () {
+                var ast, promise = parse("ClassTest.java").done(function (_ast) { ast = _ast; });
+                waitsForDone(promise, "Parsing...", 3000);
+
                 runs(function () {
                     var _class = ast.types[0];
                     // static final transient volatile int _field;
@@ -208,6 +220,9 @@ define(function (require, exports, module) {
             });
 
             it("can parse Field Initializer", function () {
+                var ast, promise = parse("ClassTest.java").done(function (_ast) { ast = _ast; });
+                waitsForDone(promise, "Parsing...", 3000);
+
                 runs(function () {
                     var _class = ast.types[0];
                     // int _fieldInt = 10;
@@ -229,6 +244,9 @@ define(function (require, exports, module) {
 
 
             it("can parse Method", function () {
+                var ast, promise = parse("ClassTest.java").done(function (_ast) { ast = _ast; });
+                waitsForDone(promise, "Parsing...", 3000);
+
                 runs(function () {
                     var _op = ast.types[0].body[13];
 
@@ -255,6 +273,9 @@ define(function (require, exports, module) {
             });
 
             it("can parse Method Modifiers", function () {
+                var ast, promise = parse("ClassTest.java").done(function (_ast) { ast = _ast; });
+                waitsForDone(promise, "Parsing...", 3000);
+
                 runs(function () {
                     var _op = ast.types[0].body[14];
 
@@ -268,6 +289,9 @@ define(function (require, exports, module) {
             });
 
             it("can parse Abstract Method", function () {
+                var ast, promise = parse("ClassTest.java").done(function (_ast) { ast = _ast; });
+                waitsForDone(promise, "Parsing...", 3000);
+
                 runs(function () {
                     var _op = ast.types[0].body[15];
                     // abstract int test3() {}
@@ -276,6 +300,9 @@ define(function (require, exports, module) {
             });
 
             it("can parse Annotated Method", function () {
+                var ast, promise = parse("ClassTest.java").done(function (_ast) { ast = _ast; });
+                waitsForDone(promise, "Parsing...", 3000);
+
                 runs(function () {
                     var _op = ast.types[0].body[16];
                     // @Deprecated
@@ -313,6 +340,9 @@ define(function (require, exports, module) {
             });
 
             it("can parse Inner Class", function () {
+                var ast, promise = parse("ClassTest.java").done(function (_ast) { ast = _ast; });
+                waitsForDone(promise, "Parsing...", 3000);
+
                 runs(function () {
                     var _innerClass = ast.types[0].body[17];
                     // static class InnerClass {}
@@ -321,37 +351,11 @@ define(function (require, exports, module) {
                     expect(_innerClass.modifiers[0]).toEqual("static");
                 });
             });
-        });
-
-        describe("Java Parser (Generic Class)", function () {
-            var parseComplete = false,
-                ast;
-
-            beforeEach(function () {
-                runs(function () {
-                    var path = ExtensionUtils.getModulePath(module) + "unittest-files/GenericClassTest.java";
-                    var file = FileSystem.getFileForPath(path);
-                    file.read({}, function (err, data, stat) {
-                        if (!err) {
-                            ast = java7.parse(data);
-                            parseComplete = true;
-                        }
-                    });
-                });
-
-                waitsFor(
-                    function () { return parseComplete; },
-                    "Waiting for parsing",
-                    3000
-                );
-            });
-
-            afterEach(function () {
-                parseComplete = false;
-                ast = null;
-            });
 
             it("can parse Generic Class", function () {
+                var ast, promise = parse("GenericClassTest.java").done(function (_ast) { ast = _ast; });
+                waitsForDone(promise, "Parsing...", 3000);
+
                 runs(function () {
                     var _class = ast.types[0];
 
@@ -360,23 +364,28 @@ define(function (require, exports, module) {
                     expect(_class.name).toEqual("GenericClassTest");
                     expect(_class.modifiers[0]).toEqual("public");
                     expect(_class.typeParameters.length).toEqual(2);
-                    expect(_class.typeParameters[0]).toEqual("E");
-                    expect(_class.typeParameters[1]).toEqual("T");
+                    expect(_class.typeParameters[0].node).toEqual("TypeParameter");
+                    expect(_class.typeParameters[0].name).toEqual("E");
+                    expect(_class.typeParameters[1].name).toEqual("T");
+                    expect(_class.typeParameters[1].type).toEqual("java.util.Collection");
 
                     // extends AbstractList<E>
                     expect(_class["extends"].node).toEqual("Type");
                     expect(_class["extends"].qualifiedName.name).toEqual("AbstractList");
-                    expect(_class["extends"].qualifiedName.typeParameters[0]).toEqual("E");
+                    expect(_class["extends"].qualifiedName.typeParameters[0].name).toEqual("E");
 
                     // implements List<E>, RandomAccess, Cloneable, java.io.Serializable
                     expect(_class["implements"].length).toEqual(4);
                     expect(_class["implements"][0].node).toEqual("Type");
                     expect(_class["implements"][0].qualifiedName.name).toEqual("List");
-                    expect(_class["implements"][0].qualifiedName.typeParameters[0]).toEqual("E");
+                    expect(_class["implements"][0].qualifiedName.typeParameters[0].name).toEqual("E");
                 });
             });
 
             it("can parse Field of Generic Class", function () {
+                var ast, promise = parse("GenericClassTest.java").done(function (_ast) { ast = _ast; });
+                waitsForDone(promise, "Parsing...", 3000);
+
                 runs(function () {
                     var _class = ast.types[0];
 
@@ -385,8 +394,8 @@ define(function (require, exports, module) {
                     expect(_class.body[0].modifiers[0]).toEqual("private");
                     expect(_class.body[0].type.node).toEqual("Type");
                     expect(_class.body[0].type.qualifiedName.name).toEqual("OrderedPair");
-                    expect(_class.body[0].type.qualifiedName.typeParameters[0]).toEqual("String");
-                    expect(_class.body[0].type.qualifiedName.typeParameters[1]).toEqual("Box<Integer>");
+                    expect(_class.body[0].type.qualifiedName.typeParameters[0].name).toEqual("String");
+                    expect(_class.body[0].type.qualifiedName.typeParameters[1].name).toEqual("Box<Integer>");
                     expect(_class.body[0].variables.length).toEqual(1);
                     expect(_class.body[0].variables[0].node).toEqual("Variable");
                     expect(_class.body[0].variables[0].name).toEqual("p");
@@ -394,57 +403,35 @@ define(function (require, exports, module) {
             });
 
             it("can parse Methods of Generic Class", function () {
+                var ast, promise = parse("GenericClassTest.java").done(function (_ast) { ast = _ast; });
+                waitsForDone(promise, "Parsing...", 3000);
+
                 runs(function () {
                     var _op;
 
                     // Constructor
                     // public Vector(Collection<? extends E> c) {}
-                    _op = ast.types[0].body[1];
+                    _op = ast.types[0].body[2];
                     expect(_op.node).toEqual("Constructor");
-                    expect(_op.name).toEqual("Vector");
+                    expect(_op.name).toEqual("GenericClassTest");
                     expect(_op.modifiers[0]).toEqual("public");
                     expect(_op.parameters[0].type.qualifiedName.name).toEqual("Collection");
-                    expect(_op.parameters[0].type.qualifiedName.typeParameters[0]).toEqual("? extends E");
+                    expect(_op.parameters[0].type.qualifiedName.typeParameters[0].name).toEqual("?");
+                    expect(_op.parameters[0].type.qualifiedName.typeParameters[0].type).toEqual("E");
                     expect(_op.parameters[0].variable.name).toEqual("c");
 
                     // public Enumeration<E> elements() {}
-                    _op = ast.types[0].body[2];
+                    _op = ast.types[0].body[3];
                     expect(_op.name).toEqual("elements");
                     expect(_op.type.qualifiedName.name).toEqual("Enumeration");
-                    expect(_op.type.qualifiedName.typeParameters[0]).toEqual("E");
+                    expect(_op.type.qualifiedName.typeParameters[0].name).toEqual("E");
                 });
-            });
-        });
-
-        describe("Java Parser (Interface)", function () {
-            var parseComplete = false,
-                ast;
-
-            beforeEach(function () {
-                runs(function () {
-                    var path = ExtensionUtils.getModulePath(module) + "unittest-files/InterfaceTest.java";
-                    var file = FileSystem.getFileForPath(path);
-                    file.read({}, function (err, data, stat) {
-                        if (!err) {
-                            ast = java7.parse(data);
-                            parseComplete = true;
-                        }
-                    });
-                });
-
-                waitsFor(
-                    function () { return parseComplete; },
-                    "Waiting for parsing",
-                    3000
-                );
-            });
-
-            afterEach(function () {
-                parseComplete = false;
-                ast = null;
             });
 
             it("can parse Interface", function () {
+                var ast, promise = parse("InterfaceTest.java").done(function (_ast) { ast = _ast; });
+                waitsForDone(promise, "Parsing...", 3000);
+
                 runs(function () {
                     var _interface = ast.types[0];
 
@@ -463,6 +450,9 @@ define(function (require, exports, module) {
             });
 
             it("can parse Field of Interface", function () {
+                var ast, promise = parse("InterfaceTest.java").done(function (_ast) { ast = _ast; });
+                waitsForDone(promise, "Parsing...", 3000);
+
                 runs(function () {
                     var _class = ast.types[0];
 
@@ -481,6 +471,9 @@ define(function (require, exports, module) {
             });
 
             it("can parse Operation of Interface", function () {
+                var ast, promise = parse("InterfaceTest.java").done(function (_ast) { ast = _ast; });
+                waitsForDone(promise, "Parsing...", 3000);
+
                 runs(function () {
                     // public CompositeContext createContext(ColorModel srcColorModel, ColorModel dstColorModel);
                     var _op = ast.types[0].body[1];
@@ -494,37 +487,12 @@ define(function (require, exports, module) {
                     expect(_op.parameters[1].variable.name).toEqual("dstColorModel");
                 });
             });
-        });
 
-        describe("Java Parser (Enum)", function () {
-            var parseComplete = false,
-                ast;
-
-            beforeEach(function () {
-                runs(function () {
-                    var path = ExtensionUtils.getModulePath(module) + "unittest-files/EnumTest.java";
-                    var file = FileSystem.getFileForPath(path);
-                    file.read({}, function (err, data, stat) {
-                        if (!err) {
-                            ast = java7.parse(data);
-                            parseComplete = true;
-                        }
-                    });
-                });
-
-                waitsFor(
-                    function () { return parseComplete; },
-                    "Waiting for parsing",
-                    3000
-                );
-            });
-
-            afterEach(function () {
-                parseComplete = false;
-                ast = null;
-            });
 
             it("can parse Enum", function () {
+                var ast, promise = parse("EnumTest.java").done(function (_ast) { ast = _ast; });
+                waitsForDone(promise, "Parsing...", 3000);
+
                 runs(function () {
                     var _enum = ast.types[0];
 
@@ -549,37 +517,11 @@ define(function (require, exports, module) {
                     expect(_enum.body[2]["arguments"][0]).toEqual("true");
                 });
             });
-        });
-
-        describe("Java Parser (AnnotationType)", function () {
-            var parseComplete = false,
-                ast;
-
-            beforeEach(function () {
-                runs(function () {
-                    var path = ExtensionUtils.getModulePath(module) + "unittest-files/AnnotationTypeTest.java";
-                    var file = FileSystem.getFileForPath(path);
-                    file.read({}, function (err, data, stat) {
-                        if (!err) {
-                            ast = java7.parse(data);
-                            parseComplete = true;
-                        }
-                    });
-                });
-
-                waitsFor(
-                    function () { return parseComplete; },
-                    "Waiting for parsing",
-                    3000
-                );
-            });
-
-            afterEach(function () {
-                parseComplete = false;
-                ast = null;
-            });
 
             it("can parse AnnotationType", function () {
+                var ast, promise = parse("AnnotationTypeTest.java").done(function (_ast) { ast = _ast; });
+                waitsForDone(promise, "Parsing...", 3000);
+
                 runs(function () {
                     var _annotationType = ast.types[0];
 
@@ -604,22 +546,36 @@ define(function (require, exports, module) {
                     expect(_annotationType.body[2].defaultValue).toEqual("\"N/A\"");
                 });
             });
+
         });
 
-        /**
-         * Java Reverse Engineering
-         *
-         */
+
+        // Specs for Java Code Generation
+        describe("Java Code Generation", function () {
+
+            // can generate UMLPackage to a folder
+            // can generate UMLClass to a .java file
+            // can generate UMLClass in UMLClassifier to Java Inner Class
+            // can generate UMLTemplateParameter to Java Type Parameter
+            // can generate UMLAttribute to Java Field
+            // can generate UMLAssociation to Java Field
+            // can generate UMLOperation to Java Method
+            // can generate UMLInterface to Java Interface
+            // can generate UMLEnumeration to Java Enum
+            // can generate UMLClass with <<annotationType>> to Java AnnotationType
+            // can generate documentation to Java Doc Comments
+            // can generate ...
+
+        });
+
+
+        // Specs for Java Reverse Engineering
         describe("Java Reverse Engineering", function () {
 
-            Repository.newProject();
-            var options = {
-                path: ExtensionUtils.getModulePath(module) + "unittest-files"
-            };
-            var promise = JavaReverseEngineer.analyze(options);
-            waitsForDone(promise, "Analyzing...", 3000);
+            it("can reverse Java Package to UMLPackage", function () {
+                var promise = reverse({});
+                waitsForDone(promise, "Analyzing...", 3000);
 
-            it("can reverse Java Package", function () {
                 runs(function () {
                     var _model = Repository.getProject().ownedElements[0];
                     expect(_model.ownedElements[0].name).toEqual("com");
@@ -628,7 +584,11 @@ define(function (require, exports, module) {
                 });
             });
 
-            it("can reverse Java Class", function () {
+
+            it("can reverse Java Class to UMLClass", function () {
+                var promise = reverse({});
+                waitsForDone(promise, "Analyzing...", 3000);
+
                 runs(function () {
                     var _model = Repository.getProject().ownedElements[0],
                         _class = _model.ownedElements[0].ownedElements[0].ownedElements[0].findByName("ClassTest");
@@ -639,7 +599,23 @@ define(function (require, exports, module) {
                 });
             });
 
-            it("can reverse Fields of Java Class", function () {
+            it("can reverse Java Type Parameters to UMLTemplateParameter", function () {
+                var promise = reverse({});
+                waitsForDone(promise, "Analyzing...", 3000);
+
+                runs(function () {
+                    var _class = findOne("GenericClassTest", type.UMLClass);
+                    expect(_class.templateParameters.length).toEqual(2);
+                    expect(_class.templateParameters[0].name).toEqual("E");
+                    expect(_class.templateParameters[1].name).toEqual("T");
+                    expect(_class.templateParameters[1].parameterType).toEqual("java.util.Collection");
+                });
+            });
+
+            it("can reverse Java Fields to UMLAttributes", function () {
+                var promise = reverse({});
+                waitsForDone(promise, "Analyzing...", 3000);
+
                 runs(function () {
                     var _model = Repository.getProject().ownedElements[0],
                         _class = _model.ownedElements[0].ownedElements[0].ownedElements[0].findByName("ClassTest");
@@ -673,7 +649,25 @@ define(function (require, exports, module) {
                 });
             });
 
-            it("can reverse Methods of Java Class", function () {
+            it("can reverse Java Fields to UMLAssociations", function () {
+                var promise = reverse({ association: true });
+                waitsForDone(promise, "Analyzing...", 3000);
+
+                runs(function () {
+                    var _class = findOne("GenericClassTest", type.UMLClass),
+                        _to    = findOne("ClassTest"),
+                        _asso  = Repository.getRelationshipsOf(_class, function (r) { return r instanceof type.UMLAssociation; })[0];
+
+                    expect(_asso.end1.reference).toEqual(_class);
+                    expect(_asso.end2.reference).toEqual(_to);
+                    expect(_asso.end2.name).toEqual("classTestRef");
+                });
+            });
+
+            it("can reverse Java Methods to UMLOperations", function () {
+                var promise = reverse({});
+                waitsForDone(promise, "Analyzing...", 3000);
+
                 runs(function () {
                     var _model = Repository.getProject().ownedElements[0],
                         _class = _model.ownedElements[0].ownedElements[0].ownedElements[0].findByName("ClassTest");
@@ -697,20 +691,15 @@ define(function (require, exports, module) {
                 });
             });
 
-            it("can reverse Generalization of Java Class", function () {
+            it("can reverse Java Extends to UMLGeneralization", function () {
                 runs(function () {
                     // extends GenericClassTest
                 });
             });
 
-            it("can reverse Interface Realization of Java Class", function () {
+            it("can reverse Java Implements to UMLInterfaceRealization", function () {
                 runs(function () {
                     // implements InterfaceTest, java.lang.Serializable
-                });
-            });
-
-            it("can reverse Associations of Java Class", function () {
-                runs(function () {
                 });
             });
 
@@ -733,8 +722,9 @@ define(function (require, exports, module) {
                 runs(function () {
                 });
             });
-
         });
+
+
 
 
     });

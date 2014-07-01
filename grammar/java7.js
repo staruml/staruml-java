@@ -263,11 +263,31 @@ break;
 case 35:
             this.$ = [];
             if ($$[$0][0] === "<" && $$[$0][$$[$0].length-1] === ">") {
-                var i, _temp;
+                var i, _temp, _param, _bounded;
                 $$[$0] = $$[$0].substring(1, $$[$0].length-1);
                 _temp = $$[$0].split(",");
                 for (i = 0; i < _temp.length; i++) {
-                    this.$.push(_temp[i].trim());
+                    _param = _temp[i].trim();
+                    if (_param.indexOf(" extends ") > 0) {
+                        _bounded = _param.split("extends");
+                        if (_bounded.length > 1) {
+                            this.$.push({
+                                "node": "TypeParameter",
+                                "name": _bounded[0].trim(),
+                                "type": _bounded[1].trim()
+                            });
+                        } else {
+                            this.$.push({
+                                "node": "TypeParameter",
+                                "name": _param
+                            });
+                        }
+                    } else {
+                        this.$.push({
+                            "node": "TypeParameter",
+                            "name": _param
+                        });
+                    }
                 }
             }
         
