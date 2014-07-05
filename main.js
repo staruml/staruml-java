@@ -39,8 +39,8 @@ define(function (require, exports, module) {
         ExtensionUtils  = staruml.getModule("utils/ExtensionUtils"),
         UML             = staruml.getModule("uml/UML");
 
-    var ConfigDialog        = require("ConfigDialog"),
-        CodeGenUtils        = require("CodeGenUtils"),
+    var CodeGenUtils        = require("CodeGenUtils"),
+        JavaPreferences     = require("JavaPreferences"),
         JavaCodeGenerator   = require("JavaCodeGenerator"),
         JavaReverseEngineer = require("JavaReverseEngineer");
 
@@ -48,7 +48,6 @@ define(function (require, exports, module) {
      * Menu IDs
      */
     var CMD_JAVA          = 'java',
-        CMD_JAVA_CONFIG   = 'java.config',
         CMD_JAVA_GENERATE = 'java.generate',
         CMD_JAVA_REVERSE  = 'java.reverse';
 
@@ -136,15 +135,19 @@ define(function (require, exports, module) {
         });
     }
 
-    function _handleConfig() {
-        ConfigDialog.showDialog();
-    }
-
     /**
      * CommandManager.execute로부터 파라미터를 받아서 코드 생성 가능하게 한다.
      * 파라미터가 없으면 baseModel, targetDir을 사용한다.
+     * options = {
+     *   base: (model)
+     *   path: "/User/niklaus/..."
+     *   javaDoc: true,
+     *   useTab: false,
+     *   indentSpaces: 4,
+     *   headerComment: true
+     * }
      */
-    function _handleGenerate() {
+    function _handleGenerate(options) {
         checkConfig(function (configured, baseModel, targetDir) {
             if (configured) {
                 generate(baseModel, targetDir);
@@ -189,16 +192,13 @@ define(function (require, exports, module) {
 
     // Register Commands
     CommandManager.register("Java",         CMD_JAVA,          CommandManager.doNothing);
-    CommandManager.register("Configure...", CMD_JAVA_CONFIG,   _handleConfig);
     CommandManager.register("Generate...",  CMD_JAVA_GENERATE, _handleGenerate);
     CommandManager.register("Reverse...",   CMD_JAVA_REVERSE,  _handleReverse);
 
     var menu, menuItem;
     menu = MenuManager.getMenu(Commands.TOOLS);
     menuItem = menu.addMenuItem(CMD_JAVA);
-    menuItem.addMenuItem(CMD_JAVA_CONFIG);
     menuItem.addMenuItem(CMD_JAVA_GENERATE);
     menuItem.addMenuItem(CMD_JAVA_REVERSE);
-
 
 });
