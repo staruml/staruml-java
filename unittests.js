@@ -573,9 +573,10 @@ define(function (require, exports, module) {
         describe("Java Reverse Engineering", function () {
 
             it("can reverse Java Package to UMLPackage", function () {
-                var promise = reverse({});
-                waitsForDone(promise, "Analyzing...", 3000);
-
+                runs(function () {
+                    var promise = reverse({});
+                    waitsForDone(promise, "Analyzing...", 3000);
+                });
                 runs(function () {
                     var _model = Repository.getProject().ownedElements[0];
                     expect(_model.ownedElements[0].name).toEqual("com");
@@ -586,9 +587,10 @@ define(function (require, exports, module) {
 
 
             it("can reverse Java Class to UMLClass", function () {
-                var promise = reverse({});
-                waitsForDone(promise, "Analyzing...", 3000);
-
+                runs(function () {
+                    var promise = reverse({});
+                    waitsForDone(promise, "Analyzing...", 3000);
+                });
                 runs(function () {
                     var _model = Repository.getProject().ownedElements[0],
                         _class = _model.ownedElements[0].ownedElements[0].ownedElements[0].findByName("ClassTest");
@@ -600,9 +602,10 @@ define(function (require, exports, module) {
             });
 
             it("can reverse Java Type Parameters to UMLTemplateParameter", function () {
-                var promise = reverse({});
-                waitsForDone(promise, "Analyzing...", 3000);
-
+                runs(function () {
+                    var promise = reverse({});
+                    waitsForDone(promise, "Analyzing...", 3000);
+                });
                 runs(function () {
                     var _class = findOne("GenericClassTest", type.UMLClass);
                     expect(_class.templateParameters.length).toEqual(2);
@@ -613,9 +616,10 @@ define(function (require, exports, module) {
             });
 
             it("can reverse Java Fields to UMLAttributes", function () {
-                var promise = reverse({});
-                waitsForDone(promise, "Analyzing...", 3000);
-
+                runs(function () {
+                    var promise = reverse({});
+                    waitsForDone(promise, "Analyzing...", 3000);
+                });
                 runs(function () {
                     var _model = Repository.getProject().ownedElements[0],
                         _class = _model.ownedElements[0].ownedElements[0].ownedElements[0].findByName("ClassTest");
@@ -650,9 +654,10 @@ define(function (require, exports, module) {
             });
 
             it("can reverse Java Fields to UMLAssociations", function () {
-                var promise = reverse({ association: true });
-                waitsForDone(promise, "Analyzing...", 3000);
-
+                runs(function () {
+                    var promise = reverse({ association: true });
+                    waitsForDone(promise, "Analyzing...", 3000);
+                });
                 runs(function () {
                     var _class = findOne("GenericClassTest", type.UMLClass),
                         _to    = findOne("ClassTest"),
@@ -665,9 +670,10 @@ define(function (require, exports, module) {
             });
 
             it("can reverse Java Methods to UMLOperations", function () {
-                var promise = reverse({});
-                waitsForDone(promise, "Analyzing...", 3000);
-
+                runs(function () {
+                    var promise = reverse({});
+                    waitsForDone(promise, "Analyzing...", 3000);
+                });
                 runs(function () {
                     var _model = Repository.getProject().ownedElements[0],
                         _class = _model.ownedElements[0].ownedElements[0].ownedElements[0].findByName("ClassTest");
@@ -693,33 +699,102 @@ define(function (require, exports, module) {
 
             it("can reverse Java Extends to UMLGeneralization", function () {
                 runs(function () {
-                    // extends GenericClassTest
+                    var promise = reverse({});
+                    waitsForDone(promise, "Analyzing...", 3000);
+                });
+                runs(function () {
+                    var _model  = Repository.getProject().ownedElements[0],
+                        _class  = _model.ownedElements[0].ownedElements[0].ownedElements[0].findByName("ClassTest"),
+                        _class2 = _model.ownedElements[0].ownedElements[0].ownedElements[0].findByName("GenericClassTest");
+
+                    var generalizations = Repository.getRelationshipsOf(_class, function (rel) { return rel instanceof type.UMLGeneralization; });
+                    expect(generalizations.length).toEqual(1);
+                    expect(generalizations[0].source).toEqual(_class);
+                    expect(generalizations[0].target).toEqual(_class2);
                 });
             });
 
             it("can reverse Java Implements to UMLInterfaceRealization", function () {
                 runs(function () {
-                    // implements InterfaceTest, java.lang.Serializable
+                    var promise = reverse({});
+                    waitsForDone(promise, "Analyzing...", 3000);
+                });
+                runs(function () {
+                    var _model  = Repository.getProject().ownedElements[0],
+                        _class  = _model.ownedElements[0].ownedElements[0].ownedElements[0].findByName("ClassTest"),
+                        _intf   = _model.ownedElements[0].ownedElements[0].ownedElements[0].findByName("InterfaceTest");
+
+                    var realizations = Repository.getRelationshipsOf(_intf, function (rel) { return rel instanceof type.UMLInterfaceRealization; });
+                    expect(realizations.length).toEqual(1);
+                    expect(realizations[0].source).toEqual(_class);
+                    expect(realizations[0].target).toEqual(_intf);
                 });
             });
 
             it("can reverse Fields of Java Generic Class", function () {
                 runs(function () {
+                    var promise = reverse({});
+                    waitsForDone(promise, "Analyzing...", 3000);
+                });
+                runs(function () {
+                    var _model  = Repository.getProject().ownedElements[0],
+                        _class  = _model.ownedElements[0].ownedElements[0].ownedElements[0].findByName("GenericClassTest");
+
+                    expect(_class.templateParameters.length).toEqual(2);
+                    expect(_class.templateParameters[0].name).toEqual("E");
+                    expect(_class.templateParameters[1].name).toEqual("T");
+                    expect(_class.templateParameters[1].parameterType).toEqual("java.util.Collection");
                 });
             });
 
             it("can reverse Java Interface", function () {
                 runs(function () {
+                    var promise = reverse({});
+                    waitsForDone(promise, "Analyzing...", 3000);
+                });
+                runs(function () {
+                    var _model  = Repository.getProject().ownedElements[0],
+                        _intf   = _model.ownedElements[0].ownedElements[0].ownedElements[0].findByName("InterfaceTest");
+                    expect(_intf).toBeDefined();
+                    expect(_intf instanceof type.UMLInterface).toBe(true);
+                    expect(_intf.attributes.length).toEqual(1);
+                    expect(_intf.operations.length).toEqual(1);
                 });
             });
 
             it("can reverse Java Enum", function () {
                 runs(function () {
+                    var promise = reverse({});
+                    waitsForDone(promise, "Analyzing...", 3000);
+                });
+                runs(function () {
+                    var _model  = Repository.getProject().ownedElements[0],
+                        _enum   = _model.ownedElements[0].ownedElements[0].ownedElements[0].findByName("RetryType");
+                    expect(_enum).toBeDefined();
+                    expect(_enum instanceof type.UMLEnumeration).toBe(true);
+                    expect(_enum.literals.length).toEqual(3);
+                    expect(_enum.literals[0].name).toEqual("NONE");
+                    expect(_enum.literals[1].name).toEqual("BEFORE_RESPONSE");
+                    expect(_enum.literals[2].name).toEqual("AFTER_RESPONSE");
                 });
             });
 
             it("can reverse Java AnnotationType", function () {
                 runs(function () {
+                    var promise = reverse({});
+                    waitsForDone(promise, "Analyzing...", 3000);
+                });
+                runs(function () {
+                    var _model  = Repository.getProject().ownedElements[0],
+                        _annotationType = _model.ownedElements[0].ownedElements[0].ownedElements[0].findByName("ClassPreamble");
+                    expect(_annotationType).toBeDefined();
+                    expect(_annotationType instanceof type.UMLClass).toBe(true);
+                    expect(_annotationType.stereotype).toEqual("annotationType");
+                    expect(_annotationType.attributes.length).toEqual(1);
+                    expect(_annotationType.attributes[0].name).toEqual("_annotationConstant");
+                    expect(_annotationType.operations.length).toEqual(2);
+                    expect(_annotationType.operations[0].name).toEqual("author");
+                    expect(_annotationType.operations[1].name).toEqual("lastModified");
                 });
             });
         });

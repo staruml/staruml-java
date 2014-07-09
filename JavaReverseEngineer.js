@@ -24,6 +24,11 @@
 
 // TODO: Field를 Association으로 변환하는 경우, Directional은 쉽지만 Bidirectional은 어떻게 할건지?
 //       무조건 directional로 하든지, 아니면 options의 bidirectional = true 이면 임의로 Bidirectional로 생성하는 방법.
+// TODO: JavaDoc을 Documentation으로.
+// TODO: options.publicOnly 처리
+// TODO: options.typeHierarchy 처리
+// TODO: options.packageOverview 처리
+// TODO: options.packageStructure 처리
 
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50, regexp: true */
 /*global define, $, _, window, staruml, type, document, java7 */
@@ -274,9 +279,6 @@ define(function (require, exports, module) {
                 _pathName = this._toPathName(_typeName);
                 _type = this._ensureClass(this._root, _pathName);
             }
-
-            console.log(_type);
-
             _throw.operation.raisedExceptions.push(_type);
         }
 

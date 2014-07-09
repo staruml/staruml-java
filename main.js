@@ -51,110 +51,66 @@ define(function (require, exports, module) {
         CMD_JAVA_GENERATE = 'java.generate',
         CMD_JAVA_REVERSE  = 'java.reverse';
 
-    // TODO: Return $.Promise
-    function checkConfig(callback) {
-        var baseModel = JavaCodeGenerator.getBaseModel(),
-            targetDir = JavaCodeGenerator.getTargetDirectory();
-        var dir = FileSystem.getDirectoryForPath(targetDir);
-        if (dir && dir._isDirectory === true) {
-            if (baseModel instanceof type.UMLPackage) {
-                callback(true, baseModel, targetDir);
-            } else {
-                callback(false);
-            }
-        } else {
-            callback(false);
-        }
-    }
-
-    function generate(baseModel, targetDir) {
-        var i, len;
-        for (i = 0, len = baseModel.ownedElements.length; i < len; i++) {
-            var elem = baseModel.ownedElements[i];
-            if (elem instanceof type.UMLPackage) {
-                var dir = targetDir + "/" + elem.name;
-                FileSystem.makeDir(dir, 0, function (err) {
-                    if (err === FileSystem.NO_ERROR) {
-                        generate(elem, dir);
-                    } else {
-                        console.log("[Java] Failed to make directory - " + dir);
-                    }
-                });
-            } else if (elem instanceof type.UMLClass) {
-                var file = targetDir + "/" + elem.name + ".java";
-                var codeWriter = new CodeGenUtils.CodeWriter();
-                JavaCodeGenerator.writePackageDeclaration(codeWriter, elem);
-                codeWriter.writeLine();
-                codeWriter.writeLine("import java.util.ArrayList;");
-                codeWriter.writeLine();
-                JavaCodeGenerator.writeClass(codeWriter, elem);
-                FileSystem.writeFile(file, codeWriter.getData(), "utf8", function (err) {
-                    if (err !== FileSystem.NO_ERROR) {
-                        console.log("[Java] Failed to generate - " + file);
-                    }
-                });
-            } else if (elem instanceof type.UMLInterface) {
-                var file = targetDir + "/" + elem.name + ".java";
-                var codeWriter = new CodeGenUtils.CodeWriter();
-                JavaCodeGenerator.writePackageDeclaration(codeWriter, elem);
-                codeWriter.writeLine();
-                codeWriter.writeLine("import java.util.ArrayList;");
-                codeWriter.writeLine();
-                JavaCodeGenerator.writeInterface(codeWriter, elem);
-                FileSystem.writeFile(file, codeWriter.getData(), "utf8", function (err) {
-                    if (err !== FileSystem.NO_ERROR) {
-                        console.log("[Java] Failed to generate - " + file);
-                    }
-                });
-            } else if (elem instanceof type.UMLEnumeration) {
-                var file = targetDir + "/" + elem.name + ".java";
-                var codeWriter = new CodeGenUtils.CodeWriter();
-                JavaCodeGenerator.writePackageDeclaration(codeWriter, elem);
-                codeWriter.writeLine();
-                JavaCodeGenerator.writeEnum(codeWriter, elem);
-                FileSystem.writeFile(file, codeWriter.getData(), "utf8", function (err) {
-                    if (err !== FileSystem.NO_ERROR) {
-                        console.log("[Java] Failed to generate - " + file);
-                    }
-                });
-            }
-        }
-    }
-
-    function traverse(dir, analyzer) {
-        dir.getContents(function (err, entries, stats) {
-            if (entries && entries.length > 0) {
-                for (var i = 0, len = entries.length; i < len; i++) {
-                    var entry = entries[i];
-                    analyzer(entry);
-                    if (entry._isDirectory === true) {
-                        traverse(entry, analyzer);
-                    }
-                }
-            }
-        });
-    }
-
     /**
      * CommandManager.execute로부터 파라미터를 받아서 코드 생성 가능하게 한다.
      * 파라미터가 없으면 baseModel, targetDir을 사용한다.
-     * options = {
-     *   base: (model)
-     *   path: "/User/niklaus/..."
-     *   javaDoc: true,
-     *   useTab: false,
-     *   indentSpaces: 4,
-     *   headerComment: true
-     * }
+     * @param {Object} options
+     * @return {$.Promise}
      */
     function _handleGenerate(options) {
-        checkConfig(function (configured, baseModel, targetDir) {
-            if (configured) {
-                generate(baseModel, targetDir);
+        var result = new $.Deferred();
+
+        // If options is not passed, get from preference
+        options = JavaPreferences.getGenOptions();
+
+        // If options.base is not assigned, popup ElementPicker
+        if (!options.base) {
+            ElementPicker.showDialog("Select a base model to generate codes", null, type.UMLPackage)
+                .done(function (buttonId, selected) {
+                    if (buttonId === Dialogs.DIALOG_BTN_OK && selected) {
+                        options.base = selected;
+
+                        // If options.path is not assigned, popup Open Dialog to select a folder
+                        if (!options.path) {
+                            FileSystem.showOpenDialog(false, true, "Select a folder where generated codes to be located", null, null, function (err, files) {
+                                if (!err) {
+                                    if (files.length > 0) {
+                                        options.path = files[0];
+                                        JavaCodeGenerator.generate(options).then(result.resolve, result.reject);
+                                    } else {
+                                        result.reject(FileSystem.USER_CANCELED);
+                                    }
+                                } else {
+                                    result.reject(err);
+                                }
+                            });
+                        } else {
+                            JavaCodeGenerator.generate(options).then(result.resolve, result.reject);
+                        }
+                    } else {
+                        result.reject();
+                    }
+                });
+        } else {
+            // If options.path is not assigned, popup Open Dialog to select a folder
+            if (!options.path) {
+                FileSystem.showOpenDialog(false, true, "Select a folder where generated codes to be located", null, null, function (err, files) {
+                    if (!err) {
+                        if (files.length > 0) {
+                            options.path = files[0];
+                            JavaCodeGenerator.generate(options).then(result.resolve, result.reject);
+                        } else {
+                            result.reject(FileSystem.USER_CANCELED);
+                        }
+                    } else {
+                        result.reject(err);
+                    }
+                });
             } else {
-                Dialogs.showAlertDialog("Java Code Generation is not configured.");
+                JavaCodeGenerator.generate(options).then(result.resolve, result.reject);
             }
-        });
+        }
+        return result.promise();
     }
 
     /**
@@ -169,24 +125,26 @@ define(function (require, exports, module) {
      * 파라미터가 없으면 baseModel, targetDir을 사용한다.
      * Must return $.Promise
      */
-    // TODO: options.path 가 주어져 있으면 showOpenDialog를 하지 않는다.
     function _handleReverse(options) {
         var result = new $.Deferred();
-        FileSystem.showOpenDialog(false, true, "Select Folder", null, null, function (err, files) {
-            if (!err) {
-                if (files && files.length > 0) {
-                    var options = {
-                        association: true,
-                        path: files[0]
-                    };
-                    JavaReverseEngineer.analyze(options).then(result.resolve, result.reject);
+        // If options is not passed, get from preference
+        options = JavaPreferences.getRevOptions();
+
+        // If options.path is not assigned, popup Open Dialog to select a folder
+        if (!options.path) {
+            FileSystem.showOpenDialog(false, true, "Select Folder", null, null, function (err, files) {
+                if (!err) {
+                    if (files.length > 0) {
+                        options.path = files[0];
+                        JavaReverseEngineer.analyze(options).then(result.resolve, result.reject);
+                    } else {
+                        result.reject(FileSystem.USER_CANCELED);
+                    }
                 } else {
-                    result.reject();
+                    result.reject(err);
                 }
-            } else {
-                result.reject(err);
-            }
-        });
+            });
+        }
         return result.promise();
     }
 

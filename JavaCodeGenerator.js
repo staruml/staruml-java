@@ -21,32 +21,18 @@
  *
  */
 
+
+// TODO: Make as class (e.g. JavaCodeGenerator)
+// TODO: Write Test Cases
+// TODO: Apply options
+
 define(function (require, exports, module) {
     "use strict";
 
     var Repository = staruml.getModule("engine/Repository"),
         Engine     = staruml.getModule("engine/Engine"),
+        FileSystem = staruml.getModule("filesystem/FileSystem"),
         UML        = staruml.getModule("uml/UML");
-
-    function getBaseModel() {
-        var project = Repository.getProject();
-        return project.getTagValue("JavaCodeGen.BaseModel");
-    }
-
-    function setBaseModel(baseModel) {
-        var project = Repository.getProject();
-        Engine.setTagValue(project, "JavaCodeGen.BaseModel", baseModel);
-    }
-
-    function getTargetDirectory() {
-        var project = Repository.getProject();
-        return project.getTagValue("JavaCodeGen.TargetDirectory");
-    }
-
-    function setTargetDirectory(baseModel) {
-        var project = Repository.getProject();
-        Engine.setTagValue(project, "JavaCodeGen.TargetDirectory", baseModel);
-    }
 
     /**
      * Return visibility
@@ -139,7 +125,7 @@ define(function (require, exports, module) {
                 _type = "ArrayList<" + _type + ">";
             } else if (elem.multiplicity.match(/^\d+$/)) { // number
                 _type += "[" + elem.multiplicity + "]";
-            }            
+            }
         }
         return _type;
     }
@@ -172,7 +158,7 @@ define(function (require, exports, module) {
             path = _.map(elem._parent.getPath(base), function (e) { return e.name; }).join(".");
         }
         if (path) {
-            codeWriter.writeLine("package " + path + ";");    
+            codeWriter.writeLine("package " + path + ";");
         }
     }
 
@@ -186,7 +172,7 @@ define(function (require, exports, module) {
             var terms = [];
             // Doc
             writeDoc(codeWriter, "Constructor");
-            // Visibility            
+            // Visibility
             var visibility = getVisibility(elem);
             if (visibility) {
                 terms.push(visibility);
@@ -215,7 +201,7 @@ define(function (require, exports, module) {
             // type
             terms.push(getType(elem));
             // name
-            terms.push(elem.name);    
+            terms.push(elem.name);
             // initial value
             if (elem.defaultValue && elem.defaultValue.length > 0) {
                 terms.push("= " + elem.defaultValue);
@@ -234,7 +220,7 @@ define(function (require, exports, module) {
         if (elem.name.length > 0) {
             var terms = [];
             var params = elem.getNonReturnParameters();
-            var returnParam = elem.getReturnParameter();            
+            var returnParam = elem.getReturnParameter();
             // doc
             var doc = elem.documentation.trim();
             _.each(params, function (param) {
@@ -274,7 +260,7 @@ define(function (require, exports, module) {
                 codeWriter.writeLine("// PUT CODE HERE");
                 codeWriter.outdent();
                 codeWriter.writeLine("}");
-            }            
+            }
         }
     }
 
@@ -466,14 +452,74 @@ define(function (require, exports, module) {
         codeWriter.writeLine("}");
     }
 
+    /*
+     * options = {
+     *   base: (model)
+     *   path: "/User/niklaus/..."
+     *   javaDoc: true,
+     *   useTab: false,
+     *   indentSpaces: 4,
+     *   headerComment: true
+     * }
+     */
+    function generate(options) {
+        var i, len;
+        for (i = 0, len = options.base.ownedElements.length; i < len; i++) {
+            var elem = options.base.ownedElements[i];
+            if (elem instanceof type.UMLPackage) {
+                var dir = options.path + "/" + elem.name;
+                FileSystem.makeDir(dir, 0, function (err) {
+                    if (err === FileSystem.NO_ERROR) {
+                        generate(elem, dir);
+                    } else {
+                        console.log("[Java] Failed to make directory - " + dir);
+                    }
+                });
+            } else if (elem instanceof type.UMLClass) {
+                var file = options.path + "/" + elem.name + ".java";
+                var codeWriter = new CodeGenUtils.CodeWriter();
+                JavaCodeGenerator.writePackageDeclaration(codeWriter, elem);
+                codeWriter.writeLine();
+                codeWriter.writeLine("import java.util.ArrayList;");
+                codeWriter.writeLine();
+                JavaCodeGenerator.writeClass(codeWriter, elem);
+                FileSystem.writeFile(file, codeWriter.getData(), "utf8", function (err) {
+                    if (err !== FileSystem.NO_ERROR) {
+                        console.log("[Java] Failed to generate - " + file);
+                    }
+                });
+            } else if (elem instanceof type.UMLInterface) {
+                var file = options.path + "/" + elem.name + ".java";
+                var codeWriter = new CodeGenUtils.CodeWriter();
+                JavaCodeGenerator.writePackageDeclaration(codeWriter, elem);
+                codeWriter.writeLine();
+                codeWriter.writeLine("import java.util.ArrayList;");
+                codeWriter.writeLine();
+                JavaCodeGenerator.writeInterface(codeWriter, elem);
+                FileSystem.writeFile(file, codeWriter.getData(), "utf8", function (err) {
+                    if (err !== FileSystem.NO_ERROR) {
+                        console.log("[Java] Failed to generate - " + file);
+                    }
+                });
+            } else if (elem instanceof type.UMLEnumeration) {
+                var file = options.path + "/" + elem.name + ".java";
+                var codeWriter = new CodeGenUtils.CodeWriter();
+                JavaCodeGenerator.writePackageDeclaration(codeWriter, elem);
+                codeWriter.writeLine();
+                JavaCodeGenerator.writeEnum(codeWriter, elem);
+                FileSystem.writeFile(file, codeWriter.getData(), "utf8", function (err) {
+                    if (err !== FileSystem.NO_ERROR) {
+                        console.log("[Java] Failed to generate - " + file);
+                    }
+                });
+            }
+        }
+    }
 
-    exports.getBaseModel            = getBaseModel;
-    exports.setBaseModel            = setBaseModel;
-    exports.getTargetDirectory      = getTargetDirectory;
-    exports.setTargetDirectory      = setTargetDirectory;
     exports.writePackageDeclaration = writePackageDeclaration;
     exports.writeClass              = writeClass;
     exports.writeInterface          = writeInterface;
     exports.writeEnum               = writeEnum;
+    exports.generate                = generate;
 
 });
