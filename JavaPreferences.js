@@ -28,22 +28,26 @@ define(function (require, exports, module) {
             type: "Section"
         },
         "java.gen.javaDoc": {
-            text: "Generate JavaDoc",
+            text: "JavaDoc",
+            description: "Generate JavaDoc comments.",
             type: "Check",
             default: true
         },
         "java.gen.useTab": {
-            text: "Use Tab for indentation",
+            text: "Use Tab",
+            description: "Use Tab for indentation instead of spaces.",
             type: "Check",
             default: false
         },
         "java.gen.indentSpaces": {
-            text: "Number of spaces for indentation",
+            text: "Indent Spaces",
+            description: "Number of spaces for indentation.",
             type: "Number",
             default: 4
         },
         "java.gen.headerComment": {
-            text: "Generate header comments",
+            text: "Header Comments",
+            description: "Generate header comments for all generated Java source files.",
             type: "Check",
             default: true
         },
@@ -52,27 +56,32 @@ define(function (require, exports, module) {
             type: "Section"
         },
         "java.rev.association": {
-            text: "Reverse Java Fields as UML Associations",
+            text: "Use Association",
+            description: "Reverse Java Fields as UML Associations.",
             type: "Check",
             default: true
         },
         "java.rev.publicOnly": {
-            text: "Reverse public members only",
+            text: "Public Only",
+            description: "Reverse public members only.",
             type: "Check",
             default: false
         },
         "java.rev.typeHierarchy": {
-            text: "Create a type hierarchy diagram",
+            text: "Type Hierarchy Diagram",
+            description: "Create a type hierarchy diagram for all classes and interfaces",
             type: "Check",
             default: true
         },
         "java.rev.packageOverview": {
-            text: "Create overview diagram for each package",
+            text: "Package Overview Diagram",
+            description: "Create overview diagram for each package",
             type: "Check",
             default: true
         },
         "java.rev.packageStructure": {
-            text: "Create a package structure diagram",
+            text: "Package Structure Diagram",
+            description: "Create a package structure diagram for all packages",
             type: "Check",
             default: true
         }
