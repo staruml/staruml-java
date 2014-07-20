@@ -26,18 +26,18 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var AppInit         = staruml.getModule("utils/AppInit"),
-        Repository      = staruml.getModule("engine/Repository"),
-        Engine          = staruml.getModule("engine/Engine"),
-        Commands        = staruml.getModule("menu/Commands"),
-        CommandManager  = staruml.getModule("menu/CommandManager"),
-        MenuManager     = staruml.getModule("menu/MenuManager"),
-        Dialogs         = staruml.getModule("widgets/Dialogs"),
-        ElementPicker   = staruml.getModule("dialogs/ElementPicker"),
-        FileSystem      = staruml.getModule("filesystem/FileSystem"),
-        FileSystemError = staruml.getModule("filesystem/FileSystemError"),
-        ExtensionUtils  = staruml.getModule("utils/ExtensionUtils"),
-        UML             = staruml.getModule("uml/UML");
+    var AppInit             = staruml.getModule("utils/AppInit"),
+        Repository          = staruml.getModule("engine/Repository"),
+        Engine              = staruml.getModule("engine/Engine"),
+        Commands            = staruml.getModule("menu/Commands"),
+        CommandManager      = staruml.getModule("menu/CommandManager"),
+        MenuManager         = staruml.getModule("menu/MenuManager"),
+        Dialogs             = staruml.getModule("widgets/Dialogs"),
+        ElementPickerDialog = staruml.getModule("dialogs/ElementPickerDialog"),
+        FileSystem          = staruml.getModule("filesystem/FileSystem"),
+        FileSystemError     = staruml.getModule("filesystem/FileSystemError"),
+        ExtensionUtils      = staruml.getModule("utils/ExtensionUtils"),
+        UML                 = staruml.getModule("uml/UML");
 
     var CodeGenUtils        = require("CodeGenUtils"),
         JavaPreferences     = require("JavaPreferences"),
@@ -65,7 +65,7 @@ define(function (require, exports, module) {
 
         // If options.base is not assigned, popup ElementPicker
         if (!options.base) {
-            ElementPicker.showDialog("Select a base model to generate codes", null, type.UMLPackage)
+            ElementPickerDialog.showDialog("Select a base model to generate codes", null, type.UMLPackage)
                 .done(function (buttonId, selected) {
                     if (buttonId === Dialogs.DIALOG_BTN_OK && selected) {
                         options.base = selected;
