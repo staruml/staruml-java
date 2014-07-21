@@ -32,7 +32,7 @@ define(function (require, exports, module) {
         Commands            = staruml.getModule("menu/Commands"),
         CommandManager      = staruml.getModule("menu/CommandManager"),
         MenuManager         = staruml.getModule("menu/MenuManager"),
-        Dialogs             = staruml.getModule("widgets/Dialogs"),
+        Dialogs             = staruml.getModule("dialogs/Dialogs"),
         ElementPickerDialog = staruml.getModule("dialogs/ElementPickerDialog"),
         FileSystem          = staruml.getModule("filesystem/FileSystem"),
         FileSystemError     = staruml.getModule("filesystem/FileSystemError"),
