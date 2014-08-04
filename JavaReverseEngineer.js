@@ -26,9 +26,6 @@
 //       무조건 directional로 하든지, 아니면 options의 bidirectional = true 이면 임의로 Bidirectional로 생성하는 방법.
 // TODO: JavaDoc을 Documentation으로.
 // TODO: options.publicOnly 처리
-// TODO: options.typeHierarchy 처리
-// TODO: options.packageOverview 처리
-// TODO: options.packageStructure 처리
 
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50, regexp: true */
 /*global define, $, _, window, staruml, type, document, java7 */
@@ -37,6 +34,7 @@ define(function (require, exports, module) {
 
     var Core            = staruml.getModule("core/Core"),
         Repository      = staruml.getModule("engine/Repository"),
+        CommandManager  = staruml.getModule("menu/CommandManager"),
         UML             = staruml.getModule("uml/UML"),
         FileSystem      = staruml.getModule("filesystem/FileSystem"),
         FileSystemError = staruml.getModule("filesystem/FileSystemError"),
@@ -78,9 +76,8 @@ define(function (require, exports, module) {
      * @constructor
      */
     function ModelBuilder() {
-
         this._baseModel = new type.UMLModel();
-
+        this._baseModel.name = "JavaReverse";
     }
 
     ModelBuilder.prototype.getBaseModel = function () {
@@ -106,7 +103,7 @@ define(function (require, exports, module) {
 
         this._builder = new ModelBuilder(); // ???
 
-        /** @member {Array.<File>} */
+        /** @member {type.UMLModel} */
         this._root = null;
 
         /** @member {Array.<File>} */
@@ -154,10 +151,43 @@ define(function (require, exports, module) {
      * @return {$.Promise}
      */
     JavaAnalyzer.prototype.analyze = function (options) {
-        var self = this;
+        var self = this,
+            promise;
 
         // Perform 1st Phase
-        var promise = Async.doSequentially(this._files, function (file) {
+        promise = this.performFirstPhase(options);
+
+        // Perform 2nd Phase
+        promise.done(function () {
+            self.performSecondPhase(options);
+        });
+
+        // Load To Project
+        promise.done(function () {
+            var json = self._builder.toJson();
+            Repository.importFromJson(Repository.getProject(), json);
+        });
+
+        // Generate Diagrams
+        promise.done(function () {
+            self.generateDiagrams(options);
+            console.log("[Java] done.");
+        });
+
+        return promise;
+    };
+
+
+    /**
+     * Perform First Phase
+     * - Create Generalizations
+     * - Create InterfaceRealizations
+     * - Create Fields or Associations
+     * - Resolve Type References
+     */
+    JavaAnalyzer.prototype.performFirstPhase = function (options) {
+        var self = this;
+        return Async.doSequentially(this._files, function (file) {
             var result = new $.Deferred();
             file.read({}, function (err, data, stat) {
                 if (!err) {
@@ -172,30 +202,16 @@ define(function (require, exports, module) {
             });
             return result.promise();
         }, false);
-
-        // Perform 2nd Phase
-        promise.always(function () {
-            self.perform2ndPhase(options);
-        });
-
-        // Load To Project
-        promise.always(function () {
-            var json = self._builder.toJson();
-            Repository.importFromJson(Repository.getProject(), json);
-            console.log("[Java] done.");
-        });
-
-        return promise;
     };
 
     /**
-     * Perform 2nd Phase
+     * Perform Second Phase
      * - Create Generalizations
      * - Create InterfaceRealizations
      * - Create Fields or Associations
      * - Resolve Type References
      */
-    JavaAnalyzer.prototype.perform2ndPhase = function (options) {
+    JavaAnalyzer.prototype.performSecondPhase = function (options) {
         var i, len, j, len2, _typeName, _type, _pathName;
 
         // Create Generalizations
@@ -314,9 +330,27 @@ define(function (require, exports, module) {
                 _typedFeature.feature.multiplicity = _dim.join(",");
             }
         }
-
     };
 
+    /**
+     * Generate Diagrams (Type Hierarchy, Package Structure, Package Overview)
+     */
+    JavaAnalyzer.prototype.generateDiagrams = function (options) {
+        var baseModel = Repository.get(this._root._id);
+        if (options.packageStructure) {
+            CommandManager.execute("diagramGenerator.packageStructure", baseModel, true);
+        }
+        if (options.typeHierarchy) {
+            CommandManager.execute("diagramGenerator.typeHierarchy", baseModel, true);
+        }
+        if (options.packageOverview) {
+            baseModel.traverse(function (elem) {
+                if (elem instanceof type.UMLPackage) {
+                    CommandManager.execute("diagramGenerator.overview", elem, true);
+                }
+            });
+        }
+    };
 
     /**
      * Convert string type name to path name (Array of string)

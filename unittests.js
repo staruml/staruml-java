@@ -72,8 +72,12 @@ define(function (require, exports, module) {
         describe("Java Parsing", function () {
 
             it("can parse CompilationUnit", function () {
-                var ast, promise = parse("ClassTest.java").done(function (_ast) { ast = _ast; });
-                waitsForDone(promise, "Parsing...", 3000);
+                var ast, promise;
+
+                runs(function () {
+                    promise = parse("ClassTest.java").done(function (_ast) { ast = _ast; });
+                    waitsForDone(promise, "Parsing...", 3000);
+                });
 
                 runs(function () {
                     // package com.mycompany.test;
@@ -85,8 +89,12 @@ define(function (require, exports, module) {
             });
 
             it("can parse Import", function () {
-                var ast, promise = parse("ClassTest.java").done(function (_ast) { ast = _ast; });
-                waitsForDone(promise, "Parsing...", 3000);
+                var ast, promise;
+
+                runs(function () {
+                    promise = parse("ClassTest.java").done(function (_ast) { ast = _ast; });
+                    waitsForDone(promise, "Parsing...", 3000);
+                });
 
                 runs(function () {
                     expect(ast.imports.length).toEqual(4);
@@ -114,8 +122,12 @@ define(function (require, exports, module) {
             });
 
             it("can parse Class", function () {
-                var ast, promise = parse("ClassTest.java").done(function (_ast) { ast = _ast; });
-                waitsForDone(promise, "Parsing...", 3000);
+                var ast, promise;
+
+                runs(function () {
+                    promise = parse("ClassTest.java").done(function (_ast) { ast = _ast; });
+                    waitsForDone(promise, "Parsing...", 3000);
+                });
 
                 runs(function () {
                     var _class = ast.types[0];
@@ -140,8 +152,12 @@ define(function (require, exports, module) {
             });
 
             it("can parse Fields", function () {
-                var ast, promise = parse("ClassTest.java").done(function (_ast) { ast = _ast; });
-                waitsForDone(promise, "Parsing...", 3000);
+                var ast, promise;
+
+                runs(function () {
+                    promise = parse("ClassTest.java").done(function (_ast) { ast = _ast; });
+                    waitsForDone(promise, "Parsing...", 3000);
+                });
 
                 runs(function () {
                     var _class = ast.types[0];
@@ -170,8 +186,12 @@ define(function (require, exports, module) {
             });
 
             it("can parse Array Fields", function () {
-                var ast, promise = parse("ClassTest.java").done(function (_ast) { ast = _ast; });
-                waitsForDone(promise, "Parsing...", 3000);
+                var ast, promise;
+
+                runs(function () {
+                    promise = parse("ClassTest.java").done(function (_ast) { ast = _ast; });
+                    waitsForDone(promise, "Parsing...", 3000);
+                });
 
                 runs(function () {
                     var _class = ast.types[0];
@@ -188,8 +208,12 @@ define(function (require, exports, module) {
             });
 
             it("can parse Multiple Variable Fields", function () {
-                var ast, promise = parse("ClassTest.java").done(function (_ast) { ast = _ast; });
-                waitsForDone(promise, "Parsing...", 3000);
+                var ast, promise;
+
+                runs(function () {
+                    promise = parse("ClassTest.java").done(function (_ast) { ast = _ast; });
+                    waitsForDone(promise, "Parsing...", 3000);
+                });
 
                 runs(function () {
                     var _class = ast.types[0];
@@ -204,8 +228,12 @@ define(function (require, exports, module) {
             });
 
             it("can parse Field Modifiers", function () {
-                var ast, promise = parse("ClassTest.java").done(function (_ast) { ast = _ast; });
-                waitsForDone(promise, "Parsing...", 3000);
+                var ast, promise;
+
+                runs(function () {
+                    promise = parse("ClassTest.java").done(function (_ast) { ast = _ast; });
+                    waitsForDone(promise, "Parsing...", 3000);
+                });
 
                 runs(function () {
                     var _class = ast.types[0];
@@ -220,8 +248,12 @@ define(function (require, exports, module) {
             });
 
             it("can parse Field Initializer", function () {
-                var ast, promise = parse("ClassTest.java").done(function (_ast) { ast = _ast; });
-                waitsForDone(promise, "Parsing...", 3000);
+                var ast, promise;
+
+                runs(function () {
+                    promise = parse("ClassTest.java").done(function (_ast) { ast = _ast; });
+                    waitsForDone(promise, "Parsing...", 3000);
+                });
 
                 runs(function () {
                     var _class = ast.types[0];
@@ -244,8 +276,12 @@ define(function (require, exports, module) {
 
 
             it("can parse Method", function () {
-                var ast, promise = parse("ClassTest.java").done(function (_ast) { ast = _ast; });
-                waitsForDone(promise, "Parsing...", 3000);
+                var ast, promise;
+
+                runs(function () {
+                    promise = parse("ClassTest.java").done(function (_ast) { ast = _ast; });
+                    waitsForDone(promise, "Parsing...", 3000);
+                });
 
                 runs(function () {
                     var _op = ast.types[0].body[13];
@@ -273,8 +309,12 @@ define(function (require, exports, module) {
             });
 
             it("can parse Method Modifiers", function () {
-                var ast, promise = parse("ClassTest.java").done(function (_ast) { ast = _ast; });
-                waitsForDone(promise, "Parsing...", 3000);
+                var ast, promise;
+
+                runs(function () {
+                    promise = parse("ClassTest.java").done(function (_ast) { ast = _ast; });
+                    waitsForDone(promise, "Parsing...", 3000);
+                });
 
                 runs(function () {
                     var _op = ast.types[0].body[14];
@@ -289,8 +329,12 @@ define(function (require, exports, module) {
             });
 
             it("can parse Abstract Method", function () {
-                var ast, promise = parse("ClassTest.java").done(function (_ast) { ast = _ast; });
-                waitsForDone(promise, "Parsing...", 3000);
+                var ast, promise;
+
+                runs(function () {
+                    promise = parse("ClassTest.java").done(function (_ast) { ast = _ast; });
+                    waitsForDone(promise, "Parsing...", 3000);
+                });
 
                 runs(function () {
                     var _op = ast.types[0].body[15];
@@ -300,8 +344,12 @@ define(function (require, exports, module) {
             });
 
             it("can parse Annotated Method", function () {
-                var ast, promise = parse("ClassTest.java").done(function (_ast) { ast = _ast; });
-                waitsForDone(promise, "Parsing...", 3000);
+                var ast, promise;
+
+                runs(function () {
+                    promise = parse("ClassTest.java").done(function (_ast) { ast = _ast; });
+                    waitsForDone(promise, "Parsing...", 3000);
+                });
 
                 runs(function () {
                     var _op = ast.types[0].body[16];
@@ -340,8 +388,12 @@ define(function (require, exports, module) {
             });
 
             it("can parse Inner Class", function () {
-                var ast, promise = parse("ClassTest.java").done(function (_ast) { ast = _ast; });
-                waitsForDone(promise, "Parsing...", 3000);
+                var ast, promise;
+
+                runs(function () {
+                    promise = parse("ClassTest.java").done(function (_ast) { ast = _ast; });
+                    waitsForDone(promise, "Parsing...", 3000);
+                });
 
                 runs(function () {
                     var _innerClass = ast.types[0].body[17];
@@ -353,8 +405,12 @@ define(function (require, exports, module) {
             });
 
             it("can parse Generic Class", function () {
-                var ast, promise = parse("GenericClassTest.java").done(function (_ast) { ast = _ast; });
-                waitsForDone(promise, "Parsing...", 3000);
+                var ast, promise;
+
+                runs(function () {
+                    promise = parse("GenericClassTest.java").done(function (_ast) { ast = _ast; });
+                    waitsForDone(promise, "Parsing...", 3000);
+                });
 
                 runs(function () {
                     var _class = ast.types[0];
@@ -383,8 +439,12 @@ define(function (require, exports, module) {
             });
 
             it("can parse Field of Generic Class", function () {
-                var ast, promise = parse("GenericClassTest.java").done(function (_ast) { ast = _ast; });
-                waitsForDone(promise, "Parsing...", 3000);
+                var ast, promise;
+
+                runs(function () {
+                    promise = parse("GenericClassTest.java").done(function (_ast) { ast = _ast; });
+                    waitsForDone(promise, "Parsing...", 3000);
+                });
 
                 runs(function () {
                     var _class = ast.types[0];
@@ -403,8 +463,12 @@ define(function (require, exports, module) {
             });
 
             it("can parse Methods of Generic Class", function () {
-                var ast, promise = parse("GenericClassTest.java").done(function (_ast) { ast = _ast; });
-                waitsForDone(promise, "Parsing...", 3000);
+                var ast, promise;
+
+                runs(function () {
+                    promise = parse("GenericClassTest.java").done(function (_ast) { ast = _ast; });
+                    waitsForDone(promise, "Parsing...", 3000);
+                });
 
                 runs(function () {
                     var _op;
@@ -429,8 +493,12 @@ define(function (require, exports, module) {
             });
 
             it("can parse Interface", function () {
-                var ast, promise = parse("InterfaceTest.java").done(function (_ast) { ast = _ast; });
-                waitsForDone(promise, "Parsing...", 3000);
+                var ast, promise;
+
+                runs(function () {
+                    promise = parse("InterfaceTest.java").done(function (_ast) { ast = _ast; });
+                    waitsForDone(promise, "Parsing...", 3000);
+                });
 
                 runs(function () {
                     var _interface = ast.types[0];
@@ -450,8 +518,12 @@ define(function (require, exports, module) {
             });
 
             it("can parse Field of Interface", function () {
-                var ast, promise = parse("InterfaceTest.java").done(function (_ast) { ast = _ast; });
-                waitsForDone(promise, "Parsing...", 3000);
+                var ast, promise;
+
+                runs(function () {
+                    promise = parse("InterfaceTest.java").done(function (_ast) { ast = _ast; });
+                    waitsForDone(promise, "Parsing...", 3000);
+                });
 
                 runs(function () {
                     var _class = ast.types[0];
@@ -471,8 +543,12 @@ define(function (require, exports, module) {
             });
 
             it("can parse Operation of Interface", function () {
-                var ast, promise = parse("InterfaceTest.java").done(function (_ast) { ast = _ast; });
-                waitsForDone(promise, "Parsing...", 3000);
+                var ast, promise;
+
+                runs(function () {
+                    promise = parse("InterfaceTest.java").done(function (_ast) { ast = _ast; });
+                    waitsForDone(promise, "Parsing...", 3000);
+                });
 
                 runs(function () {
                     // public CompositeContext createContext(ColorModel srcColorModel, ColorModel dstColorModel);
@@ -490,8 +566,12 @@ define(function (require, exports, module) {
 
 
             it("can parse Enum", function () {
-                var ast, promise = parse("EnumTest.java").done(function (_ast) { ast = _ast; });
-                waitsForDone(promise, "Parsing...", 3000);
+                var ast, promise;
+
+                runs(function () {
+                    promise = parse("EnumTest.java").done(function (_ast) { ast = _ast; });
+                    waitsForDone(promise, "Parsing...", 3000);
+                });
 
                 runs(function () {
                     var _enum = ast.types[0];
@@ -519,8 +599,12 @@ define(function (require, exports, module) {
             });
 
             it("can parse AnnotationType", function () {
-                var ast, promise = parse("AnnotationTypeTest.java").done(function (_ast) { ast = _ast; });
-                waitsForDone(promise, "Parsing...", 3000);
+                var ast, promise;
+
+                runs(function () {
+                    promise = parse("AnnotationTypeTest.java").done(function (_ast) { ast = _ast; });
+                    waitsForDone(promise, "Parsing...", 3000);
+                });
 
                 runs(function () {
                     var _annotationType = ast.types[0];
