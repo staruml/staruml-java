@@ -599,7 +599,14 @@ define(function (require, exports, module) {
         var i, len;
         if (memberNodeArray.length > 0) {
             for (i = 0, len = memberNodeArray.length; i < len; i++) {
-                var memberNode = memberNodeArray[i];
+                var memberNode = memberNodeArray[i],
+                    visibility = this._getVisibility(memberNode.modifiers);
+
+                // Generate public members only if publicOnly == true
+                if (options.publicOnly && visibility !== UML.VK_PUBLIC) {
+                    continue;
+                }
+
                 switch (memberNode.node) {
                 case "Field":
                     if (options.association) {
