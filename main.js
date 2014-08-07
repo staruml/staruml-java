@@ -45,38 +45,40 @@ define(function (require, exports, module) {
         JavaReverseEngineer = require("JavaReverseEngineer");
 
     /**
-     * Menu IDs
+     * Commands IDs
      */
-    var CMD_JAVA          = 'java',
-        CMD_JAVA_GENERATE = 'java.generate',
-        CMD_JAVA_REVERSE  = 'java.reverse';
+    var CMD_JAVA           = 'java',
+        CMD_JAVA_GENERATE  = 'java.generate',
+        CMD_JAVA_REVERSE   = 'java.reverse',
+        CMD_JAVA_CONFIGURE = 'java.configure';
 
     /**
      * CommandManager.execute로부터 파라미터를 받아서 코드 생성 가능하게 한다.
-     * 파라미터가 없으면 baseModel, targetDir을 사용한다.
+     * @param {Element} base
+     * @param {string} path
      * @param {Object} options
      * @return {$.Promise}
      */
-    function _handleGenerate(options) {
+    function _handleGenerate(base, path, options) {
         var result = new $.Deferred();
 
         // If options is not passed, get from preference
-        options = JavaPreferences.getGenOptions();
+        options = (options ? options : JavaPreferences.getGenOptions());
 
-        // If options.base is not assigned, popup ElementPicker
-        if (!options.base) {
+        // If base is not assigned, popup ElementPicker
+        if (!base) {
             ElementPickerDialog.showDialog("Select a base model to generate codes", null, type.UMLPackage)
                 .done(function (buttonId, selected) {
                     if (buttonId === Dialogs.DIALOG_BTN_OK && selected) {
-                        options.base = selected;
+                        base = selected;
 
-                        // If options.path is not assigned, popup Open Dialog to select a folder
-                        if (!options.path) {
+                        // If path is not assigned, popup Open Dialog to select a folder
+                        if (!path) {
                             FileSystem.showOpenDialog(false, true, "Select a folder where generated codes to be located", null, null, function (err, files) {
                                 if (!err) {
                                     if (files.length > 0) {
-                                        options.path = files[0];
-                                        JavaCodeGenerator.generate(options).then(result.resolve, result.reject);
+                                        path = files[0];
+                                        JavaCodeGenerator.generate(base, path, options).then(result.resolve, result.reject);
                                     } else {
                                         result.reject(FileSystem.USER_CANCELED);
                                     }
@@ -85,20 +87,20 @@ define(function (require, exports, module) {
                                 }
                             });
                         } else {
-                            JavaCodeGenerator.generate(options).then(result.resolve, result.reject);
+                            JavaCodeGenerator.generate(base, path, options).then(result.resolve, result.reject);
                         }
                     } else {
                         result.reject();
                     }
                 });
         } else {
-            // If options.path is not assigned, popup Open Dialog to select a folder
-            if (!options.path) {
+            // If path is not assigned, popup Open Dialog to select a folder
+            if (!path) {
                 FileSystem.showOpenDialog(false, true, "Select a folder where generated codes to be located", null, null, function (err, files) {
                     if (!err) {
                         if (files.length > 0) {
-                            options.path = files[0];
-                            JavaCodeGenerator.generate(options).then(result.resolve, result.reject);
+                            path = files[0];
+                            JavaCodeGenerator.generate(base, path, options).then(result.resolve, result.reject);
                         } else {
                             result.reject(FileSystem.USER_CANCELED);
                         }
@@ -107,7 +109,7 @@ define(function (require, exports, module) {
                     }
                 });
             } else {
-                JavaCodeGenerator.generate(options).then(result.resolve, result.reject);
+                JavaCodeGenerator.generate(base, path, options).then(result.resolve, result.reject);
             }
         }
         return result.promise();
@@ -125,18 +127,18 @@ define(function (require, exports, module) {
      * 파라미터가 없으면 baseModel, targetDir을 사용한다.
      * Must return $.Promise
      */
-    function _handleReverse(options) {
+    function _handleReverse(basePath, options) {
         var result = new $.Deferred();
         // If options is not passed, get from preference
         options = JavaPreferences.getRevOptions();
 
-        // If options.path is not assigned, popup Open Dialog to select a folder
-        if (!options.path) {
+        // If basePath is not assigned, popup Open Dialog to select a folder
+        if (!basePath) {
             FileSystem.showOpenDialog(false, true, "Select Folder", null, null, function (err, files) {
                 if (!err) {
                     if (files.length > 0) {
-                        options.path = files[0];
-                        JavaReverseEngineer.analyze(options).then(result.resolve, result.reject);
+                        basePath = files[0];
+                        JavaReverseEngineer.analyze(basePath, options).then(result.resolve, result.reject);
                     } else {
                         result.reject(FileSystem.USER_CANCELED);
                     }
@@ -147,16 +149,23 @@ define(function (require, exports, module) {
         }
         return result.promise();
     }
+    
+    function _handleConfigure() {
+        CommandManager.execute(Commands.FILE_PREFERENCES, JavaPreferences.getId());
+    }
 
     // Register Commands
-    CommandManager.register("Java",         CMD_JAVA,          CommandManager.doNothing);
-    CommandManager.register("Generate...",  CMD_JAVA_GENERATE, _handleGenerate);
-    CommandManager.register("Reverse...",   CMD_JAVA_REVERSE,  _handleReverse);
+    CommandManager.register("Java",             CMD_JAVA,           CommandManager.doNothing);
+    CommandManager.register("Generate Code...", CMD_JAVA_GENERATE,  _handleGenerate);
+    CommandManager.register("Reverse Code...",  CMD_JAVA_REVERSE,   _handleReverse);
+    CommandManager.register("Configure...",     CMD_JAVA_CONFIGURE, _handleConfigure);
 
     var menu, menuItem;
     menu = MenuManager.getMenu(Commands.TOOLS);
     menuItem = menu.addMenuItem(CMD_JAVA);
     menuItem.addMenuItem(CMD_JAVA_GENERATE);
     menuItem.addMenuItem(CMD_JAVA_REVERSE);
+    menuItem.addMenuDivider();
+    menuItem.addMenuItem(CMD_JAVA_CONFIGURE);
 
 });

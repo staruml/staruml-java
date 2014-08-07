@@ -25,7 +25,6 @@
 // TODO: Field를 Association으로 변환하는 경우, Directional은 쉽지만 Bidirectional은 어떻게 할건지?
 //       무조건 directional로 하든지, 아니면 options의 bidirectional = true 이면 임의로 Bidirectional로 생성하는 방법.
 // TODO: JavaDoc을 Documentation으로.
-// TODO: options.publicOnly 처리
 
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50, regexp: true */
 /*global define, $, _, window, staruml, type, document, java7 */
@@ -946,7 +945,7 @@ define(function (require, exports, module) {
      *       }
      * @return {$.Promise}
      */
-    function analyze(options) {
+    function analyze(basePath, options) {
         var result = new $.Deferred(),
             javaAnalyzer = new JavaAnalyzer();
 
@@ -961,7 +960,7 @@ define(function (require, exports, module) {
         }
 
         // Traverse all file entries
-        var dir = FileSystem.getDirectoryForPath(options.path);
+        var dir = FileSystem.getDirectoryForPath(basePath);
         dir.visit(visitEntry, {}, function (err) {
             if (!err) {
                 javaAnalyzer.analyze(options).then(result.resolve, result.reject);

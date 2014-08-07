@@ -22,6 +22,8 @@ define(function (require, exports, module) {
         Core              = staruml.getModule("core/Core"),
         PreferenceManager = staruml.getModule("preference/PreferenceManager");
 
+    var preferenceId = "java";
+    
     var javaPreferences = {
         "java.gen": {
             text: "Java Code Generation",
@@ -44,12 +46,6 @@ define(function (require, exports, module) {
             description: "Number of spaces for indentation.",
             type: "Number",
             default: 4
-        },
-        "java.gen.headerComment": {
-            text: "Header Comments",
-            description: "Generate header comments for all generated Java source files.",
-            type: "Check",
-            default: true
         },
         "java.rev": {
             text: "Java Reverse Engineering",
@@ -86,13 +82,16 @@ define(function (require, exports, module) {
             default: true
         }
     };
+    
+    function getId() {
+        return preferenceId;
+    }
 
     function getGenOptions() {
         return {
             javaDoc       : PreferenceManager.get("java.gen.javaDoc"),
             useTab        : PreferenceManager.get("java.gen.useTab"),
-            indentSpaces  : PreferenceManager.get("java.gen.indentSpaces"),
-            headerComment : PreferenceManager.get("java.gen.headerComment")
+            indentSpaces  : PreferenceManager.get("java.gen.indentSpaces")
         };
     }
 
@@ -107,9 +106,10 @@ define(function (require, exports, module) {
     }
 
     AppInit.htmlReady(function () {
-        PreferenceManager.register("java", "Java", javaPreferences);
+        PreferenceManager.register(preferenceId, "Java", javaPreferences);
     });
 
+    exports.getId         = getId;
     exports.getGenOptions = getGenOptions;
     exports.getRevOptions = getRevOptions;
 
