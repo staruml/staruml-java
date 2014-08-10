@@ -22,10 +22,7 @@
  */
 
 
-// TODO: Field를 Association으로 변환하는 경우, Directional은 쉽지만 Bidirectional은 어떻게 할건지?
-//       무조건 directional로 하든지, 아니면 options의 bidirectional = true 이면 임의로 Bidirectional로 생성하는 방법.
 // TODO: JavaDoc to Documentation.
-// TODO: Reverse Collection Types  (List, Set, ...)
 
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50, regexp: true */
 /*global define, $, _, window, staruml, type, document, java7 */
@@ -70,6 +67,24 @@ define(function (require, exports, module) {
         "java.lang.String",
         "java.lang.Character"
     ];
+
+    var javaCollectionTypes = [
+        "Collection",
+        "Set",
+        "SortedSet",
+        "NavigableSet",
+        "HashSet",
+        "TreeSet",
+        "LinkedHashSet",
+        "List",
+        "ArrayList",
+        "LinkedList",
+        "Deque",
+        "ArrayDeque",
+        "Queue"
+    ];
+
+    var javaUtilCollectionTypes = _.map(javaCollectionTypes, function (c) { return "java.util." + c; });
 
     /**
      * CodeWriter
@@ -194,7 +209,9 @@ define(function (require, exports, module) {
                     var ast = java7.parse(data);
                     self._root = self._builder.getBaseModel();
                     self._currentCompilationUnit = ast;
+                    self._currentCompilationUnit.file = file;
                     self.translateCompilationUnit(options, self._root, ast);
+                    // self._currentCompilationUnit = null;
                     result.resolve();
                 } else {
                     result.reject(err);
@@ -212,14 +229,14 @@ define(function (require, exports, module) {
      * - Resolve Type References
      */
     JavaAnalyzer.prototype.performSecondPhase = function (options) {
-        var i, len, j, len2, _typeName, _type, _pathName;
+        var i, len, j, len2, _typeName, _type, _itemTypeName, _itemType, _pathName;
 
         // Create Generalizations
         //     if super type not found, create a Class correspond to the super type.
         for (i = 0, len = this._extendPendings.length; i < len; i++) {
             var _extend = this._extendPendings[i];
             _typeName = _extend.node.qualifiedName.name;
-            _type = this._findType(_extend.classifier, _typeName);
+            _type = this._findType(_extend.classifier, _typeName, _extend.compilationUnitNode);
             if (!_type) {
                 _pathName = this._toPathName(_typeName);
                 if (_extend.kind === "interface") {
@@ -242,7 +259,7 @@ define(function (require, exports, module) {
         for (i = 0, len = this._implementPendings.length; i < len; i++) {
             var _implement = this._implementPendings[i];
             _typeName = _implement.node.qualifiedName.name;
-            _type = this._findType(_implement.classifier, _typeName);
+            _type = this._findType(_implement.classifier, _typeName, _implement.compilationUnitNode);
             if (!_type) {
                 _pathName = this._toPathName(_typeName);
                 _type = this._ensureInterface(this._root, _pathName);
@@ -258,36 +275,61 @@ define(function (require, exports, module) {
         for (i = 0, len = this._associationPendings.length; i < len; i++) {
             var _asso = this._associationPendings[i];
             _typeName = _asso.node.type.qualifiedName.name;
-            _type = this._findType(_asso.classifier, _typeName);
-            
+            _type = this._findType(_asso.classifier, _typeName, _asso.node.compilationUnitNode);
+            _itemTypeName = this._isGenericCollection(_asso.node.type, _asso.node.compilationUnitNode);
+            if (_itemTypeName) {
+                _itemType = this._findType(_asso.classifier, _itemTypeName, _asso.node.compilationUnitNode);
+            } else {
+                _itemType = null;
+            }
+
             // if type found, add as Association
-            if (_type) {
+            if (_type || _itemType) {
                 for (j = 0, len2 = _asso.node.variables.length; j < len2; j++) {
                     var variableNode = _asso.node.variables[j];
-                    
+
                     // Create Association
                     var association = new type.UMLAssociation();
                     association._parent = _asso.classifier;
                     _asso.classifier.ownedElements.push(association);
-                    
+
                     // Set End1
                     association.end1.reference = _asso.classifier;
                     association.end1.name = "";
                     association.end1.visibility = UML.VK_PACKAGE;
                     association.end1.navigable = false;
-                    
+
                     // Set End2
-                    association.end2.reference = _type;
+                    if (_itemType) {
+                        association.end2.reference = _itemType;
+                        association.end2.multiplicity = "*";
+                        this._addTag(association.end2, Core.TK_STRING, "collection", _asso.node.type.qualifiedName.name);
+                    } else {
+                        association.end2.reference = _type;
+                    }
                     association.end2.name = variableNode.name;
                     association.end2.visibility = this._getVisibility(_asso.node.modifiers);
                     association.end2.navigable = true;
-                    // TODO: multiplicity (array or java.util.List, java.util.Set)
-                    // TODO: aggregation
-                    // TODO: static
-                    // TODO: final
-                    // TODO: volatile
-                    // TODO: transient
-                    
+
+                    // Final Modifier
+                    if (_.contains(_asso.node.modifiers, "final")) {
+                        association.end2.isReadOnly = true;
+                    }
+
+                    // Static Modifier
+                    if (_.contains(_asso.node.modifiers, "static")) {
+                        this._addTag(association.end2, Core.TK_BOOLEAN, "static", true);
+                    }
+
+                    // Volatile Modifier
+                    if (_.contains(_asso.node.modifiers, "volatile")) {
+                        this._addTag(association.end2, Core.TK_BOOLEAN, "volatile", true);
+                    }
+
+                    // Transient Modifier
+                    if (_.contains(_asso.node.modifiers, "transient")) {
+                        this._addTag(association.end2, Core.TK_BOOLEAN, "transient", true);
+                    }
                 }
             // if type not found, add as Attribute
             } else {
@@ -299,7 +341,7 @@ define(function (require, exports, module) {
         for (i = 0, len = this._throwPendings.length; i < len; i++) {
             var _throw = this._throwPendings[i];
             _typeName = _throw.node.name;
-            _type = this._findType(_throw.operation, _typeName);
+            _type = this._findType(_throw.operation, _typeName, _throw.compilationUnitNode);
             if (!_type) {
                 _pathName = this._toPathName(_typeName);
                 _type = this._ensureClass(this._root, _pathName);
@@ -310,15 +352,24 @@ define(function (require, exports, module) {
         // Resolve Type References
         for (i = 0, len = this._typedFeaturePendings.length; i < len; i++) {
             var _typedFeature = this._typedFeaturePendings[i];
-            _typeName = _typedFeature.node.qualifiedName.name;
+            _typeName = _typedFeature.node.type.qualifiedName.name;
 
             // Find type and assign
-            _type = this._findType(_typedFeature.namespace, _typeName);
+            _type = this._findType(_typedFeature.namespace, _typeName, _typedFeature.node.compilationUnitNode);
+
             // if type is exists
             if (_type) {
                 _typedFeature.feature.type = _type;
             // if type is not exists
             } else {
+                // if type is generic collection type (e.g. java.util.List<String>)
+                _itemTypeName = this._isGenericCollection(_typedFeature.node.type, _typedFeature.node.compilationUnitNode);
+                if (_itemTypeName) {
+                    _typeName = _itemTypeName;
+                    _typedFeature.feature.multiplicity = "*";
+                    this._addTag(_typedFeature.feature, Core.TK_STRING, "collection", _typedFeature.node.type.qualifiedName.name);
+                }
+
                 // if type is primitive type
                 if (_.contains(javaPrimitiveTypes, _typeName)) {
                     _typedFeature.feature.type = _typeName;
@@ -331,9 +382,9 @@ define(function (require, exports, module) {
             }
 
             // Translate type's arrayDimension to multiplicity
-            if (_typedFeature.node.arrayDimension && _typedFeature.node.arrayDimension.length > 0) {
+            if (_typedFeature.node.type.arrayDimension && _typedFeature.node.type.arrayDimension.length > 0) {
                 var _dim = [];
-                for (j = 0, len2 = _typedFeature.node.arrayDimension.length; j < len2; j++) {
+                for (j = 0, len2 = _typedFeature.node.type.arrayDimension.length; j < len2; j++) {
                     _dim.push("*");
                 }
                 _typedFeature.feature.multiplicity = _dim.join(",");
@@ -379,10 +430,11 @@ define(function (require, exports, module) {
      * Find Type.
      *
      * @param {Element} namespace
-     * @param {string|Object} type - Type name string or type node.
+     * @param {string|Object} type Type name string or type node.
+     * @param {Object} compilationUnitNode To search type with import statements.
      * @return {Element} element correspond to the type.
      */
-    JavaAnalyzer.prototype._findType = function (namespace, type) {
+    JavaAnalyzer.prototype._findType = function (namespace, type, compilationUnitNode) {
         var typeName,
             pathName,
             _type = null;
@@ -409,10 +461,10 @@ define(function (require, exports, module) {
 
         // 3. Find from imported namespaces
         if (!_type) {
-            if (this._currentCompilationUnit.imports) {
+            if (compilationUnitNode.imports) {
                 var i, len;
-                for (i = 0, len = this._currentCompilationUnit.imports.length; i < len; i++) {
-                    var _import = this._currentCompilationUnit.imports[i];
+                for (i = 0, len = compilationUnitNode.imports.length; i < len; i++) {
+                    var _import = compilationUnitNode.imports[i];
                     // Find in wildcard imports (e.g. import java.lang.*)
                     if (_import.wildcard) {
                         var _namespace = this._root.lookdown(_import.qualifiedName.name);
@@ -453,6 +505,35 @@ define(function (require, exports, module) {
         }
         return UML.VK_PACKAGE;
     };
+
+    /**
+     * @param {Element} elem
+     */
+    JavaAnalyzer.prototype._addTag = function (elem, kind, name, value) {
+        var tag = new type.Tag();
+        tag._parent = elem;
+        tag.name = name;
+        tag.kind = kind;
+        switch (kind) {
+        case Core.TK_STRING:
+            tag.value = value;
+            break;
+        case Core.TK_BOOLEAN:
+            tag.checked = value;
+            break;
+        case Core.TK_NUMBER:
+            tag.number = value;
+            break;
+        case Core.TK_REFERENCE:
+            tag.reference = value;
+            break;
+        case Core.TK_HIDDEN:
+            tag.value = value;
+            break;
+        }
+        elem.tags.push(tag);
+    };
+
 
     /**
      * Return the package of a given pathNames. If not exists, create the package.
@@ -537,6 +618,43 @@ define(function (require, exports, module) {
     };
 
     /**
+     * Test a given type is a generic collection or not
+     * @param {Object} typeNode
+     * @return {string} Collection item type name
+     */
+    JavaAnalyzer.prototype._isGenericCollection = function (typeNode, compilationUnitNode) {
+        if (typeNode.qualifiedName.typeParameters && typeNode.qualifiedName.typeParameters.length > 0) {
+            var _collectionType = typeNode.qualifiedName.name,
+                _itemType       = typeNode.qualifiedName.typeParameters[0].name;
+
+            // Used Full name (e.g. java.util.List)
+            if (_.contains(javaUtilCollectionTypes, _collectionType)) {
+                return _itemType;
+            }
+
+            // Used name with imports (e.g. List and import java.util.List or java.util.*)
+            if (_.contains(javaCollectionTypes, _collectionType)) {
+                if (compilationUnitNode.imports) {
+                    for (var i = 0, len = compilationUnitNode.imports.length; i < len; i++) {
+                        var _import = compilationUnitNode.imports[i];
+
+                        // Full name import (e.g. import java.util.List)
+                        if (_import.qualifiedName.name === "java.util." + _collectionType) {
+                            return _itemType;
+                        }
+
+                        // Wildcard import (e.g. import java.util.*)
+                        if (_import.qualifiedName.name === "java.util" && _import.wildcard) {
+                            return _itemType;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    };
+
+    /**
      * Translate Java CompilationUnit Node.
      * @param {Element} namespace
      * @param {Object} compilationUnitNode
@@ -616,6 +734,8 @@ define(function (require, exports, module) {
                     continue;
                 }
 
+                memberNode.compilationUnitNode = this._currentCompilationUnit;
+
                 switch (memberNode.node) {
                 case "Field":
                     if (options.association) {
@@ -675,30 +795,32 @@ define(function (require, exports, module) {
         _class = new type.UMLClass();
         _class._parent = namespace;
         _class.name = classNode.name;
-        
+
         // Access Modifiers
         _class.visibility = this._getVisibility(classNode.modifiers);
-        
+
         // Abstract Class
         if (_.contains(classNode.modifiers, "abstract")) {
             _class.isAbstract = true;
         }
-        
+
         // Final Class
         if (_.contains(classNode.modifiers, "final")) {
             _class.isFinalSpecification = true;
             _class.isLeaf = true;
         }
-        
+
         namespace.ownedElements.push(_class);
 
         // Register Extends for 2nd Phase Translation
         if (classNode["extends"]) {
-            this._extendPendings.push({
+            var _extendPending = {
                 classifier: _class,
                 node: classNode["extends"],
-                kind: "class"
-            });
+                kind: "class",
+                compilationUnitNode: this._currentCompilationUnit
+            };
+            this._extendPendings.push(_extendPending);
         }
 
         // - 1) 타입이 소스에 있는 경우 --> 해당 타입으로 Generalization 생성
@@ -709,10 +831,12 @@ define(function (require, exports, module) {
         if (classNode["implements"]) {
             for (i = 0, len = classNode["implements"].length; i < len; i++) {
                 var _impl = classNode["implements"][i];
-                this._implementPendings.push({
+                var _implementPending = {
                     classifier: _class,
-                    node: _impl
-                });
+                    node: _impl,
+                    compilationUnitNode: this._currentCompilationUnit
+                };
+                this._implementPendings.push(_implementPending);
             }
         }
         // Translate Type Parameters
@@ -814,10 +938,11 @@ define(function (require, exports, module) {
         var i, len;
         if (fieldNode.variables && fieldNode.variables.length > 0) {
             // Add to _associationPendings
-            this._associationPendings.push({
+            var _associationPending = {
                 classifier: namespace,
                 node: fieldNode
-            });
+            };
+            this._associationPendings.push(_associationPending);
         }
     };
 
@@ -830,7 +955,6 @@ define(function (require, exports, module) {
         var i, len;
         if (fieldNode.variables && fieldNode.variables.length > 0) {
             for (i = 0, len = fieldNode.variables.length; i < len; i++) {
-                var _tag;
                 var variableNode = fieldNode.variables[i];
 
                 // Create Attribute
@@ -843,46 +967,37 @@ define(function (require, exports, module) {
                 if (variableNode.initializer) {
                     _attribute.defaultValue = variableNode.initializer;
                 }
-                
+
                 // Static Modifier
                 if (_.contains(fieldNode.modifiers, "static")) {
                     _attribute.isStatic = true;
                 }
-                
+
                 // Final Modifier
                 if (_.contains(fieldNode.modifiers, "final")) {
                     _attribute.isLeaf = true;
                     _attribute.isReadOnly = true;
                 }
-                
+
                 // Volatile Modifier
                 if (_.contains(fieldNode.modifiers, "volatile")) {
-                    _tag = new type.Tag();
-                    _tag._parent = _attribute;
-                    _tag.name = "volatile";
-                    _tag.kind = Core.TK_BOOLEAN;
-                    _tag.checked = true;
-                    _attribute.tags.push(_tag);
+                    this._addTag(_attribute, Core.TK_BOOLEAN, "volatile", true);
                 }
 
                 // Transient Modifier
                 if (_.contains(fieldNode.modifiers, "transient")) {
-                    _tag = new type.Tag();
-                    _tag._parent = _attribute;
-                    _tag.name = "transient";
-                    _tag.kind = Core.TK_BOOLEAN;
-                    _tag.checked = true;
-                    _attribute.tags.push(_tag);
+                    this._addTag(_attribute, Core.TK_BOOLEAN, "transient", true);
                 }
-                
+
                 namespace.attributes.push(_attribute);
 
                 // Add to _typedFeaturePendings
-                this._typedFeaturePendings.push({
+                var _typedFeature = {
                     namespace: namespace,
                     feature: _attribute,
-                    node: fieldNode.type
-                });
+                    node: fieldNode
+                };
+                this._typedFeaturePendings.push(_typedFeature);
 
             }
         }
@@ -913,13 +1028,18 @@ define(function (require, exports, module) {
         if (_.contains(methodNode.modifiers, "synchronized")) {
             _operation.concurrency = UML.CCK_CONCURRENT;
         }
-        // TODO: native (to Tag?)
-        // TODO: strictfp (to Tag?)
+        if (_.contains(methodNode.modifiers, "native")) {
+            this._addTag(_operation, Core.TK_BOOLEAN, "native", true);
+        }
+        if (_.contains(methodNode.modifiers, "strictfp")) {
+            this._addTag(_operation, Core.TK_BOOLEAN, "strictfp", true);
+        }
 
         // Formal Parameters
         if (methodNode.parameters && methodNode.parameters.length > 0) {
             for (i = 0, len = methodNode.parameters.length; i < len; i++) {
                 var parameterNode = methodNode.parameters[i];
+                parameterNode.compilationUnitNode = methodNode.compilationUnitNode;
                 this.translateParameter(options, _operation, parameterNode);
             }
         }
@@ -934,7 +1054,7 @@ define(function (require, exports, module) {
             this._typedFeaturePendings.push({
                 namespace: namespace,
                 feature: _returnParam,
-                node: methodNode.type
+                node: methodNode
             });
             _operation.parameters.push(_returnParam);
         }
@@ -943,10 +1063,12 @@ define(function (require, exports, module) {
         if (methodNode.throws) {
             for (i = 0, len = methodNode.throws.length; i < len; i++) {
                 var _throwNode = methodNode.throws[i];
-                this._throwPendings.push({
+                var _throwPending = {
                     operation: _operation,
-                    node: _throwNode
-                });
+                    node: _throwNode,
+                    compilationUnitNode: this._currentCompilationUnit
+                };
+                this._throwPendings.push(_throwPending);
             }
         }
 
@@ -978,7 +1100,7 @@ define(function (require, exports, module) {
         this._typedFeaturePendings.push({
             namespace: namespace._parent,
             feature: _parameter,
-            node: parameterNode.type
+            node: parameterNode
         });
     };
 

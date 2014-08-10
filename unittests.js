@@ -13,7 +13,7 @@
  */
 
 /*jslint vars: true, plusplus: true, devel: true, browser: true, nomen: true, indent: 4, maxerr: 50 */
-/*global define, describe, _, it, xit, expect, beforeEach, afterEach, waitsFor, runs, $, type, staruml, waitsForDone, java7 */
+/*global define, describe, _, it, xit, expect, beforeFirst, afterLast, spyOn, beforeEach, afterEach, waitsFor, runs, $, type, staruml, waitsForDone, java7 */
 
 define(function (require, exports, module) {
     "use strict";
@@ -30,10 +30,10 @@ define(function (require, exports, module) {
         UML             = staruml.getModule("uml/UML");
 
     describe("Java", function () {
-        
-        
-        
-        
+
+
+
+
         describe("Java Reverse Engineering", function () {
             var testPath = FileUtils.getNativeModuleDirectoryPath(module) + "/unittest-files",
                 testWindow;
@@ -49,7 +49,7 @@ define(function (require, exports, module) {
                     Commands            = testWindow.staruml.test.Commands;
                     FileSystem          = testWindow.staruml.test.FileSystem;
                     Dialogs             = testWindow.staruml.test.Dialogs;
-                    
+
                     // Reverse Java Codes in "/unittest-files/reverse/*.java"
                     var filePath;
 
@@ -67,7 +67,7 @@ define(function (require, exports, module) {
                         var promise = CommandManager.execute("java.reverse");
                         waitsForDone(promise, "java.reverse", 5000); // java reverse may takes long time.
                     });
-                                        
+
                 });
             });
 
@@ -83,7 +83,7 @@ define(function (require, exports, module) {
                     var promise = CommandManager.execute(Commands.FILE_CLOSE);
                     waitsForDone(promise);
                 });
-                
+
                 runs(function () {
                     testWindow          = null;
                     Repository          = null;
@@ -108,7 +108,7 @@ define(function (require, exports, module) {
                     return e.name === name;
                 });
             }
-            
+
             /** Expect a file to exist (failing test if not) and then delete it */
             function expectAndDelete(fullPath) {
                 runs(function () {
@@ -202,6 +202,22 @@ define(function (require, exports, module) {
                 });
             });
 
+            it("can reverse Java Field Collection Types", function () {
+                runs(function () {
+                    expect(find("stringListField") instanceof type.UMLAttribute).toBe(true);
+                    expect(find("stringListField").type).toEqual("String");
+                    expect(find("stringListField").multiplicity).toEqual("*");
+                    expect(find("stringListField").tags[0].name).toEqual("collection");
+                    expect(find("stringListField").tags[0].value).toEqual("java.util.List");
+
+                    expect(find("classTestListField") instanceof type.UMLAssociationEnd).toBe(true);
+                    expect(find("classTestListField").reference).toEqual(find("ClassTest"));
+                    expect(find("classTestListField").multiplicity).toEqual("*");
+                    expect(find("classTestListField").tags[0].name).toEqual("collection");
+                    expect(find("classTestListField").tags[0].value).toEqual("ArrayList");
+                });
+            });
+
             it("can reverse Java Multiple Field Variables", function () {
                 runs(function () {
                     expect(find("field1") instanceof type.UMLAttribute).toBe(true);
@@ -210,7 +226,7 @@ define(function (require, exports, module) {
                     expect(find("field4") instanceof type.UMLAttribute).toBe(true);
                 });
             });
-            
+
             it("can reverse Java Field Modifiers", function () {
                 runs(function () {
                     expect(find("staticField").isStatic).toEqual(true);
@@ -222,7 +238,7 @@ define(function (require, exports, module) {
                     expect(find("volatileField").tags[0].checked).toEqual(true);
                 });
             });
-            
+
             it("can reverse Java Field Initializers", function () {
                 runs(function () {
                     expect(find("intFieldInitializer").defaultValue).toEqual("10");
@@ -232,9 +248,9 @@ define(function (require, exports, module) {
                     expect(find("objectFieldInitializer").defaultValue).toEqual("null");
                 });
             });
-            
+
         });
-        
+
     });
-        
+
 });
