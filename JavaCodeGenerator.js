@@ -22,12 +22,7 @@
  */
 
 // TODO: Generate AnnotationType
-// TODO: Which type will be used for multiplicity? (e.g. Array, Vector, ArrayList, Set, ...)
-// TODO: Generate "return ?" in Method
-// TODO: Collection Type.
 // TODO: Word Wrap in JavaDoc
-// TODO: Abstract method do not have body
-// TODO: Class should be "abstract" it has at least one abstract method
 // TODO: Generate method returns $.Promise
 
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50, regexp: true */
@@ -43,7 +38,6 @@ define(function (require, exports, module) {
         UML        = staruml.getModule("uml/UML");
 
     var CodeGenUtils = require("CodeGenUtils");
-
     
     /**
      * Java Code Generator
@@ -106,7 +100,7 @@ define(function (require, exports, module) {
             codeWriter = new CodeGenUtils.CodeWriter(this.getIndentString(options));
             this.writePackageDeclaration(codeWriter, elem, options);
             codeWriter.writeLine();
-            codeWriter.writeLine("import java.util.ArrayList;");
+            codeWriter.writeLine("import java.util.*;");
             codeWriter.writeLine();
             this.writeClass(codeWriter, elem, options);
 
@@ -122,7 +116,7 @@ define(function (require, exports, module) {
             codeWriter = new CodeGenUtils.CodeWriter(this.getIndentString(options));
             this.writePackageDeclaration(codeWriter, elem, options);
             codeWriter.writeLine();
-            codeWriter.writeLine("import java.util.ArrayList;");
+            codeWriter.writeLine("import java.util.*;");
             codeWriter.writeLine();
             this.writeInterface(codeWriter, elem, options);
 
@@ -191,7 +185,7 @@ define(function (require, exports, module) {
         // strictfp
         // const
         // native
-        // synchronized
+        // TODO synchronized
         return modifiers;
     };
 
@@ -241,7 +235,11 @@ define(function (require, exports, module) {
         // multiplicity
         if (elem.multiplicity) {
             if (_.contains(["0..*", "1..*", "*"], elem.multiplicity.trim())) {
-                _type = "ArrayList<" + _type + ">";
+                if (elem.isOrdered === true) {
+                    _type = "List<" + _type + ">";
+                } else {
+                    _type = "Set<" + _type + ">";
+                }
             } else if (elem.multiplicity.match(/^\d+$/)) { // number
                 _type += "[]";
             }
@@ -289,7 +287,7 @@ define(function (require, exports, module) {
         if (elem.name.length > 0) {
             var terms = [];
             // Doc
-            this.writeDoc(codeWriter, "Constructor", options);
+            this.writeDoc(codeWriter, elem.documentation, options);
             // Visibility
             var visibility = this.getVisibility(elem);
             if (visibility) {
@@ -339,26 +337,30 @@ define(function (require, exports, module) {
             var terms = [];
             var params = elem.getNonReturnParameters();
             var returnParam = elem.getReturnParameter();
+            
             // doc
             var doc = elem.documentation.trim();
             _.each(params, function (param) {
-                doc += "\n@param " + param.documentation;
+                doc += "\n@param " + param.name + " " + param.documentation;
             });
             if (returnParam) {
                 doc += "\n@return " + returnParam.documentation;
             }
             this.writeDoc(codeWriter, doc, options);
+            
             // modifiers
             var _modifiers = this.getModifiers(elem);
             if (_modifiers.length > 0) {
                 terms.push(_modifiers.join(" "));
             }
+            
             // type
             if (returnParam) {
                 terms.push(this.getType(returnParam));
             } else {
                 terms.push("void");
             }
+            
             // name + parameters
             var paramTerms = [];
             for (var i = 0, len = params.length; i < len; i++) {
@@ -370,12 +372,35 @@ define(function (require, exports, module) {
                 paramTerms.push(s);
             }
             terms.push(elem.name + "(" + paramTerms.join(", ") + ")");
-            if (skipBody === true) {
+            
+            // body
+            if (skipBody === true || _.contains(_modifiers, "abstract")) {
                 codeWriter.writeLine(terms.join(" ") + ";");
             } else {
                 codeWriter.writeLine(terms.join(" ") + " {");
                 codeWriter.indent();
-                codeWriter.writeLine("// PUT CODE HERE");
+                codeWriter.writeLine("// TODO implement here");
+                
+                // return statement
+                if (returnParam) {
+                    var returnType = this.getType(returnParam);
+                    if (returnType === "boolean") {
+                        codeWriter.writeLine("return false;");
+                    } else if (returnType === "int" || returnType === "long" || returnType === "short" || returnType === "byte") {
+                        codeWriter.writeLine("return 0;");
+                    } else if (returnType === "float") {
+                        codeWriter.writeLine("return 0.0f;");
+                    } else if (returnType === "double") {
+                        codeWriter.writeLine("return 0.0d;");
+                    } else if (returnType === "char") {
+                        codeWriter.writeLine("return '0';");
+                    } else if (returnType === "String") {
+                        codeWriter.writeLine('return "";');
+                    } else {
+                        codeWriter.writeLine("return null;");
+                    }
+                }
+                               
                 codeWriter.outdent();
                 codeWriter.writeLine("}");
             }
@@ -389,25 +414,33 @@ define(function (require, exports, module) {
      */
     JavaCodeGenerator.prototype.writeClass = function (codeWriter, elem, options) {
         var terms = [];
+        
         // Doc
         var doc = elem.documentation.trim();
         if (Repository.getProject().author && Repository.getProject().author.length > 0) {
             doc += "\n@author " + Repository.getProject().author;
         }
         this.writeDoc(codeWriter, doc, options);
+        
         // Modifiers
         var _modifiers = this.getModifiers(elem);
+        if (_.some(elem.operations, function (op) { return op.isAbstract === true; })) {
+            _modifiers.push("abstract");
+        }
         if (_modifiers.length > 0) {
             terms.push(_modifiers.join(" "));
         }
+        
         // Class
         terms.push("class");
         terms.push(elem.name);
+        
         // Extends
         var _extends = this.getSuperClasses(elem);
         if (_extends.length > 0) {
             terms.push("extends " + _extends[0].name);
         }
+        
         // Implements
         var _implements = this.getSuperInterfaces(elem);
         if (_implements.length > 0) {

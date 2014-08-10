@@ -24,7 +24,8 @@
 
 // TODO: Field를 Association으로 변환하는 경우, Directional은 쉽지만 Bidirectional은 어떻게 할건지?
 //       무조건 directional로 하든지, 아니면 options의 bidirectional = true 이면 임의로 Bidirectional로 생성하는 방법.
-// TODO: JavaDoc을 Documentation으로.
+// TODO: JavaDoc to Documentation.
+// TODO: Reverse Collection Types  (List, Set, ...)
 
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50, regexp: true */
 /*global define, $, _, window, staruml, type, document, java7 */
@@ -258,26 +259,35 @@ define(function (require, exports, module) {
             var _asso = this._associationPendings[i];
             _typeName = _asso.node.type.qualifiedName.name;
             _type = this._findType(_asso.classifier, _typeName);
+            
             // if type found, add as Association
             if (_type) {
                 for (j = 0, len2 = _asso.node.variables.length; j < len2; j++) {
                     var variableNode = _asso.node.variables[j];
+                    
                     // Create Association
                     var association = new type.UMLAssociation();
                     association._parent = _asso.classifier;
                     _asso.classifier.ownedElements.push(association);
+                    
                     // Set End1
                     association.end1.reference = _asso.classifier;
                     association.end1.name = "";
                     association.end1.visibility = UML.VK_PACKAGE;
                     association.end1.navigable = false;
-                    // TODO: Multiplicity
-                    // TODO: Aggregation?
+                    
                     // Set End2
                     association.end2.reference = _type;
                     association.end2.name = variableNode.name;
                     association.end2.visibility = this._getVisibility(_asso.node.modifiers);
                     association.end2.navigable = true;
+                    // TODO: multiplicity (array or java.util.List, java.util.Set)
+                    // TODO: aggregation
+                    // TODO: static
+                    // TODO: final
+                    // TODO: volatile
+                    // TODO: transient
+                    
                 }
             // if type not found, add as Attribute
             } else {
@@ -665,7 +675,21 @@ define(function (require, exports, module) {
         _class = new type.UMLClass();
         _class._parent = namespace;
         _class.name = classNode.name;
+        
+        // Access Modifiers
         _class.visibility = this._getVisibility(classNode.modifiers);
+        
+        // Abstract Class
+        if (_.contains(classNode.modifiers, "abstract")) {
+            _class.isAbstract = true;
+        }
+        
+        // Final Class
+        if (_.contains(classNode.modifiers, "final")) {
+            _class.isFinalSpecification = true;
+            _class.isLeaf = true;
+        }
+        
         namespace.ownedElements.push(_class);
 
         // Register Extends for 2nd Phase Translation
@@ -806,6 +830,7 @@ define(function (require, exports, module) {
         var i, len;
         if (fieldNode.variables && fieldNode.variables.length > 0) {
             for (i = 0, len = fieldNode.variables.length; i < len; i++) {
+                var _tag;
                 var variableNode = fieldNode.variables[i];
 
                 // Create Attribute
@@ -813,19 +838,43 @@ define(function (require, exports, module) {
                 _attribute._parent = namespace;
                 _attribute.name = variableNode.name;
 
-                // Modifiers
+                // Access Modifiers
                 _attribute.visibility = this._getVisibility(fieldNode.modifiers);
                 if (variableNode.initializer) {
                     _attribute.defaultValue = variableNode.initializer;
                 }
+                
+                // Static Modifier
                 if (_.contains(fieldNode.modifiers, "static")) {
                     _attribute.isStatic = true;
                 }
+                
+                // Final Modifier
                 if (_.contains(fieldNode.modifiers, "final")) {
                     _attribute.isLeaf = true;
                     _attribute.isReadOnly = true;
                 }
-                // TODO: volatile, transient
+                
+                // Volatile Modifier
+                if (_.contains(fieldNode.modifiers, "volatile")) {
+                    _tag = new type.Tag();
+                    _tag._parent = _attribute;
+                    _tag.name = "volatile";
+                    _tag.kind = Core.TK_BOOLEAN;
+                    _tag.checked = true;
+                    _attribute.tags.push(_tag);
+                }
+
+                // Transient Modifier
+                if (_.contains(fieldNode.modifiers, "transient")) {
+                    _tag = new type.Tag();
+                    _tag._parent = _attribute;
+                    _tag.name = "transient";
+                    _tag.kind = Core.TK_BOOLEAN;
+                    _tag.checked = true;
+                    _attribute.tags.push(_tag);
+                }
+                
                 namespace.attributes.push(_attribute);
 
                 // Add to _typedFeaturePendings
@@ -864,7 +913,8 @@ define(function (require, exports, module) {
         if (_.contains(methodNode.modifiers, "synchronized")) {
             _operation.concurrency = UML.CCK_CONCURRENT;
         }
-        // TODO: modifiers: native, strictfp
+        // TODO: native (to Tag?)
+        // TODO: strictfp (to Tag?)
 
         // Formal Parameters
         if (methodNode.parameters && methodNode.parameters.length > 0) {
