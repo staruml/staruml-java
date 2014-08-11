@@ -1,7 +1,7 @@
 Java Extension for StarUML 2
 ============================
 
-This extension for StarUML(http://staruml.io) support to generate Java code from UML model and to reverse Java code to UML model. Install this extension from Extension Manager of StarUML.
+This extension for StarUML(http://staruml.io) support to generate Java code from UML model and to reverse Java code to UML model. Install this extension from Extension Manager of StarUML. It is based on Java 1.7 specification.
 
 Java Code Generation
 --------------------
@@ -102,12 +102,13 @@ Belows are the rules to convert from Java source code to UML model elements.
 
 * converted to _UMLClass_.
 * Class name to `name` property.
+* Type parameters to _UMLTemplateParameter_.
 * Access modifier `public`, `protected` and  `private` to `visibility` property.
 * `abstract` modifier to `isAbstract` property.
 * `final` modifier to `isLeaf` property.
-* Default constructor is generated.
+* Constructors to _UMLOperation_ with stereotype `<<constructor>>`.
 * All contained types (_UMLClass_, _UMLInterface_, _UMLEnumeration_) are generated as inner type definition.
-* Documentation property to JavaDoc comment.
+* JavaDoc comment to Documentation.
 
 
 ### Java Field (to UMLAttribute)
@@ -126,6 +127,7 @@ Belows are the rules to convert from Java source code to UML model elements.
 * `transient` modifier to a Tag with `name="transient"` and `checked=true` .
 * `volatile` modifier to a Tag with `name="volatile"` and `checked=true`.
 * Initial value to `defaultValue` property.
+* JavaDoc comment to Documentation.
 
 ### Java Field (to UMLAssociation)
 
@@ -137,16 +139,41 @@ Belows are the rules to convert from Java source code to UML model elements.
     * Otherwise : converted to _UMLAttribute_, not _UMLAssociation_.
 
 * Access modifier `public`, `protected` and  `private` to `visibility` property.
-
+* JavaDoc comment to Documentation.
 
 ### Java Method
 
 * converted to _UMLOperation_.
+* Type parameters to _UMLTemplateParameter_.
 * Access modifier `public`, `protected` and  `private` to `visibility` property.
+* `static` modifier to `isStatic` property.
+* `abstract` modifier to `isAbstract` property.
+* `final` modifier to `isLeaf` property.
+* `synchronized` modifier to `concurrency="concurrent"` property.
+* `native` modifier to a Tag with `name="native"` and `checked=true`.
+* `strictfp` modifier to a Tag with `name="strictfp"` and `checked=true`.
+* `throws` clauses to `raisedExceptions` property.
+* JavaDoc comment to Documentation.
 
 ### Java Interface
 
+* converted to _UMLInterface_.
+* Class name to `name` property.
+* Type parameters to _UMLTemplateParameter_.
+* Access modifier `public`, `protected` and  `private` to `visibility` property.
+* JavaDoc comment to Documentation.
+
 ### Java Enum
+
+* converted to _UMLEnumeration_.
+* Enum name to `name` property.
+* Type parameters to _UMLTemplateParameter_.
+* Access modifier `public`, `protected` and  `private` to `visibility` property.
+* Enum constants are converted to _UMLEnumerationLiteral_.
+* JavaDoc comment to Documentation.
 
 ### Java AnnotationType
 
+* converted to _UMLClass_ with stereotype `<<annotationType>>`.
+* Annotation type elements to _UMLOperation_. (Default value to a Tag with `name="default"`).
+* JavaDoc comment to Documentation.

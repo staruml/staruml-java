@@ -43,7 +43,7 @@
 %%
 compilationUnit
     :	packageDeclaration EOF
-        {
+        {        
             return {
                 "node": "CompilationUnit",
                 "package": $1
@@ -211,17 +211,19 @@ typeDeclaration
     ;
 
 classDeclaration
-    :   CLASS Identifier classInheritance interfaceImplentation classBody
+    :   CLASS Identifier classInheritance interfaceImplentation commentReturn classBody
         {
             $$ = {
                 "node": "Class",
                 "name": $2,
                 "extends": $3,
                 "implements": $4,
-                "body": $5
+                "body": $6,
+                "comment": $5
             };
+            
         }
-    |   CLASS Identifier typeParameters classInheritance interfaceImplentation classBody
+    |   CLASS Identifier typeParameters classInheritance interfaceImplentation commentReturn classBody
         {
             $$ = {
                 "node": "Class",
@@ -229,7 +231,8 @@ classDeclaration
                 "typeParameters": $3,
                 "extends": $4,
                 "implements": $5,
-                "body": $6
+                "body": $7,
+                "comment": $6 
             };
         }
     ;
@@ -292,13 +295,14 @@ typeParameters
     ;
 
 enumDeclaration
-    :   ENUM Identifier interfaceImplentation enumBody
+    :   ENUM Identifier interfaceImplentation commentReturn enumBody
         {
             $$ = {
                 "node": "Enum",
                 "name": $2,
                 "implements": $3,
-                "body": $4
+                "body": $5,
+                "comment": $4
             };
         }
     ;
@@ -339,7 +343,7 @@ enumBodyDeclaration
     ;
 
 enumConstants
-    :   annotations Identifier enumConstantArguments enumConstantClassBody
+    :   annotations Identifier enumConstantArguments commentReturn enumConstantClassBody
         {
             $$ = [
                 {
@@ -347,11 +351,12 @@ enumConstants
                     "annotations": $1,
                     "name": $2,
                     "arguments": $3,
-                    "body": $4
+                    "body": $5,
+                    "comment": $4
                 }
             ];
         }
-    |   enumConstants COMMA annotations Identifier enumConstantArguments enumConstantClassBody
+    |   enumConstants COMMA annotations Identifier enumConstantArguments commentReturn enumConstantClassBody
         {
             $1.push(
                 {
@@ -359,7 +364,8 @@ enumConstants
                     "annotations": $3,
                     "name": $4,
                     "arguments": $5,
-                    "body": $6
+                    "body": $7,
+                    "comment": $6
                 }
             );
             $$ = $1;
@@ -376,24 +382,26 @@ enumConstantClassBody
     ;
 
 interfaceDeclaration
-    :   INTERFACE Identifier optionalTypeParameters interfaceBody
+    :   INTERFACE Identifier optionalTypeParameters commentReturn interfaceBody
         {
             $$ = {
                 "node": "Interface",
                 "name": $2,
-                "body": $4
+                "body": $5,
+                "comment": $4
             };
             if ($3) {
                 $$["typeParameters"] = $3;
             }
         }
-    |   INTERFACE Identifier optionalTypeParameters EXTENDS typeList interfaceBody
+    |   INTERFACE Identifier optionalTypeParameters EXTENDS typeList commentReturn interfaceBody
         {
             $$ = {
                 "node": "Interface",
                 "name": $2,
                 "extends": $5,
-                "body": $6
+                "body": $7,
+                "comment": $6
             };
             if ($3) {
                 $$["typeParameters"] = $3;
@@ -548,7 +556,7 @@ modifiers
 
 classMemberDeclaration
     :   /* Methods */
-        VOID Identifier formalParameters arrayDimensionBracks throwsList block
+        VOID Identifier formalParameters arrayDimensionBracks throwsList commentReturn block
         {
             $$ = {
                 "node": "Method",
@@ -556,59 +564,11 @@ classMemberDeclaration
                 "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
                 "arrayDimension": $4,
                 "parameters": $3,
-                "throws": $5
+                "throws": $5,
+                "comment": $6
             };
         }
-    |   VOID Identifier formalParameters arrayDimensionBracks block
-        {
-            $$ = {
-                "node": "Method",
-                "name": $2,
-                "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
-                "arrayDimension": $4,
-                "parameters": $3
-            };
-        }
-    |   VOID Identifier formalParameters block
-        {
-            $$ = {
-                "node": "Method",
-                "name": $2,
-                "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
-                "parameters": $3
-            };
-        }
-    |   type Identifier formalParameters arrayDimensionBracks throwsList block
-        {
-            $$ = {
-                "node": "Method",
-                "name": $2,
-                "type": $1,
-                "arrayDimension": $4,
-                "parameters": $3,
-                "throws": $5
-            };
-        }
-    |   type Identifier formalParameters arrayDimensionBracks block
-        {
-            $$ = {
-                "node": "Method",
-                "name": $2,
-                "type": $1,
-                "arrayDimension": $4,
-                "parameters": $3
-            };
-        }
-    |   type Identifier formalParameters block
-        {
-            $$ = {
-                "node": "Method",
-                "name": $2,
-                "type": $1,
-                "parameters": $3
-            };
-        }
-    |   VOID Identifier formalParameters arrayDimensionBracks throwsList SEMI
+    |   VOID Identifier formalParameters arrayDimensionBracks commentReturn block
         {
             $$ = {
                 "node": "Method",
@@ -616,29 +576,20 @@ classMemberDeclaration
                 "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
                 "arrayDimension": $4,
                 "parameters": $3,
-                "throws": $5
+                "comment": $5
             };
         }
-    |   VOID Identifier formalParameters arrayDimensionBracks SEMI
+    |   VOID Identifier formalParameters commentReturn block
         {
             $$ = {
                 "node": "Method",
                 "name": $2,
                 "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
-                "arrayDimension": $4,
-                "parameters": $3
+                "parameters": $3,
+                "comment": $4
             };
         }
-    |   VOID Identifier formalParameters SEMI
-        {
-            $$ = {
-                "node": "Method",
-                "name": $2,
-                "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
-                "parameters": $3
-            };
-        }
-    |   type Identifier formalParameters arrayDimensionBracks throwsList SEMI
+    |   type Identifier formalParameters arrayDimensionBracks throwsList commentReturn block
         {
             $$ = {
                 "node": "Method",
@@ -646,29 +597,98 @@ classMemberDeclaration
                 "type": $1,
                 "arrayDimension": $4,
                 "parameters": $3,
-                "throws": $5
+                "throws": $5,
+                "comment": $6
             };
         }
-    |   type Identifier formalParameters arrayDimensionBracks SEMI
+    |   type Identifier formalParameters arrayDimensionBracks commentReturn block
         {
             $$ = {
                 "node": "Method",
                 "name": $2,
                 "type": $1,
                 "arrayDimension": $4,
-                "parameters": $3
+                "parameters": $3,
+                "comment": $5
             };
         }
-    |   type Identifier formalParameters SEMI
+    |   type Identifier formalParameters commentReturn block
         {
             $$ = {
                 "node": "Method",
                 "name": $2,
                 "type": $1,
-                "parameters": $3
+                "parameters": $3,
+                "comment": $4
             };
         }
-    |   typeParameters VOID Identifier formalParameters arrayDimensionBracks throwsList block
+    |   VOID Identifier formalParameters arrayDimensionBracks throwsList commentReturn SEMI
+        {
+            $$ = {
+                "node": "Method",
+                "name": $2,
+                "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
+                "arrayDimension": $4,
+                "parameters": $3,
+                "throws": $5,
+                "comment": $6
+            };
+        }
+    |   VOID Identifier formalParameters arrayDimensionBracks commentReturn SEMI
+        {
+            $$ = {
+                "node": "Method",
+                "name": $2,
+                "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
+                "arrayDimension": $4,
+                "parameters": $3,
+                "comment": $5
+            };
+        }
+    |   VOID Identifier formalParameters commentReturn SEMI
+        {
+            $$ = {
+                "node": "Method",
+                "name": $2,
+                "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
+                "parameters": $3,
+                "comment": $4
+            };
+        }
+    |   type Identifier formalParameters arrayDimensionBracks throwsList commentReturn SEMI
+        {
+            $$ = {
+                "node": "Method",
+                "name": $2,
+                "type": $1,
+                "arrayDimension": $4,
+                "parameters": $3,
+                "throws": $5,
+                "comment": $6
+            };
+        }
+    |   type Identifier formalParameters arrayDimensionBracks commentReturn SEMI
+        {
+            $$ = {
+                "node": "Method",
+                "name": $2,
+                "type": $1,
+                "arrayDimension": $4,
+                "parameters": $3,
+                "comment": $5
+            };
+        }
+    |   type Identifier formalParameters commentReturn SEMI
+        {
+            $$ = {
+                "node": "Method",
+                "name": $2,
+                "type": $1,
+                "parameters": $3,
+                "comment": $4
+            };
+        }
+    |   typeParameters VOID Identifier formalParameters arrayDimensionBracks throwsList commentReturn block
         {
             $$ = {
                 "node": "Method",
@@ -677,64 +697,11 @@ classMemberDeclaration
                 "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
                 "arrayDimension": $5,
                 "parameters": $4,
-                "throws": $6
+                "throws": $6,
+                "comment": $7
             };
         }
-    |   typeParameters VOID Identifier formalParameters arrayDimensionBracks block
-        {
-            $$ = {
-                "node": "Method",
-                "typeParameters": $1,
-                "name": $3,
-                "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
-                "arrayDimension": $5,
-                "parameters": $4
-            };
-        }
-    |   typeParameters VOID Identifier formalParameters block
-        {
-            $$ = {
-                "node": "Method",
-                "typeParameters": $1,
-                "name": $3,
-                "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
-                "parameters": $4
-            };
-        }
-    |   typeParameters type Identifier formalParameters arrayDimensionBracks throwsList block
-        {
-            $$ = {
-                "node": "Method",
-                "typeParameters": $1,
-                "name": $3,
-                "type": $2,
-                "arrayDimension": $5,
-                "parameters": $4,
-                "throws": $6
-            };
-        }
-    |   typeParameters type Identifier formalParameters arrayDimensionBracks block
-        {
-            $$ = {
-                "node": "Method",
-                "typeParameters": $1,
-                "name": $3,
-                "type": $2,
-                "arrayDimension": $5,
-                "parameters": $4
-            };
-        }
-    |   typeParameters type Identifier formalParameters block
-        {
-            $$ = {
-                "node": "Method",
-                "typeParameters": $1,
-                "name": $3,
-                "type": $2,
-                "parameters": $4
-            };
-        }
-    |   typeParameters VOID Identifier formalParameters arrayDimensionBracks throwsList SEMI
+    |   typeParameters VOID Identifier formalParameters arrayDimensionBracks commentReturn block
         {
             $$ = {
                 "node": "Method",
@@ -743,31 +710,21 @@ classMemberDeclaration
                 "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
                 "arrayDimension": $5,
                 "parameters": $4,
-                "throws": $6
+                "comment": $6
             };
         }
-    |   typeParameters VOID Identifier formalParameters arrayDimensionBracks SEMI
+    |   typeParameters VOID Identifier formalParameters commentReturn block
         {
             $$ = {
                 "node": "Method",
                 "typeParameters": $1,
                 "name": $3,
                 "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
-                "arrayDimension": $5,
-                "parameters": $4
+                "parameters": $4,
+                "comment": $5
             };
         }
-    |   typeParameters VOID Identifier formalParameters SEMI
-        {
-            $$ = {
-                "node": "Method",
-                "typeParameters": $1,
-                "name": $3,
-                "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
-                "parameters": $4
-            };
-        }
-    |   typeParameters type Identifier formalParameters arrayDimensionBracks throwsList SEMI
+    |   typeParameters type Identifier formalParameters arrayDimensionBracks throwsList commentReturn block
         {
             $$ = {
                 "node": "Method",
@@ -776,10 +733,11 @@ classMemberDeclaration
                 "type": $2,
                 "arrayDimension": $5,
                 "parameters": $4,
-                "throws": $6
+                "throws": $6,
+                "comment": $7
             };
         }
-    |   typeParameters type Identifier formalParameters arrayDimensionBracks SEMI
+    |   typeParameters type Identifier formalParameters arrayDimensionBracks commentReturn block
         {
             $$ = {
                 "node": "Method",
@@ -787,47 +745,124 @@ classMemberDeclaration
                 "name": $3,
                 "type": $2,
                 "arrayDimension": $5,
-                "parameters": $4
+                "parameters": $4,
+                "comment": $6
             };
         }
-    |   typeParameters type Identifier formalParameters SEMI
+    |   typeParameters type Identifier formalParameters commentReturn block
         {
             $$ = {
                 "node": "Method",
                 "typeParameters": $1,
                 "name": $3,
                 "type": $2,
-                "parameters": $4
+                "parameters": $4,
+                "comment": $5
+            };
+        }
+    |   typeParameters VOID Identifier formalParameters arrayDimensionBracks throwsList commentReturn SEMI
+        {
+            $$ = {
+                "node": "Method",
+                "typeParameters": $1,
+                "name": $3,
+                "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
+                "arrayDimension": $5,
+                "parameters": $4,
+                "throws": $6,
+                "comment": $7
+            };
+        }
+    |   typeParameters VOID Identifier formalParameters arrayDimensionBracks commentReturn SEMI
+        {
+            $$ = {
+                "node": "Method",
+                "typeParameters": $1,
+                "name": $3,
+                "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
+                "arrayDimension": $5,
+                "parameters": $4,
+                "comment": $6
+            };
+        }
+    |   typeParameters VOID Identifier formalParameters commentReturn SEMI
+        {
+            $$ = {
+                "node": "Method",
+                "typeParameters": $1,
+                "name": $3,
+                "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
+                "parameters": $4,
+                "comment": $5
+            };
+        }
+    |   typeParameters type Identifier formalParameters arrayDimensionBracks throwsList commentReturn SEMI
+        {
+            $$ = {
+                "node": "Method",
+                "typeParameters": $1,
+                "name": $3,
+                "type": $2,
+                "arrayDimension": $5,
+                "parameters": $4,
+                "throws": $6,
+                "comment": $7
+            };
+        }
+    |   typeParameters type Identifier formalParameters arrayDimensionBracks commentReturn SEMI
+        {
+            $$ = {
+                "node": "Method",
+                "typeParameters": $1,
+                "name": $3,
+                "type": $2,
+                "arrayDimension": $5,
+                "parameters": $4,
+                "comment": $6
+            };
+        }
+    |   typeParameters type Identifier formalParameters commentReturn SEMI
+        {
+            $$ = {
+                "node": "Method",
+                "typeParameters": $1,
+                "name": $3,
+                "type": $2,
+                "parameters": $4,
+                "comment": $5
             };
         }
 
     /* Fields */
-    |   type variableDeclarators SEMI
+    |   type variableDeclarators commentReturn SEMI
         {
             $$ = {
                 "node": "Field",
                 "type": $1,
-                "variables": $2
+                "variables": $2,
+                "comment": $3
             };
         }
 
     /* Constructor */
-    |   Identifier formalParameters throwsList block
+    |   Identifier formalParameters throwsList commentReturn block
         {
             $$ = {
                 "node": "Constructor",
                 "name": $1,
                 "parameters": $2,
-                "throws": $3
+                "throws": $3,
+                "comment": $4
             };
         }
-    |   typeParameters Identifier formalParameters throwsList block
+    |   typeParameters Identifier formalParameters throwsList commentReturn block
         {
             $$ = {
                 "node": "Constructor",
                 "name": $2,
                 "parameters": $3,
-                "throws": $4
+                "throws": $4,
+                "comment": $5
             };
         }
 
@@ -837,7 +872,6 @@ classMemberDeclaration
     |   enumDeclaration
     |   annotationTypeDeclaration
     ;
-
 
 throwsList
     : %empty /* empty */
@@ -878,15 +912,16 @@ interfaceBodyDeclaration
     ;
 
 interfaceMemberDeclaration
-    :   type constDelarators SEMI
+    :   type constDelarators commentReturn SEMI
         {
             $$ = {
                 "node": "Field",
                 "type": $1,
-                "variables": $2
+                "variables": $2,
+                "comment": $3
             };
         }
-    |   VOID Identifier formalParameters arrayDimensionBracks throwsList SEMI
+    |   VOID Identifier formalParameters arrayDimensionBracks throwsList commentReturn SEMI
         {
             $$ = {
                 "node": "Method",
@@ -894,29 +929,32 @@ interfaceMemberDeclaration
                 "arrayDimension": $4,
                 "name": $2,
                 "parameters": $3,
-                "throws": $5
+                "throws": $5,
+                "comment": $6
             };
         }
-    |   VOID Identifier formalParameters arrayDimensionBracks SEMI
+    |   VOID Identifier formalParameters arrayDimensionBracks commentReturn SEMI
         {
             $$ = {
                 "node": "Method",
                 "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
                 "arrayDimension": $4,
                 "name": $2,
-                "parameters": $3
+                "parameters": $3,
+                "comment": $5
             };
         }
-    |   VOID Identifier formalParameters SEMI
+    |   VOID Identifier formalParameters commentReturn SEMI
         {
             $$ = {
                 "node": "Method",
                 "type": { "node": "Type", "qualifiedName": { "node": "QualifiedName", "name": "void" }},
                 "name": $2,
-                "parameters": $3
+                "parameters": $3,
+                "comment": $4
             };
         }
-    |   type Identifier formalParameters arrayDimensionBracks throwsList SEMI
+    |   type Identifier formalParameters arrayDimensionBracks throwsList commentReturn SEMI
         {
             $$ = {
                 "node": "Method",
@@ -924,29 +962,32 @@ interfaceMemberDeclaration
                 "arrayDimension": $4,
                 "name": $2,
                 "parameters": $3,
-                "throws": $5
+                "throws": $5,
+                "comment": $6
             };
         }
-    |   type Identifier formalParameters arrayDimensionBracks SEMI
+    |   type Identifier formalParameters arrayDimensionBracks commentReturn SEMI
         {
             $$ = {
                 "node": "Method",
                 "type": $1,
                 "arrayDimension": $4,
                 "name": $2,
-                "parameters": $3
+                "parameters": $3,
+                "comment": $5
             };
         }
-    |   type Identifier formalParameters SEMI
+    |   type Identifier formalParameters commentReturn SEMI
         {
             $$ = {
                 "node": "Method",
                 "type": $1,
                 "name": $2,
-                "parameters": $3
+                "parameters": $3,
+                "comment": $4
             };
         }
-    |   typeParameters VOID Identifier formalParameters arrayDimensionBracks throwsList SEMI
+    |   typeParameters VOID Identifier formalParameters arrayDimensionBracks throwsList commentReturn SEMI
         {
             $$ = {
                 "node": "Method",
@@ -955,10 +996,11 @@ interfaceMemberDeclaration
                 "arrayDimension": $5,
                 "name": $3,
                 "parameters": $4,
-                "throws": $6
+                "throws": $6,
+                "comment": $7
             };
         }
-    |   typeParameters VOID Identifier formalParameters arrayDimensionBracks SEMI
+    |   typeParameters VOID Identifier formalParameters arrayDimensionBracks commentReturn SEMI
         {
             $$ = {
                 "node": "Method",
@@ -966,20 +1008,22 @@ interfaceMemberDeclaration
                 "type": { "node": "Type", "name": "void" },
                 "arrayDimension": $5,
                 "name": $3,
-                "parameters": $4
+                "parameters": $4,
+                "comment": $6
             };
         }
-    |   typeParameters VOID Identifier formalParameters SEMI
+    |   typeParameters VOID Identifier formalParameters commentReturn SEMI
         {
             $$ = {
                 "node": "Method",
                 "typeParameters": $1,
                 "type": { "node": "Type", "name": "void" },
                 "name": $3,
-                "parameters": $4
+                "parameters": $4,
+                "comment": $5
             };
         }
-    |   typeParameters type Identifier formalParameters arrayDimensionBracks throwsList SEMI
+    |   typeParameters type Identifier formalParameters arrayDimensionBracks throwsList commentReturn SEMI
         {
             $$ = {
                 "node": "Method",
@@ -988,10 +1032,11 @@ interfaceMemberDeclaration
                 "arrayDimension": $5,
                 "name": $3,
                 "parameters": $4,
-                "throws": $6
+                "throws": $6,
+                "comment": $7
             };
         }
-    |   typeParameters type Identifier formalParameters arrayDimensionBracks SEMI
+    |   typeParameters type Identifier formalParameters arrayDimensionBracks commentReturn SEMI
         {
             $$ = {
                 "node": "Method",
@@ -999,17 +1044,19 @@ interfaceMemberDeclaration
                 "type": $2,
                 "arrayDimension": $5,
                 "name": $3,
-                "parameters": $4
+                "parameters": $4,
+                "comment": $6
             };
         }
-    |   typeParameters type Identifier formalParameters SEMI
+    |   typeParameters type Identifier formalParameters commentReturn SEMI
         {
             $$ = {
                 "node": "Method",
                 "typeParameters": $1,
                 "type": $2,
                 "name": $3,
-                "parameters": $4
+                "parameters": $4,
+                "comment": $5
             };
         }
     |   classDeclaration
@@ -1519,21 +1566,23 @@ elementValueList
     ;
 
 annotationTypeDeclaration
-    :   AT INTERFACE Identifier annotationTypeBody
+    :   AT INTERFACE Identifier commentReturn annotationTypeBody
         {
             $$ = {
                 "node": "AnnotationType",
                 "name": $3,
-                "body": $4
+                "body": $5,
+                "comment": $4
             };
         }
-    |   AT INTERFACE Identifier EXTENDS typeList annotationTypeBody
+    |   AT INTERFACE Identifier EXTENDS typeList commentReturn annotationTypeBody
         {
             $$ = {
                 "node": "AnnotationType",
                 "name": $3,
                 "extends": $5,
-                "body": $6
+                "body": $7,
+                "comment": $6
             };
         }
     ;
@@ -1590,23 +1639,26 @@ annotationTypeElementDeclaration
     ;
 
 annotationTypeElementRest
-    :   type annotationConstantRest SEMI
+    :   type annotationConstantRest commentReturn SEMI
         {
             $$ = {
                 "node": "Field",
                 "type": $1,
-                "variables": $2
+                "variables": $2,
+                "comment": $3
             };
         }
-    |   typeParameters type annotationMethodRest SEMI
+    |   typeParameters type annotationMethodRest commentReturn SEMI
         {
             $3["typeParameters"] = $1;
             $3["type"] = $2;
+            $3["comment"] = $4;
             $$ = $3;
         }
-    |   type annotationMethodRest SEMI
+    |   type annotationMethodRest commentReturn SEMI
         {
             $2["type"] = $1;
+            $2["comment"] = $3;
             $$ = $2;
         }
     |   classDeclaration
@@ -1955,6 +2007,16 @@ assignmentToken
 
 newCreator
     :   NEW creator
+    ;
+
+
+/* THIS RULE IS TO JUST RETURN JAVADOC COMMENT */
+commentReturn
+    :   %empty
+        {
+            $$ = yy.__currentComment;
+            yy.__currentComment = null;
+        }
     ;
 
 

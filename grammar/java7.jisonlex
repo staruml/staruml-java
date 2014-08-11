@@ -80,12 +80,18 @@ Template                        [<][^=\(\);\|\+\-\"\'\{\*\\}:]+[>]+
 
 ((("/*")))                      %{ this.begin('comment'); %}
 
-<comment>[^\*]+                 %{  //console.log(yytext); %}
+<comment>[^\*]+                 %{
+                                    if (yy.__currentComment) {
+                                        yy.__currentComment += "\n" + yytext.trim();
+                                    } else {
+                                        yy.__currentComment = yytext.trim();
+                                    }
+                                %}
 <comment>[\"]                   /* skip */                  
 <comment>[=]                    /* skip */
 <comment>[\*][=\"']*            %{
-                                    var currentChar = yytext;
-                                    //console.log("currentChar" + currentChar);
+                                    var currentChar = yytext;                                    
+                                    // console.log("currentChar" + currentChar);
                                     if(currentChar === '*') {
                                         var nxtChar = this._input[0]; // peek into next char without altering lexer's position
                                         //console.log("* match :"+yytext)
@@ -317,6 +323,13 @@ Template                        [<][^=\(\);\|\+\-\"\'\{\*\\}:]+[>]+
 "..."                           return 'ELLIPSIS';
 
 /* Identifier */
-{JavaIdentifier}                return 'Identifier';
+{JavaIdentifier}                %{
+                                    // console.log(yytext);
+                                    // console.log(this);
+                                    // console.log(yylineno);
+                                    // console.log(yylloc);
+                                    return 'Identifier';
+                                %}
+                                
 
 <<EOF>>                         return 'EOF';

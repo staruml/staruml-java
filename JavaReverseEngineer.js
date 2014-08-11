@@ -21,9 +21,6 @@
  *
  */
 
-
-// TODO: JavaDoc to Documentation.
-
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50, regexp: true */
 /*global define, $, _, window, staruml, type, document, java7 */
 define(function (require, exports, module) {
@@ -211,7 +208,6 @@ define(function (require, exports, module) {
                     self._currentCompilationUnit = ast;
                     self._currentCompilationUnit.file = file;
                     self.translateCompilationUnit(options, self._root, ast);
-                    // self._currentCompilationUnit = null;
                     result.resolve();
                 } else {
                     result.reject(err);
@@ -236,6 +232,7 @@ define(function (require, exports, module) {
         for (i = 0, len = this._extendPendings.length; i < len; i++) {
             var _extend = this._extendPendings[i];
             _typeName = _extend.node.qualifiedName.name;
+            
             _type = this._findType(_extend.classifier, _typeName, _extend.compilationUnitNode);
             if (!_type) {
                 _pathName = this._toPathName(_typeName);
@@ -745,7 +742,7 @@ define(function (require, exports, module) {
                     }
                     break;
                 case "Constructor":
-                    this.translateMethod(options, namespace, memberNode);
+                    this.translateMethod(options, namespace, memberNode, true);
                     break;
                 case "Method":
                     this.translateMethod(options, namespace, memberNode);
@@ -810,6 +807,11 @@ define(function (require, exports, module) {
             _class.isLeaf = true;
         }
 
+        // JavaDoc
+        if (classNode.comment) {
+            _class.documentation = classNode.comment;
+        }
+        
         namespace.ownedElements.push(_class);
 
         // Register Extends for 2nd Phase Translation
@@ -822,7 +824,7 @@ define(function (require, exports, module) {
             };
             this._extendPendings.push(_extendPending);
         }
-
+        
         // - 1) 타입이 소스에 있는 경우 --> 해당 타입으로 Generalization 생성
         // - 2) 타입이 소스에 없는 경우 (e.g. java.util.ArrayList) --> 타입을 생성(어디에?)한 뒤 Generalization 생성
         // 모든 타입이 생성된 다음에 Generalization (혹은 기타 Relationships)이 연결되어야 하므로, 어딘가에 등록한 다음이 2nd Phase에서 처리.
@@ -860,6 +862,12 @@ define(function (require, exports, module) {
         _interface._parent = namespace;
         _interface.name = interfaceNode.name;
         _interface.visibility = this._getVisibility(interfaceNode.modifiers);
+        
+        // JavaDoc
+        if (interfaceNode.comment) {
+            _interface.documentation = interfaceNode.comment;
+        }        
+        
         namespace.ownedElements.push(_interface);
 
         // Register Extends for 2nd Phase Translation
@@ -869,7 +877,8 @@ define(function (require, exports, module) {
                 this._extendPendings.push({
                     classifier: _interface,
                     node: _extend,
-                    kind: "interface"
+                    kind: "interface",
+                    compilationUnitNode: this._currentCompilationUnit
                 });
             }
         }
@@ -895,6 +904,12 @@ define(function (require, exports, module) {
         _enum._parent = namespace;
         _enum.name = enumNode.name;
         _enum.visibility = this._getVisibility(enumNode.modifiers);
+        
+        // JavaDoc
+        if (enumNode.comment) {
+            _enum.documentation = enumNode.comment;
+        }        
+        
         namespace.ownedElements.push(_enum);
 
         // Translate Type Parameters
@@ -919,6 +934,12 @@ define(function (require, exports, module) {
         _annotationType.name = annotationTypeNode.name;
         _annotationType.stereotype = "annotationType";
         _annotationType.visibility = this._getVisibility(annotationTypeNode.modifiers);
+        
+        // JavaDoc
+        if (annotationTypeNode.comment) {
+            _annotationType.documentation = annotationTypeNode.comment;
+        }                
+        
         namespace.ownedElements.push(_annotationType);
 
         // Translate Type Parameters
@@ -989,6 +1010,11 @@ define(function (require, exports, module) {
                     this._addTag(_attribute, Core.TK_BOOLEAN, "transient", true);
                 }
 
+                // JavaDoc
+                if (fieldNode.comment) {
+                    _attribute.documentation = fieldNode.comment;
+                }                        
+                
                 namespace.attributes.push(_attribute);
 
                 // Add to _typedFeaturePendings
@@ -1007,7 +1033,7 @@ define(function (require, exports, module) {
     /**
      * Translate Method
      */
-    JavaAnalyzer.prototype.translateMethod = function (options, namespace, methodNode) {
+    JavaAnalyzer.prototype.translateMethod = function (options, namespace, methodNode, isConstructor) {
         var i, len,
             _operation = new type.UMLOperation();
         _operation._parent = namespace;
@@ -1035,6 +1061,11 @@ define(function (require, exports, module) {
             this._addTag(_operation, Core.TK_BOOLEAN, "strictfp", true);
         }
 
+        // Constructor
+        if (isConstructor) {
+            _operation.stereotype = "constructor";
+        }
+        
         // Formal Parameters
         if (methodNode.parameters && methodNode.parameters.length > 0) {
             for (i = 0, len = methodNode.parameters.length; i < len; i++) {
@@ -1066,12 +1097,22 @@ define(function (require, exports, module) {
                 var _throwPending = {
                     operation: _operation,
                     node: _throwNode,
-                    compilationUnitNode: this._currentCompilationUnit
+                    compilationUnitNode: methodNode.compilationUnitNode
                 };
                 this._throwPendings.push(_throwPending);
             }
         }
 
+        // JavaDoc
+        if (methodNode.comment) {
+            _operation.documentation = methodNode.comment;
+        }         
+        
+        // "default" for Annotation Type Element
+        if (methodNode.defaultValue) {
+            this._addTag(_operation, Core.TK_STRING, "default", methodNode.defaultValue);
+        }
+        
         // Translate Type Parameters
         this.translateTypeParameters(options, _operation, methodNode.typeParameters);
     };
@@ -1083,6 +1124,12 @@ define(function (require, exports, module) {
         var _literal = new type.UMLEnumerationLiteral();
         _literal._parent = namespace;
         _literal.name = enumConstantNode.name;
+        
+        // JavaDoc
+        if (enumConstantNode.comment) {
+            _literal.documentation = enumConstantNode.comment;
+        }           
+        
         namespace.literals.push(_literal);
     };
 
@@ -1105,16 +1152,8 @@ define(function (require, exports, module) {
     };
 
     /**
-     *
+     * @param {string} basePath
      * @param {Object} options
-     *       options = {
-     *          path: "/User/niklaus/...",
-     *          association: true,
-     *          publicOnly: true,
-     *          typeHiarachy: true,
-     *          packageOverview: true,
-     *          packageStructure: true
-     *       }
      * @return {$.Promise}
      */
     function analyze(basePath, options) {
