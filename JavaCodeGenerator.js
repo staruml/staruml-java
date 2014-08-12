@@ -21,10 +21,6 @@
  *
  */
 
-// TODO: Generate AnnotationType
-// TODO: Word Wrap in JavaDoc
-// TODO: Generate method returns $.Promise
-
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50, regexp: true */
 /*global define, $, _, window, staruml, type, document, java7 */
 
@@ -35,6 +31,7 @@ define(function (require, exports, module) {
         Engine     = staruml.getModule("engine/Engine"),
         FileSystem = staruml.getModule("filesystem/FileSystem"),
         FileUtils  = staruml.getModule("file/FileUtils"),
+        Async      = staruml.getModule("utils/Async"),
         UML        = staruml.getModule("uml/UML");
 
     var CodeGenUtils = require("CodeGenUtils");
@@ -42,10 +39,13 @@ define(function (require, exports, module) {
     /**
      * Java Code Generator
      * @constructor
+     *
+     * @param {type.UMLPackage} baseModel
+     * @param {string} basePath generated files and directories to be placed
      */
     function JavaCodeGenerator(baseModel, basePath) {
     
-        /** @member {Element} */
+        /** @member {type.Model} */
         this.baseModel = baseModel;
         
         /** @member {string} */
@@ -53,7 +53,11 @@ define(function (require, exports, module) {
         
     }
 
-    
+    /**
+     * Return Indent String based on options
+     * @param {Object} options
+     * @return {string}
+     */
     JavaCodeGenerator.prototype.getIndentString = function (options) {
         if (options.useTab) {
             return "\t";
@@ -64,11 +68,11 @@ define(function (require, exports, module) {
             }
             return indent.join("");
         }
-    }
+    };
     
     /**
      * Generate codes from a given element
-     * @param {Element} elem
+     * @param {type.Model} elem
      * @param {string} path
      * @param {Object} options
      * @return {$.Promise}
@@ -81,36 +85,51 @@ define(function (require, exports, module) {
             codeWriter,
             file;
         
-        if (elem instanceof type.UMLPackage) {            
-            fullPath = path + "/" + elem.name,
+        // Package
+        if (elem instanceof type.UMLPackage) {
+            fullPath = path + "/" + elem.name;
             directory = FileSystem.getDirectoryForPath(fullPath);
             directory.create(function (err, stat) {
                 if (!err) {
-                    var i, len, child;
-                    for (i = 0, len = elem.ownedElements.length; i < len; i++) {
-                        child = elem.ownedElements[i];
-                        self.generate(child, fullPath, options)
-                    }
+                    Async.doSequentially(
+                        elem.ownedElements,
+                        function (child) {
+                            return self.generate(child, fullPath, options);
+                        },
+                        false
+                    ).then(result.resolve, result.reject);
                 } else {
-                    console.log("[Java] Failed to make directory - " + path);
+                    result.reject(err);
                 }
             });
         } else if (elem instanceof type.UMLClass) {
-            fullPath = path + "/" + elem.name + ".java";
-            codeWriter = new CodeGenUtils.CodeWriter(this.getIndentString(options));
-            this.writePackageDeclaration(codeWriter, elem, options);
-            codeWriter.writeLine();
-            codeWriter.writeLine("import java.util.*;");
-            codeWriter.writeLine();
-            this.writeClass(codeWriter, elem, options);
-
-            file = FileSystem.getFileForPath(fullPath);
-            FileUtils.writeText(file, codeWriter.getData(), true)
-                .done(function () {
-                })
-                .fail(function (err) {
-                    console.log("[Java] Failed to generate - " + fullPath);
-                });;            
+            
+            // AnnotationType
+            if (elem.stereotype === "annotationType") {
+                fullPath = path + "/" + elem.name + ".java";
+                codeWriter = new CodeGenUtils.CodeWriter(this.getIndentString(options));
+                this.writePackageDeclaration(codeWriter, elem, options);
+                codeWriter.writeLine();
+                codeWriter.writeLine("import java.util.*;");
+                codeWriter.writeLine();
+                this.writeAnnotationType(codeWriter, elem, options);
+                file = FileSystem.getFileForPath(fullPath);
+                FileUtils.writeText(file, codeWriter.getData(), true).then(result.resolve, result.reject);
+                
+            // Class
+            } else {
+                fullPath = path + "/" + elem.name + ".java";
+                codeWriter = new CodeGenUtils.CodeWriter(this.getIndentString(options));
+                this.writePackageDeclaration(codeWriter, elem, options);
+                codeWriter.writeLine();
+                codeWriter.writeLine("import java.util.*;");
+                codeWriter.writeLine();
+                this.writeClass(codeWriter, elem, options);
+                file = FileSystem.getFileForPath(fullPath);
+                FileUtils.writeText(file, codeWriter.getData(), true).then(result.resolve, result.reject);
+            }
+            
+        // Interface
         } else if (elem instanceof type.UMLInterface) {
             fullPath = path + "/" + elem.name + ".java";
             codeWriter = new CodeGenUtils.CodeWriter(this.getIndentString(options));
@@ -119,50 +138,47 @@ define(function (require, exports, module) {
             codeWriter.writeLine("import java.util.*;");
             codeWriter.writeLine();
             this.writeInterface(codeWriter, elem, options);
-
             file = FileSystem.getFileForPath(fullPath);
-            FileUtils.writeText(file, codeWriter.getData(), true)
-                .done(function () {
-                })
-                .fail(function (err) {
-                    console.log("[Java] Failed to generate - " + fullPath);
-                });;
+            FileUtils.writeText(file, codeWriter.getData(), true).then(result.resolve, result.reject);
+            
+        // Enum
         } else if (elem instanceof type.UMLEnumeration) {
             fullPath = path + "/" + elem.name + ".java";
             codeWriter = new CodeGenUtils.CodeWriter(this.getIndentString(options));
             this.writePackageDeclaration(codeWriter, elem, options);
             codeWriter.writeLine();
             this.writeEnum(codeWriter, elem, options);
-
             file = FileSystem.getFileForPath(fullPath);
-            FileUtils.writeText(file, codeWriter.getData(), true)
-                .done(function () {
-                })
-                .fail(function (err) {
-                    console.log("[Java] Failed to generate - " + fullPath);
-                });;
+            FileUtils.writeText(file, codeWriter.getData(), true).then(result.resolve, result.reject);
+            
+        // Others (Nothing generated.)
+        } else {
+            result.resolve();
         }
-        
         return result.promise();
     };
     
     
     /**
      * Return visibility
-     * @param {Model} elem
+     * @param {type.Model} elem
      * @return {string}
      */
     JavaCodeGenerator.prototype.getVisibility = function (elem) {
         switch (elem.visibility) {
-        case UML.VK_PUBLIC:    return "public";
-        case UML.VK_PROTECTED: return "protected";
-        case UML.VK_PRIVATE:   return "private";
+        case UML.VK_PUBLIC:
+            return "public";
+        case UML.VK_PROTECTED:
+            return "protected";
+        case UML.VK_PRIVATE:
+            return "private";
         }
         return null;
-    }
+    };
 
     /**
      * Collect modifiers of a given element.
+     * @param {type.Model} elem
      * @return {Array.<string>}
      */
     JavaCodeGenerator.prototype.getModifiers = function (elem) {
@@ -180,19 +196,21 @@ define(function (require, exports, module) {
         if (elem.isFinalSpecification === true || elem.isLeaf === true) {
             modifiers.push("final");
         }
+        if (elem.concurrency === UML.CCK_CONCURRENT) {
+            modifiers.push("synchronized");
+        }
         // transient
         // volatile
         // strictfp
         // const
         // native
-        // TODO synchronized
         return modifiers;
     };
 
     /**
      * Collect super classes of a given element
-     * @param {Core.Model} elem
-     * @return {Array.<Model>}
+     * @param {type.Model} elem
+     * @return {Array.<type.Model>}
      */
     JavaCodeGenerator.prototype.getSuperClasses = function (elem) {
         var generalizations = Repository.getRelationshipsOf(elem, function (rel) {
@@ -203,8 +221,8 @@ define(function (require, exports, module) {
 
     /**
      * Collect super interfaces of a given element
-     * @param {Core.Model} elem
-     * @return {Array.<Model>}
+     * @param {type.Model} elem
+     * @return {Array.<type.Model>}
      */
     JavaCodeGenerator.prototype.getSuperInterfaces = function (elem) {
         var realizations = Repository.getRelationshipsOf(elem, function (rel) {
@@ -215,7 +233,7 @@ define(function (require, exports, module) {
 
     /**
      * Return type expression
-     * @param {Model} elem
+     * @param {type.Model} elem
      * @return {string}
      */
     JavaCodeGenerator.prototype.getType = function (elem) {
@@ -251,12 +269,14 @@ define(function (require, exports, module) {
      * Write Doc
      * @param {StringWriter} codeWriter
      * @param {string} text
+     * @param {Object} options
      */
     JavaCodeGenerator.prototype.writeDoc = function (codeWriter, text, options) {
+        var i, len, lines;
         if (options.javaDoc && _.isString(text)) {
-            var lines = text.trim().split("\n");
+            lines = text.trim().split("\n");
             codeWriter.writeLine("/**");
-            for (var i = 0, len = lines.length; i < len; i++) {
+            for (i = 0, len = lines.length; i < len; i++) {
                 codeWriter.writeLine(" * " + lines[i]);
             }
             codeWriter.writeLine(" */");
@@ -266,7 +286,8 @@ define(function (require, exports, module) {
     /**
      * Write Package Declaration
      * @param {StringWriter} codeWriter
-     * @param {Element} elem
+     * @param {type.Model} elem
+     * @param {Object} options     
      */
     JavaCodeGenerator.prototype.writePackageDeclaration = function (codeWriter, elem, options) {
         var path = null;
@@ -281,7 +302,8 @@ define(function (require, exports, module) {
     /**
      * Write Constructor
      * @param {StringWriter} codeWriter
-     * @param {Element} elem
+     * @param {type.Model} elem
+     * @param {Object} options     
      */
     JavaCodeGenerator.prototype.writeConstructor = function (codeWriter, elem, options) {
         if (elem.name.length > 0) {
@@ -302,7 +324,8 @@ define(function (require, exports, module) {
     /**
      * Write Member Variable
      * @param {StringWriter} codeWriter
-     * @param {Element} elem
+     * @param {type.Model} elem
+     * @param {Object} options     
      */
     JavaCodeGenerator.prototype.writeMemberVariable = function (codeWriter, elem, options) {
         if (elem.name.length > 0) {
@@ -329,10 +352,12 @@ define(function (require, exports, module) {
     /**
      * Write Method
      * @param {StringWriter} codeWriter
-     * @param {Element} elem
+     * @param {type.Model} elem
+     * @param {Object} options     
      * @param {boolean} skipBody
+     * @param {boolean} skipParams
      */
-    JavaCodeGenerator.prototype.writeMethod = function (codeWriter, elem, skipBody, options) {
+    JavaCodeGenerator.prototype.writeMethod = function (codeWriter, elem, options, skipBody, skipParams) {
         if (elem.name.length > 0) {
             var terms = [];
             var params = elem.getNonReturnParameters();
@@ -363,13 +388,16 @@ define(function (require, exports, module) {
             
             // name + parameters
             var paramTerms = [];
-            for (var i = 0, len = params.length; i < len; i++) {
-                var p = params[i];
-                var s = this.getType(p) + " " + p.name;
-                if (p.isReadOnly === true) {
-                    s = "final " + s;
+            if (!skipParams) {
+                var i, len;
+                for (i = 0, len = params.length; i < len; i++) {
+                    var p = params[i];
+                    var s = this.getType(p) + " " + p.name;
+                    if (p.isReadOnly === true) {
+                        s = "final " + s;
+                    }
+                    paramTerms.push(s);
                 }
-                paramTerms.push(s);
             }
             terms.push(elem.name + "(" + paramTerms.join(", ") + ")");
             
@@ -410,10 +438,11 @@ define(function (require, exports, module) {
     /**
      * Write Class
      * @param {StringWriter} codeWriter
-     * @param {Element} elem
+     * @param {type.Model} elem
+     * @param {Object} options     
      */
     JavaCodeGenerator.prototype.writeClass = function (codeWriter, elem, options) {
-        var terms = [];
+        var i, len, terms = [];
         
         // Doc
         var doc = elem.documentation.trim();
@@ -456,7 +485,7 @@ define(function (require, exports, module) {
 
         // Member Variables
         // (from attributes)
-        for (var i = 0, len = elem.attributes.length; i < len; i++) {
+        for (i = 0, len = elem.attributes.length; i < len; i++) {
             this.writeMemberVariable(codeWriter, elem.attributes[i], options);
             codeWriter.writeLine();
         }
@@ -464,7 +493,7 @@ define(function (require, exports, module) {
         var associations = Repository.getRelationshipsOf(elem, function (rel) {
             return (rel instanceof type.UMLAssociation);
         });
-        for (var i = 0, len = associations.length; i < len; i++) {
+        for (i = 0, len = associations.length; i < len; i++) {
             var asso = associations[i];
             if (asso.end1.reference === elem && asso.end2.navigable === true) {
                 this.writeMemberVariable(codeWriter, asso.end2, options);
@@ -476,16 +505,20 @@ define(function (require, exports, module) {
         }
 
         // Methods
-        for (var i = 0, len = elem.operations.length; i < len; i++) {
-            this.writeMethod(codeWriter, elem.operations[i], false, options);
+        for (i = 0, len = elem.operations.length; i < len; i++) {
+            this.writeMethod(codeWriter, elem.operations[i], options, false, false);
             codeWriter.writeLine();
         }
 
         // Inner Definitions
-        for (var i = 0, len = elem.ownedElements.length; i < len; i++) {
+        for (i = 0, len = elem.ownedElements.length; i < len; i++) {
             var def = elem.ownedElements[i];
             if (def instanceof type.UMLClass) {
-                this.writeClass(codeWriter, def, options);
+                if (def.stereotype === "annotationType") {
+                    this.writeAnnotationType(codeWriter, def, options);
+                } else {
+                    this.writeClass(codeWriter, def, options);
+                }
                 codeWriter.writeLine();
             } else if (def instanceof type.UMLInterface) {
                 this.writeInterface(codeWriter, def, options);
@@ -504,20 +537,25 @@ define(function (require, exports, module) {
     /**
      * Write Interface
      * @param {StringWriter} codeWriter
-     * @param {Element} elem
+     * @param {type.Model} elem
+     * @param {Object} options     
      */
     JavaCodeGenerator.prototype.writeInterface = function (codeWriter, elem, options) {
-        var terms = [];
+        var i, len, terms = [];
+        
         // Doc
         this.writeDoc(codeWriter, elem.documentation, options);
+        
         // Modifiers
         var visibility = this.getVisibility(elem);
         if (visibility) {
             terms.push(visibility);
         }
+        
         // Interface
         terms.push("interface");
         terms.push(elem.name);
+        
         // Extends
         var _extends = this.getSuperClasses(elem);
         if (_extends.length > 0) {
@@ -529,7 +567,7 @@ define(function (require, exports, module) {
 
         // Member Variables
         // (from attributes)
-        for (var i = 0, len = elem.attributes.length; i < len; i++) {
+        for (i = 0, len = elem.attributes.length; i < len; i++) {
             this.writeMemberVariable(codeWriter, elem.attributes[i], options);
             codeWriter.writeLine();
         }
@@ -537,7 +575,7 @@ define(function (require, exports, module) {
         var associations = Repository.getRelationshipsOf(elem, function (rel) {
             return (rel instanceof type.UMLAssociation);
         });
-        for (var i = 0, len = associations.length; i < len; i++) {
+        for (i = 0, len = associations.length; i < len; i++) {
             var asso = associations[i];
             if (asso.end1.reference === elem && asso.end2.navigable === true) {
                 this.writeMemberVariable(codeWriter, asso.end2, options);
@@ -549,16 +587,20 @@ define(function (require, exports, module) {
         }
 
         // Methods
-        for (var i = 0, len = elem.operations.length; i < len; i++) {
-            this.writeMethod(codeWriter, elem.operations[i], true, options);
+        for (i = 0, len = elem.operations.length; i < len; i++) {
+            this.writeMethod(codeWriter, elem.operations[i], options, true, false);
             codeWriter.writeLine();
         }
 
         // Inner Definitions
-        for (var i = 0, len = elem.ownedElements.length; i < len; i++) {
+        for (i = 0, len = elem.ownedElements.length; i < len; i++) {
             var def = elem.ownedElements[i];
             if (def instanceof type.UMLClass) {
-                this.writeClass(codeWriter, def, options);
+                if (def.stereotype === "annotationType") {
+                    this.writeAnnotationType(codeWriter, def, options);
+                } else {
+                    this.writeClass(codeWriter, def, options);
+                }
                 codeWriter.writeLine();
             } else if (def instanceof type.UMLInterface) {
                 this.writeInterface(codeWriter, def, options);
@@ -576,10 +618,11 @@ define(function (require, exports, module) {
     /**
      * Write Enum
      * @param {StringWriter} codeWriter
-     * @param {Element} elem
+     * @param {type.Model} elem
+     * @param {Object} options     
      */
     JavaCodeGenerator.prototype.writeEnum = function (codeWriter, elem, options) {
-        var terms = [];
+        var i, len, terms = [];
         // Doc
         this.writeDoc(codeWriter, elem.documentation, options);
         
@@ -596,33 +639,93 @@ define(function (require, exports, module) {
         codeWriter.indent();
 
         // Literals
-        for (var i = 0, len = elem.literals.length; i < len; i++) {
-            codeWriter.writeLine(elem.literals[i].name + (i < elem.literals.length-1 ? "," : ""));
+        for (i = 0, len = elem.literals.length; i < len; i++) {
+            codeWriter.writeLine(elem.literals[i].name + (i < elem.literals.length - 1 ? "," : ""));
         }
 
         codeWriter.outdent();
         codeWriter.writeLine("}");
     };
 
-    /*
-     * options = {
-     *   base: (model)
-     *   path: "/User/niklaus/..."
-     *   javaDoc: true,
-     *   useTab: false,
-     *   indentSpaces: 4,
-     *   headerComment: true
-     * }
+    
+    /**
+     * Write AnnotationType
+     * @param {StringWriter} codeWriter
+     * @param {type.Model} elem
+     * @param {Object} options     
+     */
+    JavaCodeGenerator.prototype.writeAnnotationType = function (codeWriter, elem, options) {
+        var i, len, terms = [];
+        
+        // Doc
+        var doc = elem.documentation.trim();
+        if (Repository.getProject().author && Repository.getProject().author.length > 0) {
+            doc += "\n@author " + Repository.getProject().author;
+        }
+        this.writeDoc(codeWriter, doc, options);
+        
+        // Modifiers
+        var _modifiers = this.getModifiers(elem);
+        if (_.some(elem.operations, function (op) { return op.isAbstract === true; })) {
+            _modifiers.push("abstract");
+        }
+        if (_modifiers.length > 0) {
+            terms.push(_modifiers.join(" "));
+        }
+        
+        // AnnotationType
+        terms.push("@interface");
+        terms.push(elem.name);
+        
+        codeWriter.writeLine(terms.join(" ") + " {");
+        codeWriter.writeLine();
+        codeWriter.indent();
+
+        // Member Variables
+        for (i = 0, len = elem.attributes.length; i < len; i++) {
+            this.writeMemberVariable(codeWriter, elem.attributes[i], options);
+            codeWriter.writeLine();
+        }
+        
+        // Methods
+        for (i = 0, len = elem.operations.length; i < len; i++) {
+            this.writeMethod(codeWriter, elem.operations[i], options, true, true);
+            codeWriter.writeLine();
+        }
+
+        // Inner Definitions
+        for (i = 0, len = elem.ownedElements.length; i < len; i++) {
+            var def = elem.ownedElements[i];
+            if (def instanceof type.UMLClass) {
+                if (def.stereotype === "annotationType") {
+                    this.writeAnnotationType(codeWriter, def, options);
+                } else {
+                    this.writeClass(codeWriter, def, options);
+                }
+                codeWriter.writeLine();
+            } else if (def instanceof type.UMLInterface) {
+                this.writeInterface(codeWriter, def, options);
+                codeWriter.writeLine();
+            } else if (def instanceof type.UMLEnumeration) {
+                this.writeEnum(codeWriter, def, options);
+                codeWriter.writeLine();
+            }
+        }
+
+        codeWriter.outdent();
+        codeWriter.writeLine("}");
+    };
+        
+    /**
+     * Generate
+     * @param {type.Model} baseModel
+     * @param {string} basePath
+     * @param {Object} options
      */
     function generate(baseModel, basePath, options) {
         var result = new $.Deferred();
         var javaCodeGenerator = new JavaCodeGenerator(baseModel, basePath);
-        var i, len, elem;
-        for (i = 0, len = baseModel.ownedElements.length; i < len; i++) {
-            elem = baseModel.ownedElements[i];
-            javaCodeGenerator.generate(elem, basePath, options);
-        }
-        return result.promise();
+        return javaCodeGenerator.generate(baseModel, basePath, options);
     }
     
     exports.generate = generate;

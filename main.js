@@ -23,6 +23,7 @@
 
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50, regexp: true */
 /*global define, $, _, window, staruml, type, appshell, document */
+
 define(function (require, exports, module) {
     "use strict";
 
@@ -53,7 +54,8 @@ define(function (require, exports, module) {
         CMD_JAVA_CONFIGURE = 'java.configure';
 
     /**
-     * CommandManager.execute로부터 파라미터를 받아서 코드 생성 가능하게 한다.
+     * Command Handler for Java Generate
+     *
      * @param {Element} base
      * @param {string} path
      * @param {Object} options
@@ -63,7 +65,7 @@ define(function (require, exports, module) {
         var result = new $.Deferred();
 
         // If options is not passed, get from preference
-        options = (options ? options : JavaPreferences.getGenOptions());
+        options = options || JavaPreferences.getGenOptions();
 
         // If base is not assigned, popup ElementPicker
         if (!base) {
@@ -116,19 +118,15 @@ define(function (require, exports, module) {
     }
 
     /**
-     * CommandManager.execute로부터 파라미터를 받아서 코드 역공학이 가능하게 한다.
-     * e.g.) options = {
-     *          path: "/User/niklaus/...",
-     *          files: [ "....java", ".java" ],
-     *          typeHiarachy: true
-     *          packageOverview: true
-     *          packageStructure: true
-     *       }
-     * 파라미터가 없으면 baseModel, targetDir을 사용한다.
-     * Must return $.Promise
+     * Command Handler for Java Reverse 
+     *
+     * @param {string} basePath
+     * @param {Object} options
+     * @return {$.Promise}
      */
     function _handleReverse(basePath, options) {
         var result = new $.Deferred();
+        
         // If options is not passed, get from preference
         options = JavaPreferences.getRevOptions();
 
@@ -150,6 +148,10 @@ define(function (require, exports, module) {
         return result.promise();
     }
     
+    
+    /**
+     * Popup PreferenceDialog with Java Preference Schema
+     */
     function _handleConfigure() {
         CommandManager.execute(Commands.FILE_PREFERENCES, JavaPreferences.getId());
     }

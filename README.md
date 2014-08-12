@@ -28,10 +28,10 @@ Belows are the rules to convert from UML model elements to Java source codes.
 
 ### UMLAttribute
 
-* converted to _Java Member Variable_.
+* converted to _Java Field_.
 * `visibility` property to one of modifiers `public`, `protected`, `private` and none.
-* `name` property to member variable identifier.
-* `type` property to member variable type.
+* `name` property to field identifier.
+* `type` property to field type.
 * `multiplicity` property to array type.
 * `isStatic` property to `static` modifier.
 * `isLeaf` property to `final` modifier.
@@ -66,10 +66,10 @@ Belows are the rules to convert from UML model elements to Java source codes.
 
 ### UMLAssociationEnd
 
-* converted to _Java Member Variable_.
+* converted to _Java Field_.
 * `visibility` property to one of modifiers `public`, `protected`, `private` and none.
-* `name` property to member variable identifier.
-* `type` property to member variable type.
+* `name` property to field identifier.
+* `type` property to field type.
 * If `multiplicity` is one of `0..*`, `1..*`, `*`, then collection type (`java.util.List<>` when `isOrdered` = `true` or `java.util.Set<>`) is used.
 * `defaultValue` property to initial value.
 * Documentation property to JavaDoc comment.
@@ -177,3 +177,8 @@ Belows are the rules to convert from Java source code to UML model elements.
 * converted to _UMLClass_ with stereotype `<<annotationType>>`.
 * Annotation type elements to _UMLOperation_. (Default value to a Tag with `name="default"`).
 * JavaDoc comment to Documentation.
+
+
+---
+
+Licensed under the MIT license (see LICENSE file).
