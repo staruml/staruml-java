@@ -28,7 +28,7 @@ define(function (require, exports, module) {
 
     var Core            = staruml.getModule("core/Core"),
         Repository      = staruml.getModule("engine/Repository"),
-        CommandManager  = staruml.getModule("command/CommandManager"),
+        CommandManager  = staruml.getModule("menu/CommandManager"),
         UML             = staruml.getModule("uml/UML"),
         FileSystem      = staruml.getModule("filesystem/FileSystem"),
         FileSystemError = staruml.getModule("filesystem/FileSystemError"),
