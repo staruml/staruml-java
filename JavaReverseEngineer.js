@@ -28,7 +28,7 @@ define(function (require, exports, module) {
 
     var Core            = staruml.getModule("core/Core"),
         Repository      = staruml.getModule("engine/Repository"),
-        CommandManager  = staruml.getModule("menu/CommandManager"),
+        CommandManager  = staruml.getModule("command/CommandManager"),
         UML             = staruml.getModule("uml/UML"),
         FileSystem      = staruml.getModule("filesystem/FileSystem"),
         FileSystemError = staruml.getModule("filesystem/FileSystemError"),
@@ -219,7 +219,7 @@ define(function (require, exports, module) {
         for (i = 0, len = this._extendPendings.length; i < len; i++) {
             var _extend = this._extendPendings[i];
             _typeName = _extend.node.qualifiedName.name;
-            
+
             _type = this._findType(_extend.classifier, _typeName, _extend.compilationUnitNode);
             if (!_type) {
                 _pathName = this._toPathName(_typeName);
@@ -813,7 +813,7 @@ define(function (require, exports, module) {
         if (classNode.comment) {
             _class.documentation = classNode.comment;
         }
-        
+
         namespace.ownedElements.push(_class);
 
         // Register Extends for 2nd Phase Translation
@@ -826,7 +826,7 @@ define(function (require, exports, module) {
             };
             this._extendPendings.push(_extendPending);
         }
-        
+
         // - 1) 타입이 소스에 있는 경우 --> 해당 타입으로 Generalization 생성
         // - 2) 타입이 소스에 없는 경우 (e.g. java.util.ArrayList) --> 타입을 생성(어디에?)한 뒤 Generalization 생성
         // 모든 타입이 생성된 다음에 Generalization (혹은 기타 Relationships)이 연결되어야 하므로, 어딘가에 등록한 다음이 2nd Phase에서 처리.
@@ -865,12 +865,12 @@ define(function (require, exports, module) {
         _interface._parent = namespace;
         _interface.name = interfaceNode.name;
         _interface.visibility = this._getVisibility(interfaceNode.modifiers);
-        
+
         // JavaDoc
         if (interfaceNode.comment) {
             _interface.documentation = interfaceNode.comment;
         }
-        
+
         namespace.ownedElements.push(_interface);
 
         // Register Extends for 2nd Phase Translation
@@ -908,12 +908,12 @@ define(function (require, exports, module) {
         _enum._parent = namespace;
         _enum.name = enumNode.name;
         _enum.visibility = this._getVisibility(enumNode.modifiers);
-        
+
         // JavaDoc
         if (enumNode.comment) {
             _enum.documentation = enumNode.comment;
         }
-        
+
         namespace.ownedElements.push(_enum);
 
         // Translate Type Parameters
@@ -939,12 +939,12 @@ define(function (require, exports, module) {
         _annotationType.name = annotationTypeNode.name;
         _annotationType.stereotype = "annotationType";
         _annotationType.visibility = this._getVisibility(annotationTypeNode.modifiers);
-        
+
         // JavaDoc
         if (annotationTypeNode.comment) {
             _annotationType.documentation = annotationTypeNode.comment;
         }
-        
+
         namespace.ownedElements.push(_annotationType);
 
         // Translate Type Parameters
@@ -1021,7 +1021,7 @@ define(function (require, exports, module) {
                 if (fieldNode.comment) {
                     _attribute.documentation = fieldNode.comment;
                 }
-                
+
                 namespace.attributes.push(_attribute);
 
                 // Add to _typedFeaturePendings
@@ -1076,7 +1076,7 @@ define(function (require, exports, module) {
         if (isConstructor) {
             _operation.stereotype = "constructor";
         }
-        
+
         // Formal Parameters
         if (methodNode.parameters && methodNode.parameters.length > 0) {
             for (i = 0, len = methodNode.parameters.length; i < len; i++) {
@@ -1118,12 +1118,12 @@ define(function (require, exports, module) {
         if (methodNode.comment) {
             _operation.documentation = methodNode.comment;
         }
-        
+
         // "default" for Annotation Type Element
         if (methodNode.defaultValue) {
             this._addTag(_operation, Core.TK_STRING, "default", methodNode.defaultValue);
         }
-        
+
         // Translate Type Parameters
         this.translateTypeParameters(options, _operation, methodNode.typeParameters);
     };
@@ -1138,12 +1138,12 @@ define(function (require, exports, module) {
         var _literal = new type.UMLEnumerationLiteral();
         _literal._parent = namespace;
         _literal.name = enumConstantNode.name;
-        
+
         // JavaDoc
         if (enumConstantNode.comment) {
             _literal.documentation = enumConstantNode.comment;
         }
-        
+
         namespace.literals.push(_literal);
     };
 

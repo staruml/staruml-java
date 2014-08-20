@@ -30,8 +30,8 @@ define(function (require, exports, module) {
     var AppInit             = staruml.getModule("utils/AppInit"),
         Repository          = staruml.getModule("engine/Repository"),
         Engine              = staruml.getModule("engine/Engine"),
-        Commands            = staruml.getModule("menu/Commands"),
-        CommandManager      = staruml.getModule("menu/CommandManager"),
+        Commands            = staruml.getModule("command/Commands"),
+        CommandManager      = staruml.getModule("command/CommandManager"),
         MenuManager         = staruml.getModule("menu/MenuManager"),
         Dialogs             = staruml.getModule("dialogs/Dialogs"),
         ElementPickerDialog = staruml.getModule("dialogs/ElementPickerDialog"),
@@ -118,7 +118,7 @@ define(function (require, exports, module) {
     }
 
     /**
-     * Command Handler for Java Reverse 
+     * Command Handler for Java Reverse
      *
      * @param {string} basePath
      * @param {Object} options
@@ -126,7 +126,7 @@ define(function (require, exports, module) {
      */
     function _handleReverse(basePath, options) {
         var result = new $.Deferred();
-        
+
         // If options is not passed, get from preference
         options = JavaPreferences.getRevOptions();
 
@@ -147,8 +147,8 @@ define(function (require, exports, module) {
         }
         return result.promise();
     }
-    
-    
+
+
     /**
      * Popup PreferenceDialog with Java Preference Schema
      */
