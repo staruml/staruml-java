@@ -2,7 +2,8 @@
     "name": "staruml.java",
     "title": "Java",
     "description": "Java code generation and reverse engineering.",
-    "homepage": "https://github.com/staruml/JavaCodeEng",
+    "homepage": "https://github.com/staruml/Java",
+    "issues": "https://github.com/staruml/Java/issues",
     "keywords": ["java"],
     "version": "0.9.0",
     "author": {
