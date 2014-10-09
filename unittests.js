@@ -13,21 +13,21 @@
  */
 
 /*jslint vars: true, plusplus: true, devel: true, browser: true, nomen: true, indent: 4, maxerr: 50 */
-/*global define, describe, _, it, xit, expect, beforeFirst, afterLast, spyOn, beforeEach, afterEach, waitsFor, runs, $, type, staruml, waitsForDone, java7 */
+/*global define, describe, _, it, xit, expect, beforeFirst, afterLast, spyOn, beforeEach, afterEach, waitsFor, runs, $, type, app, waitsForDone, java7 */
 
 define(function (require, exports, module) {
     "use strict";
 
     // Modules from the SpecRunner window
-    var Repository,       // loaded from staruml.test
-        CommandManager,   // loaded from staruml.test
-        Commands,         // loaded from staruml.test
-        Dialogs,          // loaded from staruml.test
-        FileSystem      = staruml.getModule("filesystem/FileSystem"),
-        SpecRunnerUtils = staruml.getModule("spec/SpecRunnerUtils"),
-        FileUtils       = staruml.getModule("file/FileUtils"),
-        ExtensionUtils  = staruml.getModule("utils/ExtensionUtils"),
-        UML             = staruml.getModule("uml/UML");
+    var Repository,       // loaded from app.test
+        CommandManager,   // loaded from app.test
+        Commands,         // loaded from app.test
+        Dialogs,          // loaded from app.test
+        FileSystem      = app.getModule("filesystem/FileSystem"),
+        SpecRunnerUtils = app.getModule("spec/SpecRunnerUtils"),
+        FileUtils       = app.getModule("file/FileUtils"),
+        ExtensionUtils  = app.getModule("utils/ExtensionUtils"),
+        UML             = app.getModule("uml/UML");
 
     require("grammar/java7");
 
@@ -623,13 +623,13 @@ define(function (require, exports, module) {
                 SpecRunnerUtils.createTestWindowAndRun(this, function (w) {
                     testWindow = w;
 
-                    // Load module instances from staruml.test
+                    // Load module instances from app.test
                     window.type         = testWindow.type;
-                    Repository          = testWindow.staruml.test.Repository;
-                    CommandManager      = testWindow.staruml.test.CommandManager;
-                    Commands            = testWindow.staruml.test.Commands;
-                    FileSystem          = testWindow.staruml.test.FileSystem;
-                    Dialogs             = testWindow.staruml.test.Dialogs;
+                    Repository          = testWindow.app.test.Repository;
+                    CommandManager      = testWindow.app.test.CommandManager;
+                    Commands            = testWindow.app.test.Commands;
+                    FileSystem          = testWindow.app.test.FileSystem;
+                    Dialogs             = testWindow.app.test.Dialogs;
 
                     // Reverse Java Codes in "/unittest-files/reverse/*.java"
                     var filePath;

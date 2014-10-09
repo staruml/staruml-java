@@ -22,18 +22,18 @@
  */
 
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50, regexp: true, continue:true */
-/*global define, $, _, window, staruml, type, document, java7 */
+/*global define, $, _, window, app, type, document, java7 */
 define(function (require, exports, module) {
     "use strict";
 
-    var Core            = staruml.getModule("core/Core"),
-        Repository      = staruml.getModule("engine/Repository"),
-        CommandManager  = staruml.getModule("command/CommandManager"),
-        UML             = staruml.getModule("uml/UML"),
-        FileSystem      = staruml.getModule("filesystem/FileSystem"),
-        FileSystemError = staruml.getModule("filesystem/FileSystemError"),
-        FileUtils       = staruml.getModule("file/FileUtils"),
-        Async           = staruml.getModule("utils/Async");
+    var Core            = app.getModule("core/Core"),
+        Repository      = app.getModule("engine/Repository"),
+        CommandManager  = app.getModule("command/CommandManager"),
+        UML             = app.getModule("uml/UML"),
+        FileSystem      = app.getModule("filesystem/FileSystem"),
+        FileSystemError = app.getModule("filesystem/FileSystemError"),
+        FileUtils       = app.getModule("file/FileUtils"),
+        Async           = app.getModule("utils/Async");
 
     require("grammar/java7");
 

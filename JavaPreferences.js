@@ -18,12 +18,12 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var AppInit           = staruml.getModule("utils/AppInit"),
-        Core              = staruml.getModule("core/Core"),
-        PreferenceManager = staruml.getModule("preference/PreferenceManager");
+    var AppInit           = app.getModule("utils/AppInit"),
+        Core              = app.getModule("core/Core"),
+        PreferenceManager = app.getModule("preference/PreferenceManager");
 
     var preferenceId = "java";
-    
+
     var javaPreferences = {
         "java.gen": {
             text: "Java Code Generation",
@@ -82,7 +82,7 @@ define(function (require, exports, module) {
             default: true
         }
     };
-    
+
     function getId() {
         return preferenceId;
     }

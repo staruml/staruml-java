@@ -22,23 +22,23 @@
  */
 
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50, regexp: true */
-/*global define, $, _, window, staruml, type, appshell, document */
+/*global define, $, _, window, app, type, appshell, document */
 
 define(function (require, exports, module) {
     "use strict";
 
-    var AppInit             = staruml.getModule("utils/AppInit"),
-        Repository          = staruml.getModule("engine/Repository"),
-        Engine              = staruml.getModule("engine/Engine"),
-        Commands            = staruml.getModule("command/Commands"),
-        CommandManager      = staruml.getModule("command/CommandManager"),
-        MenuManager         = staruml.getModule("menu/MenuManager"),
-        Dialogs             = staruml.getModule("dialogs/Dialogs"),
-        ElementPickerDialog = staruml.getModule("dialogs/ElementPickerDialog"),
-        FileSystem          = staruml.getModule("filesystem/FileSystem"),
-        FileSystemError     = staruml.getModule("filesystem/FileSystemError"),
-        ExtensionUtils      = staruml.getModule("utils/ExtensionUtils"),
-        UML                 = staruml.getModule("uml/UML");
+    var AppInit             = app.getModule("utils/AppInit"),
+        Repository          = app.getModule("engine/Repository"),
+        Engine              = app.getModule("engine/Engine"),
+        Commands            = app.getModule("command/Commands"),
+        CommandManager      = app.getModule("command/CommandManager"),
+        MenuManager         = app.getModule("menu/MenuManager"),
+        Dialogs             = app.getModule("dialogs/Dialogs"),
+        ElementPickerDialog = app.getModule("dialogs/ElementPickerDialog"),
+        FileSystem          = app.getModule("filesystem/FileSystem"),
+        FileSystemError     = app.getModule("filesystem/FileSystemError"),
+        ExtensionUtils      = app.getModule("utils/ExtensionUtils"),
+        UML                 = app.getModule("uml/UML");
 
     var CodeGenUtils        = require("CodeGenUtils"),
         JavaPreferences     = require("JavaPreferences"),
