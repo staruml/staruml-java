@@ -28,7 +28,7 @@ define(function (require, exports, module) {
     "use strict";
 
     var AppInit             = app.getModule("utils/AppInit"),
-        Repository          = app.getModule("engine/Repository"),
+        Repository          = app.getModule("core/Repository"),
         Engine              = app.getModule("engine/Engine"),
         Commands            = app.getModule("command/Commands"),
         CommandManager      = app.getModule("command/CommandManager"),

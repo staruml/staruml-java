@@ -20,6 +20,7 @@ define(function (require, exports, module) {
 
     // Modules from the SpecRunner window
     var Repository,       // loaded from app.test
+        ProjectManager,   // loaded from app.test
         CommandManager,   // loaded from app.test
         Commands,         // loaded from app.test
         Dialogs,          // loaded from app.test

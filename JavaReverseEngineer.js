@@ -27,7 +27,8 @@ define(function (require, exports, module) {
     "use strict";
 
     var Core            = app.getModule("core/Core"),
-        Repository      = app.getModule("engine/Repository"),
+        Repository      = app.getModule("core/Repository"),
+        ProjectManager  = app.getModule("engine/ProjectManager"),
         CommandManager  = app.getModule("command/CommandManager"),
         UML             = app.getModule("uml/UML"),
         FileSystem      = app.getModule("filesystem/FileSystem"),
@@ -158,7 +159,7 @@ define(function (require, exports, module) {
             var writer = new Core.Writer();
             writer.writeObj("data", self._root);
             var json = writer.current.data;
-            Repository.importFromJson(Repository.getProject(), json);
+            ProjectManager.importFromJson(ProjectManager.getProject(), json);
         });
 
         // Generate Diagrams

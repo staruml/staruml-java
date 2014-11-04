@@ -27,12 +27,13 @@
 define(function (require, exports, module) {
     "use strict";
 
-    var Repository = app.getModule("engine/Repository"),
-        Engine     = app.getModule("engine/Engine"),
-        FileSystem = app.getModule("filesystem/FileSystem"),
-        FileUtils  = app.getModule("file/FileUtils"),
-        Async      = app.getModule("utils/Async"),
-        UML        = app.getModule("uml/UML");
+    var Repository     = app.getModule("core/Repository"),
+        ProjectManager = app.getModule("engine/ProjectManager"),
+        Engine         = app.getModule("engine/Engine"),
+        FileSystem     = app.getModule("filesystem/FileSystem"),
+        FileUtils      = app.getModule("file/FileUtils"),
+        Async          = app.getModule("utils/Async"),
+        UML            = app.getModule("uml/UML");
 
     var CodeGenUtils = require("CodeGenUtils");
 
@@ -446,8 +447,8 @@ define(function (require, exports, module) {
 
         // Doc
         var doc = elem.documentation.trim();
-        if (Repository.getProject().author && Repository.getProject().author.length > 0) {
-            doc += "\n@author " + Repository.getProject().author;
+        if (ProjectManager.getProject().author && ProjectManager.getProject().author.length > 0) {
+            doc += "\n@author " + ProjectManager.getProject().author;
         }
         this.writeDoc(codeWriter, doc, options);
 
@@ -659,8 +660,8 @@ define(function (require, exports, module) {
 
         // Doc
         var doc = elem.documentation.trim();
-        if (Repository.getProject().author && Repository.getProject().author.length > 0) {
-            doc += "\n@author " + Repository.getProject().author;
+        if (ProjectManager.getProject().author && ProjectManager.getProject().author.length > 0) {
+            doc += "\n@author " + ProjectManager.getProject().author;
         }
         this.writeDoc(codeWriter, doc, options);
 
