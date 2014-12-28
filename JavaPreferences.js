@@ -20,7 +20,7 @@ define(function (require, exports, module) {
 
     var AppInit           = app.getModule("utils/AppInit"),
         Core              = app.getModule("core/Core"),
-        PreferenceManager = app.getModule("preference/PreferenceManager");
+        PreferenceManager = app.getModule("core/PreferenceManager");
 
     var preferenceId = "java";
 

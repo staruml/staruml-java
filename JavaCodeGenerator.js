@@ -259,7 +259,7 @@ define(function (require, exports, module) {
                 } else {
                     _type = "Set<" + _type + ">";
                 }
-            } else if (elem.multiplicity.match(/^\d+$/)) { // number
+            } else if (elem.multiplicity !== "1" && elem.multiplicity.match(/^\d+$/)) { // number
                 _type += "[]";
             }
         }
