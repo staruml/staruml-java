@@ -739,7 +739,7 @@ define(function (require, exports, module) {
             it("can reverse Java Final Class", function () {
                 runs(function () {
                     var _class = find("ClassFinalTest");
-                    expect(_class.isFinalSpecification).toBe(true);
+                    expect(_class.isFinalSpecialization).toBe(true);
                 });
             });
 

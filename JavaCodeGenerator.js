@@ -194,7 +194,7 @@ define(function (require, exports, module) {
         if (elem.isAbstract === true) {
             modifiers.push("abstract");
         }
-        if (elem.isFinalSpecification === true || elem.isLeaf === true) {
+        if (elem.isFinalSpecialization === true || elem.isLeaf === true) {
             modifiers.push("final");
         }
         if (elem.concurrency === UML.CCK_CONCURRENT) {

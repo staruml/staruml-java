@@ -21,7 +21,7 @@ Belows are the rules to convert from UML model elements to Java source codes.
 * converted to _Java Class_. (as a separate `.java` file)
 * `visibility` to one of modifiers `public`, `protected`, `private` and none.
 * `isAbstract` property to `abstract` modifier.
-* `isFinalSpecification` and `isLeaf` property to `final` modifier.
+* `isFinalSpecialization` and `isLeaf` property to `final` modifier.
 * Default constructor is generated.
 * All contained types (_UMLClass_, _UMLInterface_, _UMLEnumeration_) are generated as inner type definition.
 * Documentation property to JavaDoc comment.
@@ -120,7 +120,7 @@ Belows are the rules to convert from Java source code to UML model elements.
     * `T[]`(array), `java.util.List<T>`, `java.util.Set<T>` or its decendants: `type` property refers to `T` with multiplicity `*`.
     * `T` (User-Defined Types)  : `type` property refers to the `T` type.
     * Otherwise : `type` property has the type name as string.
-    
+
 * Access modifier `public`, `protected` and  `private` to `visibility` property.
 * `static` modifier to `isStatic` property.
 * `final` modifier to `isLeaf` and `isReadOnly` property.

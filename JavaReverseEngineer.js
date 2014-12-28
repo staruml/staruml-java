@@ -806,7 +806,7 @@ define(function (require, exports, module) {
 
         // Final Class
         if (_.contains(classNode.modifiers, "final")) {
-            _class.isFinalSpecification = true;
+            _class.isFinalSpecialization = true;
             _class.isLeaf = true;
         }
 
