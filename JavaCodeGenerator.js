@@ -499,7 +499,8 @@ define(function (require, exports, module) {
             if (asso.end1.reference === elem && asso.end2.navigable === true) {
                 this.writeMemberVariable(codeWriter, asso.end2, options);
                 codeWriter.writeLine();
-            } else if (asso.end2.reference === elem && asso.end1.navigable === true) {
+            }
+			if (asso.end2.reference === elem && asso.end1.navigable === true) {
                 this.writeMemberVariable(codeWriter, asso.end1, options);
                 codeWriter.writeLine();
             }
@@ -581,7 +582,8 @@ define(function (require, exports, module) {
             if (asso.end1.reference === elem && asso.end2.navigable === true) {
                 this.writeMemberVariable(codeWriter, asso.end2, options);
                 codeWriter.writeLine();
-            } else if (asso.end2.reference === elem && asso.end1.navigable === true) {
+            }
+			if (asso.end2.reference === elem && asso.end1.navigable === true) {
                 this.writeMemberVariable(codeWriter, asso.end1, options);
                 codeWriter.writeLine();
             }
