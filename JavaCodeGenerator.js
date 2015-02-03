@@ -534,7 +534,7 @@ define(function (require, exports, module) {
         }
 
         // Interface methods
-		for (var j = 0; j < _implements.length; j++) {
+        for (var j = 0; j < _implements.length; j++) {
             for (i = 0, len = _implements[j].operations.length; i < len; i++) {
                 this.writeMethod(codeWriter, _implements[j].operations[i], options, false, false);
                 codeWriter.writeLine();
