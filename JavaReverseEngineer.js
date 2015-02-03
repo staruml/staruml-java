@@ -1078,6 +1078,8 @@ define(function (require, exports, module) {
             _operation.stereotype = "constructor";
         }
 
+        //Stuff to do here to grab the correct Javadoc and put it into parameters and return
+        
         // Formal Parameters
         if (methodNode.parameters && methodNode.parameters.length > 0) {
             for (i = 0, len = methodNode.parameters.length; i < len; i++) {
