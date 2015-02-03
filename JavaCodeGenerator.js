@@ -464,7 +464,7 @@ define(function (require, exports, module) {
 
         // Modifiers
         var _modifiers = this.getModifiers(elem);
-        if (_modifiers.indexOf("abstract") !== -1 && _.some(elem.operations, function (op) { return op.isAbstract === true; })) {
+        if (_modifiers.indexOf("abstract") === -1 && _.some(elem.operations, function (op) { return op.isAbstract === true; })) {
             _modifiers.push("abstract");
         }
         if (_modifiers.length > 0) {
@@ -520,6 +520,25 @@ define(function (require, exports, module) {
         for (i = 0, len = elem.operations.length; i < len; i++) {
             this.writeMethod(codeWriter, elem.operations[i], options, false, false);
             codeWriter.writeLine();
+        }
+
+        // Extends methods
+        if (_extends.length > 0) {
+            for (i = 0, len = _extends[0].operations.length; i < len; i++) {
+                _modifiers = this.getModifiers(_extends[0].operations[i]);
+                if( _modifiers.indexOf("abstract") !== -1 ) {
+                    this.writeMethod(codeWriter, _extends[0].operations[i], options, false, false);
+                    codeWriter.writeLine();
+                }
+            }
+        }
+
+        // Interface methods
+		for (var j = 0; j < _implements.length; j++) {
+            for (i = 0, len = _implements[j].operations.length; i < len; i++) {
+                this.writeMethod(codeWriter, _implements[j].operations[i], options, false, false);
+                codeWriter.writeLine();
+            }
         }
 
         // Inner Definitions
@@ -679,7 +698,7 @@ define(function (require, exports, module) {
 
         // Modifiers
         var _modifiers = this.getModifiers(elem);
-        if (_modifiers.indexOf("abstract") !== -1 && _.some(elem.operations, function (op) { return op.isAbstract === true; })) {
+        if (_modifiers.indexOf("abstract") === -1 && _.some(elem.operations, function (op) { return op.isAbstract === true; })) {
             _modifiers.push("abstract");
         }
         if (_modifiers.length > 0) {
@@ -704,6 +723,17 @@ define(function (require, exports, module) {
         for (i = 0, len = elem.operations.length; i < len; i++) {
             this.writeMethod(codeWriter, elem.operations[i], options, true, true);
             codeWriter.writeLine();
+        }
+
+        // Extends methods
+        if (_extends.length > 0) {
+            for (i = 0, len = _extends[0].operations.length; i < len; i++) {
+                _modifiers = this.getModifiers(_extends[0].operations[i]);
+                if( _modifiers.indexOf("abstract") !== -1 ) {
+                    this.writeMethod(codeWriter, _extends[0].operations[i], options, false, false);
+                    codeWriter.writeLine();
+                }
+            }
         }
 
         // Inner Definitions
