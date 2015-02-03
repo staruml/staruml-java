@@ -310,7 +310,7 @@ define(function (require, exports, module) {
         if (elem.name.length > 0) {
             var terms = [];
             // Doc
-            this.writeDoc(codeWriter, elem.documentation, options);
+            this.writeDoc(codeWriter, "Default constructor", options);
             // Visibility
             var visibility = this.getVisibility(elem);
             if (visibility) {
@@ -366,6 +366,16 @@ define(function (require, exports, module) {
 
             // doc
             var doc = elem.documentation.trim();
+
+            //Erase Javadoc @param and @return
+            var i, lines = doc.split("\n");
+            doc = "";
+            for (i = 0, len = lines.length; i < len; i++) {
+                if(lines[i].lastIndexOf("@param", 0) !== 0 && lines[i].lastIndexOf("@return", 0) !== 0) {
+                    doc += "\n" + lines[i];
+                }
+            }
+
             _.each(params, function (param) {
                 doc += "\n@param " + param.name + " " + param.documentation;
             });
@@ -454,7 +464,7 @@ define(function (require, exports, module) {
 
         // Modifiers
         var _modifiers = this.getModifiers(elem);
-        if (_.some(elem.operations, function (op) { return op.isAbstract === true; })) {
+        if (_modifiers.indexOf("abstract") !== -1 && _.some(elem.operations, function (op) { return op.isAbstract === true; })) {
             _modifiers.push("abstract");
         }
         if (_modifiers.length > 0) {
@@ -500,7 +510,7 @@ define(function (require, exports, module) {
                 this.writeMemberVariable(codeWriter, asso.end2, options);
                 codeWriter.writeLine();
             }
-			if (asso.end2.reference === elem && asso.end1.navigable === true) {
+            if (asso.end2.reference === elem && asso.end1.navigable === true) {
                 this.writeMemberVariable(codeWriter, asso.end1, options);
                 codeWriter.writeLine();
             }
@@ -583,7 +593,7 @@ define(function (require, exports, module) {
                 this.writeMemberVariable(codeWriter, asso.end2, options);
                 codeWriter.writeLine();
             }
-			if (asso.end2.reference === elem && asso.end1.navigable === true) {
+            if (asso.end2.reference === elem && asso.end1.navigable === true) {
                 this.writeMemberVariable(codeWriter, asso.end1, options);
                 codeWriter.writeLine();
             }
@@ -669,7 +679,7 @@ define(function (require, exports, module) {
 
         // Modifiers
         var _modifiers = this.getModifiers(elem);
-        if (_.some(elem.operations, function (op) { return op.isAbstract === true; })) {
+        if (_modifiers.indexOf("abstract") !== -1 && _.some(elem.operations, function (op) { return op.isAbstract === true; })) {
             _modifiers.push("abstract");
         }
         if (_modifiers.length > 0) {
