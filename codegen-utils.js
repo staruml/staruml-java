@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 MKLab. All rights reserved.
+ * Copyright (c) 2014-2018 MKLab. All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -22,53 +22,57 @@
  */
 
 /**
-* CodeWriter
-* @constructor
-*/
-function CodeWriter (indentString) {
-  
-  /** @member {Array.<string>} lines */
-  this.lines = [];
-  
-  /** @member {string} indentString */
-  this.indentString = (indentString ? indentString : "    "); // default 4 spaces
-  
-  /** @member {Array.<string>} indentations */
-  this.indentations = [];
+ * CodeWriter
+ */
+class CodeWriter {
+  /**
+   * @constructor
+   */
+  constructor (indentString) {
+    /** @member {Array.<string>} lines */
+    this.lines = []
+
+    /** @member {string} indentString */
+    this.indentString = indentString || '    ' // default 4 spaces
+
+    /** @member {Array.<string>} indentations */
+    this.indentations = []
+  }
+
+  /**
+   * Indent
+   */
+  indent () {
+    this.indentations.push(this.indentString)
+  }
+
+  /**
+   * Outdent
+   */
+  outdent () {
+    this.indentations.splice(this.indentations.length - 1, 1)
+  }
+
+  /**
+   * Write a line
+   * @param {string} line
+   */
+  writeLine (line) {
+    if (line) {
+      this.lines.push(this.indentations.join('') + line)
+    } else {
+      this.lines.push('')
+    }
+  }
+
+  /**
+   * Return as all string data
+   * @return {string}
+   */
+  getData () {
+    return this.lines.join('\n')
+  }
+
 }
 
-/**
-* Indent
-*/    
-CodeWriter.prototype.indent = function () {
-  this.indentations.push(this.indentString);
-};
-
-/**
-* Outdent
-*/    
-CodeWriter.prototype.outdent = function () {
-  this.indentations.splice(this.indentations.length-1, 1);
-};
-
-/**
-* Write a line
-* @param {string} line
-*/    
-CodeWriter.prototype.writeLine = function (line) {
-  if (line) {
-    this.lines.push(this.indentations.join("") + line);    
-  } else {
-    this.lines.push("");
-  }        
-};
-
-/**
-* Return as all string data
-* @return {string}
-*/    
-CodeWriter.prototype.getData = function () {
-  return this.lines.join("\n");
-};
-
-exports.CodeWriter = CodeWriter;
+exports.CodeWriter = CodeWriter

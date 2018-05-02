@@ -24,7 +24,7 @@
 const fs = require('fs')
 const path = require('path')
 const _ = require('lodash')
-const CodeGenUtils = require('./CodeGenUtils')
+const codegen = require('./codegen-utils')
 
 /**
  * Java Code Generator
@@ -88,7 +88,7 @@ class JavaCodeGenerator {
       // AnnotationType
       if (elem.stereotype === 'annotationType') {
         fullPath = path.join(basePath, elem.name + '.java')
-        codeWriter = new CodeGenUtils.CodeWriter(this.getIndentString(options))
+        codeWriter = new codegen.CodeWriter(this.getIndentString(options))
         this.writePackageDeclaration(codeWriter, elem, options)
         codeWriter.writeLine()
         codeWriter.writeLine('import java.util.*;')
@@ -98,7 +98,7 @@ class JavaCodeGenerator {
       // Class
       } else {
         fullPath = basePath + '/' + elem.name + '.java'
-        codeWriter = new CodeGenUtils.CodeWriter(this.getIndentString(options))
+        codeWriter = new codegen.CodeWriter(this.getIndentString(options))
         this.writePackageDeclaration(codeWriter, elem, options)
         codeWriter.writeLine()
         codeWriter.writeLine('import java.util.*;')
@@ -110,7 +110,7 @@ class JavaCodeGenerator {
     // Interface
     } else if (elem instanceof type.UMLInterface) {
       fullPath = basePath + '/' + elem.name + '.java'
-      codeWriter = new CodeGenUtils.CodeWriter(this.getIndentString(options))
+      codeWriter = new codegen.CodeWriter(this.getIndentString(options))
       this.writePackageDeclaration(codeWriter, elem, options)
       codeWriter.writeLine()
       codeWriter.writeLine('import java.util.*;')
@@ -121,7 +121,7 @@ class JavaCodeGenerator {
     // Enum
     } else if (elem instanceof type.UMLEnumeration) {
       fullPath = basePath + '/' + elem.name + '.java'
-      codeWriter = new CodeGenUtils.CodeWriter(this.getIndentString(options))
+      codeWriter = new codegen.CodeWriter(this.getIndentString(options))
       this.writePackageDeclaration(codeWriter, elem, options)
       codeWriter.writeLine()
       this.writeEnum(codeWriter, elem, options)

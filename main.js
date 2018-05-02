@@ -21,8 +21,8 @@
  *
  */
 
-const JavaCodeGenerator = require('./JavaCodeGenerator')
-const JavaReverseEngineer = require('./JavaReverseEngineer')
+const codeGenerator = require('./code-generator')
+const codeAnalyzer = require('./code-analyzer')
 
 function getGenOptions () {
   return {
@@ -63,10 +63,10 @@ function _handleGenerate (base, path, options) {
           var files = app.dialogs.showOpenDialog('Select a folder where generated codes to be located', null, null, { properties: [ 'openDirectory' ] })
           if (files && files.length > 0) {
             path = files[0]
-            JavaCodeGenerator.generate(base, path, options)
+            codeGenerator.generate(base, path, options)
           }
         } else {
-          JavaCodeGenerator.generate(base, path, options)
+          codeGenerator.generate(base, path, options)
         }
       }
     })
@@ -76,10 +76,10 @@ function _handleGenerate (base, path, options) {
       var files = app.dialogs.showOpenDialog('Select a folder where generated codes to be located', null, null, { properties: [ 'openDirectory' ] })
       if (files && files.length > 0) {
         path = files[0]
-        JavaCodeGenerator.generate(base, path, options)
+        codeGenerator.generate(base, path, options)
       }
     } else {
-      JavaCodeGenerator.generate(base, path, options)
+      codeGenerator.generate(base, path, options)
     }
   }
 }
@@ -99,7 +99,7 @@ function _handleReverse (basePath, options) {
     var files = app.dialogs.showOpenDialog('Select Folder', null, null, { properties: [ 'openDirectory' ] })
     if (files && files.length > 0) {
       basePath = files[0]
-      JavaReverseEngineer.analyze(basePath, options)
+      codeAnalyzer.analyze(basePath, options)
     }
   }
 }
