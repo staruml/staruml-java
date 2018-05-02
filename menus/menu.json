@@ -1,0 +1,19 @@
+{
+  "menu": [
+    {
+      "id": "tools",
+      "submenu": [
+        {
+          "label": "Java",
+          "id": "tools.java",
+          "submenu": [
+            { "label": "Generate Code...", "id": "tools.java.generate", "command": "java:generate" },
+            { "label": "Reverse Code...", "id": "tools.java.reverse", "command": "java:reverse" },
+            { "type": "separator" },
+            { "label": "Configure...", "id": "tools.java.configure", "command": "java:configure" }
+          ]
+        }
+      ]
+    }
+  ]
+}

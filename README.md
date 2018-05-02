@@ -1,5 +1,5 @@
-Java Extension for StarUML 2
-============================
+Java Extension for StarUML
+==========================
 
 This extension for StarUML(http://staruml.io) support to generate Java code from UML model and to reverse Java code to UML model. Install this extension from Extension Manager of StarUML. It is based on Java 1.7 specification.
 

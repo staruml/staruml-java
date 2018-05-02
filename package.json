@@ -1,18 +1,18 @@
 {
-    "name": "staruml.java",
-    "title": "Java",
-    "description": "Java code generation and reverse engineering.",
-    "homepage": "https://github.com/staruml/Java",
-    "issues": "https://github.com/staruml/Java/issues",
-    "keywords": ["java"],
-    "version": "0.9.3",
-    "author": {
-        "name": "Minkyu Lee",
-        "email": "niklaus.lee@gmail.com",
-        "url": "https://github.com/niklauslee"
-    },
-    "license": "MIT",
-    "engines": {
-        "staruml": ">=2.0.0"
-    }
+  "name": "staruml.java",
+  "title": "Java",
+  "description": "Java code generation and reverse engineering.",
+  "homepage": "https://github.com/staruml/staruml-java",
+  "issues": "https://github.com/staruml/staruml-java/issues",
+  "keywords": ["java"],
+  "version": "0.9.4",
+  "author": {
+    "name": "Minkyu Lee",
+    "email": "niklaus.lee@gmail.com",
+    "url": "https://github.com/niklauslee"
+  },
+  "license": "MIT",
+  "engines": {
+    "staruml": "^3.0.0"
+  }
 }
