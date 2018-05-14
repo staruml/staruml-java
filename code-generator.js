@@ -69,7 +69,6 @@ class JavaCodeGenerator {
    * @param {type.Model} elem
    * @param {string} basePath
    * @param {Object} options
-   * @return {$.Promise}
    */
   generate (elem, basePath, options) {
     var fullPath

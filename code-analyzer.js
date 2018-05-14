@@ -131,7 +131,6 @@ class JavaCodeAnalyzer {
   /**
    * Analyze all files.
    * @param {Object} options
-   * @return {$.Promise}
    */
   analyze (options) {
     // Perform 1st Phase
@@ -1133,7 +1132,6 @@ class JavaCodeAnalyzer {
  * Analyze all java files in basePath
  * @param {string} basePath
  * @param {Object} options
- * @return {$.Promise}
  */
 function analyze (basePath, options) {
   var javaAnalyzer = new JavaCodeAnalyzer()

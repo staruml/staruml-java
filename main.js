@@ -48,7 +48,6 @@ function getRevOptions () {
  * @param {Element} base
  * @param {string} path
  * @param {Object} options
- * @return {$.Promise}
  */
 function _handleGenerate (base, path, options) {
   // If options is not passed, get from preference
@@ -89,7 +88,6 @@ function _handleGenerate (base, path, options) {
  *
  * @param {string} basePath
  * @param {Object} options
- * @return {$.Promise}
  */
 function _handleReverse (basePath, options) {
   // If options is not passed, get from preference
