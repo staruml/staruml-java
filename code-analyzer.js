@@ -23,7 +23,6 @@
 
 const fs = require('fs')
 const path = require('path')
-const _ = require('lodash')
 const java7 = require('./grammar/java7')
 
 // Java Primitive Types
@@ -73,7 +72,7 @@ var javaCollectionTypes = [
 ]
 
 // Java Collection Types (full names)
-var javaUtilCollectionTypes = _.map(javaCollectionTypes, c => { return 'java.util.' + c })
+var javaUtilCollectionTypes = javaCollectionTypes.map(c => { return 'java.util.' + c })
 
 /**
  * Java Code Analyzer
@@ -264,22 +263,22 @@ class JavaCodeAnalyzer {
           association.end2.navigable = true
 
           // Final Modifier
-          if (_.includes(_asso.node.modifiers, 'final')) {
+          if (_asso.node.modifiers && _asso.node.modifiers.includes('final')) {
             association.end2.isReadOnly = true
           }
 
           // Static Modifier
-          if (_.includes(_asso.node.modifiers, 'static')) {
+          if (_asso.node.modifiers && _asso.node.modifiers.includes('static')) {
             this._addTag(association.end2, type.Tag.TK_BOOLEAN, 'static', true)
           }
 
           // Volatile Modifier
-          if (_.includes(_asso.node.modifiers, 'volatile')) {
+          if (_asso.node.modifiers && _asso.node.modifiers.includes('volatile')) {
             this._addTag(association.end2, type.Tag.TK_BOOLEAN, 'volatile', true)
           }
 
           // Transient Modifier
-          if (_.includes(_asso.node.modifiers, 'transient')) {
+          if (_asso.node.modifiers && _asso.node.modifiers.includes('transient')) {
             this._addTag(association.end2, type.Tag.TK_BOOLEAN, 'transient', true)
           }
         }
@@ -323,7 +322,7 @@ class JavaCodeAnalyzer {
         }
 
         // if type is primitive type
-        if (_.includes(javaPrimitiveTypes, _typeName)) {
+        if (javaPrimitiveTypes.includes(_typeName)) {
           _typedFeature.feature.type = _typeName
           // otherwise
         } else {
@@ -392,7 +391,7 @@ class JavaCodeAnalyzer {
 
     if (type.node === 'Type') {
       typeName = type.qualifiedName.name
-    } else if (_.isString(type)) {
+    } else if (typeof type === 'string') {
       typeName = type
     }
 
@@ -449,12 +448,14 @@ class JavaCodeAnalyzer {
    * @return {string} Visibility constants for UML Elements
    */
   _getVisibility (modifiers) {
-    if (_.includes(modifiers, 'public')) {
-      return type.UMLModelElement.VK_PUBLIC
-    } else if (_.includes(modifiers, 'protected')) {
-      return type.UMLModelElement.VK_PROTECTED
-    } else if (_.includes(modifiers, 'private')) {
-      return type.UMLModelElement.VK_PRIVATE
+    if (modifiers) {
+      if (modifiers.includes('public')) {
+        return type.UMLModelElement.VK_PUBLIC
+      } else if (modifiers.includes('protected')) {
+        return type.UMLModelElement.VK_PROTECTED
+      } else if (modifiers.includes('private')) {
+        return type.UMLModelElement.VK_PRIVATE
+      }
     }
     return type.UMLModelElement.VK_PACKAGE
   }
@@ -584,12 +585,12 @@ class JavaCodeAnalyzer {
       var _itemType = typeNode.qualifiedName.typeParameters[0].name
 
       // Used Full name (e.g. java.util.List)
-      if (_.includes(javaUtilCollectionTypes, _collectionType)) {
+      if (javaUtilCollectionTypes.includes(_collectionType)) {
         return _itemType
       }
 
       // Used name with imports (e.g. List and import java.util.List or java.util.*)
-      if (_.includes(javaCollectionTypes, _collectionType)) {
+      if (javaCollectionTypes.includes(_collectionType)) {
         if (compilationUnitNode.imports) {
           var i, len
           for (i = 0, len = compilationUnitNode.imports.length; i < len; i++) {
@@ -685,7 +686,7 @@ class JavaCodeAnalyzer {
     if (Array.isArray(memberNodeArray) && memberNodeArray.length > 0) {
       for (i = 0, len = memberNodeArray.length; i < len; i++) {
         var memberNode = memberNodeArray[i]
-        if (_.isObject(memberNode) && memberNode.node) {
+        if ((typeof memberNode === 'string') && memberNode.node) {
           var visibility = this._getVisibility(memberNode.modifiers)
 
           // Generate public members only if publicOnly == true
@@ -760,12 +761,12 @@ class JavaCodeAnalyzer {
     _class.visibility = this._getVisibility(classNode.modifiers)
 
     // Abstract Class
-    if (_.includes(classNode.modifiers, 'abstract')) {
+    if (classNode.modifiers && classNode.modifiers.includes('abstract')) {
       _class.isAbstract = true
     }
 
     // Final Class
-    if (_.includes(classNode.modifiers, 'final')) {
+    if (classNode.modifiers && classNode.modifiers.includes('final')) {
       _class.isFinalSpecialization = true
       _class.isLeaf = true
     }
@@ -957,23 +958,23 @@ class JavaCodeAnalyzer {
         }
 
         // Static Modifier
-        if (_.includes(fieldNode.modifiers, 'static')) {
+        if (fieldNode.modifiers && fieldNode.modifiers.includes('static')) {
           _attribute.isStatic = true
         }
 
         // Final Modifier
-        if (_.includes(fieldNode.modifiers, 'final')) {
+        if (fieldNode.modifiers && fieldNode.modifiers.includes('final')) {
           _attribute.isLeaf = true
           _attribute.isReadOnly = true
         }
 
         // Volatile Modifier
-        if (_.includes(fieldNode.modifiers, 'volatile')) {
+        if (fieldNode.modifiers && fieldNode.modifiers.includes('volatile')) {
           this._addTag(_attribute, type.Tag.TK_BOOLEAN, 'volatile', true)
         }
 
         // Transient Modifier
-        if (_.includes(fieldNode.modifiers, 'transient')) {
+        if (fieldNode.modifiers && fieldNode.modifiers.includes('transient')) {
           this._addTag(_attribute, type.Tag.TK_BOOLEAN, 'transient', true)
         }
 
@@ -1011,22 +1012,22 @@ class JavaCodeAnalyzer {
 
     // Modifiers
     _operation.visibility = this._getVisibility(methodNode.modifiers)
-    if (_.includes(methodNode.modifiers, 'static')) {
+    if (methodNode.modifiers && methodNode.modifiers.includes('static')) {
       _operation.isStatic = true
     }
-    if (_.includes(methodNode.modifiers, 'abstract')) {
+    if (methodNode.modifiers && methodNode.modifiers.includes('abstract')) {
       _operation.isAbstract = true
     }
-    if (_.includes(methodNode.modifiers, 'final')) {
+    if (methodNode.modifiers && methodNode.modifiers.includes('final')) {
       _operation.isLeaf = true
     }
-    if (_.includes(methodNode.modifiers, 'synchronized')) {
+    if (methodNode.modifiers && methodNode.modifiers.includes('synchronized')) {
       _operation.concurrency = type.UMLBehavioralFeature.CCK_CONCURRENT
     }
-    if (_.includes(methodNode.modifiers, 'native')) {
+    if (methodNode.modifiers && methodNode.modifiers.includes('native')) {
       this._addTag(_operation, type.Tag.TK_BOOLEAN, 'native', true)
     }
-    if (_.includes(methodNode.modifiers, 'strictfp')) {
+    if (methodNode.modifiers && methodNode.modifiers.includes('strictfp')) {
       this._addTag(_operation, type.Tag.TK_BOOLEAN, 'strictfp', true)
     }
 
