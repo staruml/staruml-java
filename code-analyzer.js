@@ -686,7 +686,7 @@ class JavaCodeAnalyzer {
     if (Array.isArray(memberNodeArray) && memberNodeArray.length > 0) {
       for (i = 0, len = memberNodeArray.length; i < len; i++) {
         var memberNode = memberNodeArray[i]
-        if ((typeof memberNode === 'string') && memberNode.node) {
+        if (memberNode && (typeof memberNode.node === 'string')) {
           var visibility = this._getVisibility(memberNode.modifiers)
 
           // Generate public members only if publicOnly == true
