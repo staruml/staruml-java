@@ -303,6 +303,10 @@ class JavaCodeAnalyzer {
     // Resolve Type References
     for (i = 0, len = this._typedFeaturePendings.length; i < len; i++) {
       var _typedFeature = this._typedFeaturePendings[i]
+      //Fix bug: some reverse code error like qualifiedName attribute undefined
+      if (!!!_typedFeature.node.type.qualifiedName) {
+        continue;
+      }
       _typeName = _typedFeature.node.type.qualifiedName.name
 
       // Find type and assign
