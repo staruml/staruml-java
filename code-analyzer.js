@@ -159,6 +159,10 @@ class JavaCodeAnalyzer {
     this._files.forEach(file => {
       var data = fs.readFileSync(file, 'utf8')
       try {
+        /* Not processing empty file @author Rtfsc8(rtfsc8@rtfsc8.top) */
+        if (!!!data) {
+            return;
+        }
         var ast = java7.parse(data)
         this._currentCompilationUnit = ast
         this._currentCompilationUnit.file = file
