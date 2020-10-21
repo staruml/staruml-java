@@ -159,6 +159,10 @@ class JavaCodeAnalyzer {
     this._files.forEach(file => {
       var data = fs.readFileSync(file, 'utf8')
       try {
+        /* Not processing empty file @author Rtfsc8(rtfsc8@rtfsc8.top) */
+        if (!!!data) {
+            return;
+        }
         var ast = java7.parse(data)
         this._currentCompilationUnit = ast
         this._currentCompilationUnit.file = file
@@ -303,6 +307,10 @@ class JavaCodeAnalyzer {
     // Resolve Type References
     for (i = 0, len = this._typedFeaturePendings.length; i < len; i++) {
       var _typedFeature = this._typedFeaturePendings[i]
+      //Fix bug: some reverse code error like qualifiedName attribute undefined
+      if (!!!_typedFeature.node.type.qualifiedName) {
+        continue;
+      }
       _typeName = _typedFeature.node.type.qualifiedName.name
 
       // Find type and assign
