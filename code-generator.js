@@ -320,11 +320,12 @@ class JavaCodeGenerator {
    * Write Method
    * @param {StringWriter} codeWriter
    * @param {type.Model} elem
+   * @param {type.Model} owner
    * @param {Object} options
    * @param {boolean} skipBody
    * @param {boolean} skipParams
    */
-  writeMethod (codeWriter, elem, options, skipBody, skipParams) {
+  writeMethod (codeWriter, elem, owner, options, skipBody, skipParams) {
     if (elem.name.length > 0) {
       var terms = []
       var params = elem.getNonReturnParameters()
@@ -361,7 +362,11 @@ class JavaCodeGenerator {
       if (returnParam) {
         terms.push(this.getType(returnParam))
       } else {
-        terms.push('void')
+        if (elem.name === owner.name){
+          //constructor has no return
+        }else{
+          terms.push('void') 
+        }
       }
 
       // name + parameters
@@ -486,7 +491,7 @@ class JavaCodeGenerator {
 
     // Methods
     for (i = 0, len = elem.operations.length; i < len; i++) {
-      this.writeMethod(codeWriter, elem.operations[i], options, false, false)
+      this.writeMethod(codeWriter, elem.operations[i], elem, options, false, false)
       codeWriter.writeLine()
     }
 
@@ -495,7 +500,7 @@ class JavaCodeGenerator {
       for (i = 0, len = _extends[0].operations.length; i < len; i++) {
         _modifiers = this.getModifiers(_extends[0].operations[i])
         if (_modifiers.includes('abstract') === true) {
-          this.writeMethod(codeWriter, _extends[0].operations[i], options, false, false)
+          this.writeMethod(codeWriter, _extends[0].operations[i], _extends[0], options, false, false)
           codeWriter.writeLine()
         }
       }
@@ -504,7 +509,7 @@ class JavaCodeGenerator {
     // Interface methods
     for (var j = 0; j < _implements.length; j++) {
       for (i = 0, len = _implements[j].operations.length; i < len; i++) {
-        this.writeMethod(codeWriter, _implements[j].operations[i], options, false, false)
+        this.writeMethod(codeWriter, _implements[j].operations[i], _implements[j], options, false, false)
         codeWriter.writeLine()
       }
     }
@@ -588,7 +593,7 @@ class JavaCodeGenerator {
 
     // Methods
     for (i = 0, len = elem.operations.length; i < len; i++) {
-      this.writeMethod(codeWriter, elem.operations[i], options, true, false)
+      this.writeMethod(codeWriter, elem.operations[i], elem, options, true, false)
       codeWriter.writeLine()
     }
 
@@ -690,7 +695,7 @@ class JavaCodeGenerator {
 
     // Methods
     for (i = 0, len = elem.operations.length; i < len; i++) {
-      this.writeMethod(codeWriter, elem.operations[i], options, true, true)
+      this.writeMethod(codeWriter, elem.operations[i], elem, options, true, true)
       codeWriter.writeLine()
     }
 
@@ -700,7 +705,7 @@ class JavaCodeGenerator {
       for (i = 0, len = _extends[0].operations.length; i < len; i++) {
         _modifiers = this.getModifiers(_extends[0].operations[i])
         if (_modifiers.includes('abstract') === true) {
-          this.writeMethod(codeWriter, _extends[0].operations[i], options, false, false)
+          this.writeMethod(codeWriter, _extends[0].operations[i], _extends[0], options, false, false)
           codeWriter.writeLine()
         }
       }
