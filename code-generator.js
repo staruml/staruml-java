@@ -400,7 +400,6 @@ class JavaCodeGenerator {
    * @param {Object} options
    * @param {boolean} skipBody
    * @param {boolean} skipParams
-   * @param {type.Model} owner
    * @param {Set.<String>} imports
    * @param {Object} curPackage
    */
@@ -441,11 +440,6 @@ class JavaCodeGenerator {
       if (returnParam) {
         terms.push(this.getType(returnParam, imports, curPackage))
       } else {
-        if (elem.name === owner.name){
-          //constructor has no return
-        }else{
-          terms.push('void') 
-        }
         if (elem.name === owner.name) {
           //constructor has no return
         }else{
