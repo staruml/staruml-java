@@ -26,6 +26,41 @@ const path = require('path')
 const codegen = require('./codegen-utils')
 
 /**
+ * Return element's full path including parent's classes or interfaces
+ * @param {type.Model} elem
+ * @param {Array.<String>} imports Used to collect import declarations
+ * @return {string}
+ */
+function getElemPath (elem, imports, curPackage) {
+  // find package of elem and whole _type string with parents' decarations
+  var owner = elem._parent
+  var _name = elem.name
+  while (owner instanceof type.UMLClass || owner instanceof type.UMLInterface) {
+    if (owner.name.length > 0) {
+      _name = owner.name +'.'+ _name
+    } else {
+      _name = '.'+ _name
+    }
+    elem = owner
+    owner = owner._parent
+  }
+
+  // generate _import as fullpath of owner package
+  var _fullImport = elem.name
+  var _import = ''
+  if (owner != null && owner != curPackage) {
+    while (owner instanceof type.UMLPackage) {
+      _import = _fullImport //ignore final root package that would be view point
+      _fullImport = owner.name + '.' + _fullImport
+      owner = owner._parent
+    }
+    imports.add(_import)
+  }
+
+  return _name
+}
+
+/**
  * Java Code Generator
  */
 class JavaCodeGenerator {
@@ -242,49 +277,23 @@ class JavaCodeGenerator {
    */
   getType (elem, imports, curPackage) {
     var _type = 'void'
-    var _import = ''
-    var owner = null
-    var topType = null
+    var typeElem = null
     
     // type name
     if (elem instanceof type.UMLAssociationEnd) {
       if (elem.reference instanceof type.UMLModelElement && elem.reference.name.length > 0) {
-        _type = elem.reference.name
-      }
-      // inner types need to add owner's name as prefix
-      owner = elem.reference._parent
-      topType = elem.reference
-    } else {
-      if (elem.type instanceof type.UMLModelElement && elem.type.name.length > 0) {
-        _type = elem.type.name
+        typeElem = elem.reference
         // inner types need add owner's name as prefix
-        owner = elem.type._parent
-        topType = elem.type
+        _type = getElemPath(typeElem, imports, curPackage)
+      }      
+    } else {
+      if (elem.type instanceof type.UMLModelElement && elem.type.name.length > 0) {        
+        typeElem = elem.type
+        // inner types need add owner's name as prefix
+        _type = getElemPath(typeElem, imports, curPackage)
       } else if ((typeof elem.type === 'string') && elem.type.length > 0) {
         _type = elem.type
       }
-    }
-    
-    // find package of elem and whole _type string with parents' decarations
-    while (owner instanceof type.UMLClass || owner instanceof type.UMLInterface) {
-      if (owner.name.length > 0) {
-        _type = owner.name +'.'+ _type
-      } else {
-        _type = '.'+ _type
-      }
-      topType = owner
-      owner = owner._parent
-    }
-    
-    // generate _import as fullpath of owner package
-    if (owner != null && owner != curPackage) {
-      var _fullImport = topType.name
-      while (owner instanceof type.UMLPackage) {
-        _import = _fullImport //ignore final root package that would be view point
-        _fullImport = owner.name + '.' + _fullImport
-        owner = owner._parent
-      }
-      imports.add(_import)
     }
     
     // multiplicity
@@ -531,21 +540,13 @@ class JavaCodeGenerator {
     // Extends
     var _extends = this.getSuperClasses(elem)
     if (_extends.length > 0) {
-      terms.push('extends ' + _extends[0].name)
+      terms.push('extends ' + getElemPath(_extends[0], imports, curPackage))
     }
 
     // Implements
     var _implements = this.getSuperInterfaces(elem)
     if (_implements.length > 0) {
-      terms.push('implements ' + _implements.map(
-        function (e) {
-          var _type = e.name
-          var owner = e._parent
-          if ((owner instanceof type.UMLClass || owner instanceof type.UMLInterface) && owner.name.length > 0) {
-            _type = owner.name +'.'+ _type
-          }
-          return _type
-        }).join(', '))
+      terms.push('implements ' + _implements.map(function (e) {return getElemPath(e, imports, curPackage)}).join(', '))
     }
     codeWriter.writeLine(terms.join(' ') + ' {')
     codeWriter.writeLine()
@@ -653,7 +654,7 @@ class JavaCodeGenerator {
     // Extends
     var _extends = this.getSuperClasses(elem)
     if (_extends.length > 0) {
-      terms.push('extends ' + _extends.map(function (e) { return e.name }).join(', '))
+      terms.push('extends ' + _extends.map(function (e) { return getElemPath(e, imports, curPackage) }).join(', '))
     }
     codeWriter.writeLine(terms.join(' ') + ' {')
     codeWriter.writeLine()
