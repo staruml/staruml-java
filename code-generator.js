@@ -136,6 +136,7 @@ class JavaCodeGenerator {
           imports.forEach(function(v,i,s) {codeWriter.writeLine('import ' + v + ';')})
         }
         codeWriter.writeLine()
+        codeWriter.writeLine('import java.io.*;')
         codeWriter.writeLine('import java.util.*;')
         codeWriter.writeLine('\n')
 
@@ -154,6 +155,7 @@ class JavaCodeGenerator {
           imports.forEach(function(v,i,s) {codeWriter.writeLine('import ' + v + ';')})
         }
         codeWriter.writeLine()
+        codeWriter.writeLine('import java.io.*;')
         codeWriter.writeLine('import java.util.*;')
         codeWriter.writeLine('\n')
 
@@ -174,6 +176,7 @@ class JavaCodeGenerator {
         imports.forEach(function(v,i,s) {codeWriter.writeLine('import ' + v + ';')})
       }
       codeWriter.writeLine()
+      codeWriter.writeLine('import java.io.*;')
       codeWriter.writeLine('import java.util.*;')
       codeWriter.writeLine('\n')
 
@@ -263,12 +266,52 @@ class JavaCodeGenerator {
    * @return {Array.<type.Model>}
    */
   getSuperInterfaces (elem) {
-    var realizations = app.repository.getRelationshipsOf(elem, function (rel) {
-      return (rel instanceof type.UMLInterfaceRealization && rel.source === elem)
-    })
-    return realizations.map(function (gen) { return gen.target })
+    if (elem instanceof type.UMLClass) {
+      var realizations = app.repository.getRelationshipsOf(elem, function (rel) {
+        return (rel instanceof type.UMLInterfaceRealization && rel.source === elem)
+      })
+      return realizations.map(function (gen) { return gen.target })
+    } else {
+      return this.getSuperClasses(elem)
+    }
   }
 
+  /**
+   * Collect all super classes to allExtends Array
+   * @param {type.Model} elem
+   * @param {Set.<UMLClass>} allExtendsSet Used to avoid repeated elements in allExtends array
+   * @param {Array.<UMLClass>} allExtends Used to collect super classes in order
+   */
+  collectExtends (elem, allExtendsSet, allExtends) {
+    var _exts = this.getSuperClasses(elem)
+    for (var i = 0; i < _exts.length; i++) {
+      var _ext = _exts[i]
+      this.collectExtends(_ext, allExtendsSet, allExtends)
+      if (!allExtendsSet.has(_ext)) {
+        allExtendsSet.add(_ext)
+        allExtends.push(_ext)
+      }
+    }
+  }
+
+  /**
+   * Collect all super interfaces to allImplements Array
+   * @param {type.Model} elem
+   * @param {Set.<UMLInterface>} allImplementsSet Used to avoid repeated elements in allImplements array
+   * @param {Array.<UMLInterface>} allImplements Used to collect super interfaces in order
+   */
+  collectImplements (elem, allImplementsSet, allImplements) {
+    var _impls = this.getSuperInterfaces(elem)
+    for (var i = 0; i < _impls.length; i++) {
+      var _impl = _impls[i]
+      this.collectImplements(_impl, allImplementsSet, allImplements)
+      if (!allImplementsSet.has(_impl)) {
+        allImplementsSet.add(_impl)
+        allImplements.push(_impl)
+      }
+    }
+  }
+  
   /**
    * Return type expression
    * @param {type.Model} elem
@@ -405,14 +448,15 @@ class JavaCodeGenerator {
    * Write Method
    * @param {StringWriter} codeWriter
    * @param {type.Model} elem
-   * @param {type.Model} owner
+   * @param {type.Model} owner Who wants to write this method
    * @param {Object} options
    * @param {boolean} skipBody
    * @param {boolean} skipParams
+   * @param {boolean} declaredBy Who declared this method
    * @param {Set.<String>} imports
    * @param {Object} curPackage
    */
-  writeMethod (codeWriter, elem, owner, options, skipBody, skipParams, imports, curPackage) {
+  writeMethod (codeWriter, elem, owner, options, skipBody, skipParams, declaredBy, imports, curPackage) {
     if (elem.name.length > 0) {
       var terms = []
       var params = elem.getNonReturnParameters()
@@ -477,8 +521,12 @@ class JavaCodeGenerator {
       } else {
         codeWriter.writeLine(terms.join(' ') + ' {')
         codeWriter.indent()
-        codeWriter.writeLine('// TODO implement here')
-
+        if (declaredBy === owner) {
+          codeWriter.writeLine('// TODO implement here')
+        } else {
+          codeWriter.writeLine('// TODO implement ' + declaredBy.name + '.' + elem.name + '() here')
+        }
+        
         // return statement
         if (returnParam) {
           var returnType = this.getType(returnParam, imports, curPackage)
@@ -580,25 +628,43 @@ class JavaCodeGenerator {
 
     // Methods
     for (i = 0, len = elem.operations.length; i < len; i++) {
-      this.writeMethod(codeWriter, elem.operations[i], elem, options, false, false, imports, curPackage)
+      this.writeMethod(codeWriter, elem.operations[i], elem, options, false, false, elem, imports, curPackage)
       codeWriter.writeLine()
     }
-
+    
     // Extends methods
     if (_extends.length > 0) {
       for (i = 0, len = _extends[0].operations.length; i < len; i++) {
-        _modifiers = this.getModifiers(_extends[0].operations[i])
-        if (_modifiers.includes('abstract') === true) {
-          this.writeMethod(codeWriter, _extends[0].operations[i], _extends[0], options, false, false, imports, curPackage)
+        var _modifiers2 = this.getModifiers(_extends[0].operations[i])
+        if (_modifiers2.includes('abstract') === true) {
+          this.writeMethod(codeWriter, _extends[0].operations[i], elem, options, false, false, _extends[0], imports, curPackage)
           codeWriter.writeLine()
         }
       }
     }
 
-    // Interface methods
-    for (var j = 0; j < _implements.length; j++) {
-      for (i = 0, len = _implements[j].operations.length; i < len; i++) {
-        this.writeMethod(codeWriter, _implements[j].operations[i], _implements[j], options, false, false, imports, curPackage)
+    // Interface methods including all super interfaces
+    var _allExtendsSet = new Set()
+    var _allExtends = new Array()
+    this.collectExtends(elem, _allExtendsSet, _allExtends)
+
+    // collect methods implemented by all extends to _allImplementsSet to be ignored when writeLine
+    var _allImplementsSet = new Set()
+    var _allImplements = new Array()
+    if (_allExtends.length > 0) {
+      for (i = 0, len = _allExtends.length; i < len; i++) {
+        this.collectImplements(_allExtends[i], _allImplementsSet, _allImplements)
+      }
+    }
+
+    // collect valid super interfaces
+    _allImplements.splice(0,_allImplements.length)    
+    this.collectImplements(elem, _allImplementsSet, _allImplements)
+
+    // write methods in valid super interfaces
+    for (var j = 0; j < _allImplements.length; j++) {
+      for (i = 0, len = _allImplements[j].operations.length; i < len; i++) {
+        this.writeMethod(codeWriter, _allImplements[j].operations[i], elem, options, false, false, _allImplements[j], imports, curPackage)
         codeWriter.writeLine()
       }
     }
@@ -684,7 +750,7 @@ class JavaCodeGenerator {
 
     // Methods
     for (i = 0, len = elem.operations.length; i < len; i++) {
-      this.writeMethod(codeWriter, elem.operations[i], elem, options, true, false, imports, curPackage)
+      this.writeMethod(codeWriter, elem.operations[i], elem, options, true, false, elem, imports, curPackage)
       codeWriter.writeLine()
     }
 
@@ -790,7 +856,7 @@ class JavaCodeGenerator {
 
     // Methods
     for (i = 0, len = elem.operations.length; i < len; i++) {
-      this.writeMethod(codeWriter, elem.operations[i], elem, options, true, true, imports, curPackage)
+      this.writeMethod(codeWriter, elem.operations[i], elem, options, true, true, elem, imports, curPackage)
       codeWriter.writeLine()
     }
 
@@ -800,7 +866,7 @@ class JavaCodeGenerator {
       for (i = 0, len = _extends[0].operations.length; i < len; i++) {
         _modifiers = this.getModifiers(_extends[0].operations[i])
         if (_modifiers.includes('abstract') === true) {
-          this.writeMethod(codeWriter, _extends[0].operations[i], _extends[0], options, false, false, imports, curPackage)
+          this.writeMethod(codeWriter, _extends[0].operations[i], elem, options, false, false, _extends[0], imports, curPackage)
           codeWriter.writeLine()
         }
       }
