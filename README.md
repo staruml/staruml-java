@@ -2,11 +2,9 @@
 
 This extension for StarUML(http://staruml.io) support to generate Java code from UML model and to reverse Java code to UML model. Install this extension from Extension Manager of StarUML.
 
-> :warning: **Note**
-> This extensions do not provide perfect reverse engineering which is a test and temporal feature. If you need a complete reverse engineering feature, please check other professional reverse engineering tools.
+> :warning: This extensions do not provide perfect reverse engineering which is a test and temporal feature. If you need a complete reverse engineering feature, please check other professional reverse engineering tools.
 
-> :warning: **Note**
-> This extension is based on Java 1.7 Specification.
+> :white_check_mark: This extension is based on Java 1.7 Specification.
 
 ## Java Code Generation
 
