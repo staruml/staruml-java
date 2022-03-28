@@ -4,7 +4,9 @@
   "description": "Java code generation and reverse engineering.",
   "homepage": "https://github.com/staruml/staruml-java",
   "issues": "https://github.com/staruml/staruml-java/issues",
-  "keywords": ["java"],
+  "keywords": [
+    "java"
+  ],
   "version": "0.9.5",
   "author": {
     "name": "Minkyu Lee",
@@ -13,6 +15,6 @@
   },
   "license": "MIT",
   "engines": {
-    "staruml": "^3.0.0"
+    "staruml": ">=3.0.0"
   }
 }
