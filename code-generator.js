@@ -414,8 +414,8 @@ class JavaCodeGenerator {
       }
       if (constructorOperation) {
         // Generate constructor using parameters from the UML operation
-        var params = constructorOperation.params.map(param => `${param.type} ${param.name}`).join(', ')
-        terms.push(`${elem.name}(${params})`)
+        var params = constructorOperation.params.map(param => param.type + " " + param.name).join(', ')
+        terms.push(elem.name + '(' + params + ')')
       } else {
         terms.push(elem.name + '()')
       }
