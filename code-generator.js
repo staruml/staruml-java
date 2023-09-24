@@ -398,7 +398,7 @@ class JavaCodeGenerator {
    * @param {type.Model} elem
    * @param {Object} options
    */
-  writeConstructor (codeWriter, elem, options, imports, curPackage) {
+    writeConstructor (codeWriter, elem, options, imports, curPackage) {
     if (elem.name.length > 0) {
       var terms = []
       // Doc
@@ -461,6 +461,7 @@ class JavaCodeGenerator {
       var terms = []
       var params = elem.getNonReturnParameters()
       var returnParam = elem.getReturnParameter()
+      var isConstructor = (elem.name === owner.name)
 
       // doc
       var doc = elem.documentation.trim()
@@ -490,14 +491,10 @@ class JavaCodeGenerator {
       }
 
       // type
-      if (returnParam) {
+      if (returnParam && !isConstructor) {
         terms.push(this.getType(returnParam, imports, curPackage))
-      } else {
-        if (elem.name === owner.name) {
-          //constructor has no return
-        }else{
-          terms.push('void') 
-        }
+      } else if (!isConstructor) {
+        terms.push('void') 
       }
 
       // name + parameters
@@ -528,7 +525,7 @@ class JavaCodeGenerator {
         }
         
         // return statement
-        if (returnParam) {
+        if (returnParam && !isConstructor) {
           var returnType = this.getType(returnParam, imports, curPackage)
           if (returnType === 'boolean') {
             codeWriter.writeLine('return false;')
