@@ -401,14 +401,24 @@ class JavaCodeGenerator {
   writeConstructor (codeWriter, elem, options, imports, curPackage) {
     if (elem.name.length > 0) {
       var terms = []
+
+      // Check if there's an operation with the same name as the class (custom constructor)
+      var constructorOperation = elem.operations.find(op => op.name === elem.name)
+      
       // Doc
-      this.writeDoc(codeWriter, 'Default constructor', options, imports, curPackage)
+      this.writeDoc(codeWriter, constructorOperation ? 'Custom constructor' : 'Default constructor', options, imports, curPackage)
       // Visibility
       var visibility = this.getVisibility(elem)
       if (visibility) {
         terms.push(visibility)
       }
-      terms.push(elem.name + '()')
+      if (constructorOperation) {
+        // Generate constructor using parameters from the UML operation
+        var params = constructorOperation.params.map(param => `${param.type} ${param.name}`).join(', ')
+        terms.push(`${elem.name}(${params})`)
+      } else {
+        terms.push(elem.name + '()')
+      }
       codeWriter.writeLine(terms.join(' ') + ' {')
       codeWriter.writeLine('}')
     }
