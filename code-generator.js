@@ -48,9 +48,9 @@ function getElemPath(elem, imports, curPackage) {
   // generate _import as fullpath of owner package
   var _fullImport = elem.name;
   var _import = "";
-  if (owner != null && owner != curPackage) {
+  if (owner !== null && owner !== curPackage) {
     while (owner instanceof type.UMLPackage) {
-      _import = _fullImport; //ignore final root package that would be view point
+      _import = _fullImport; // ignore final root package that would be view point
       _fullImport = owner.name + "." + _fullImport;
       owner = owner._parent;
     }
@@ -561,7 +561,7 @@ class JavaCodeGenerator {
       var i;
       var lines = doc.split("\n");
       doc = "";
-      for (i = 0, len = lines.length; i < len; i++) {
+      for (let i = 0, len = lines.length; i < len; i++) {
         if (
           lines[i].lastIndexOf("@param", 0) !== 0 &&
           lines[i].lastIndexOf("@return", 0) !== 0
@@ -589,7 +589,7 @@ class JavaCodeGenerator {
         terms.push(this.getType(returnParam, imports, curPackage));
       } else {
         if (elem.name === owner.name) {
-          //constructor has no return
+          // constructor has no return
         } else {
           terms.push("void");
         }
@@ -737,13 +737,17 @@ class JavaCodeGenerator {
       );
       codeWriter.writeLine();
     }
+
     // (from associations)
     var associations = app.repository.getRelationshipsOf(elem, function (rel) {
       return rel instanceof type.UMLAssociation;
     });
-    for (i = 0, len = associations.length; i < len; i++) {
+    for (let i = 0, len = associations.length; i < len; i++) {
       var asso = associations[i];
-      if (asso.end1.reference === elem && asso.end2.navigable === true) {
+      if (
+        asso.end1.reference === elem &&
+        asso.end2.navigable !== "notNavigable"
+      ) {
         this.writeMemberVariable(
           codeWriter,
           asso.end2,
@@ -753,7 +757,10 @@ class JavaCodeGenerator {
         );
         codeWriter.writeLine();
       }
-      if (asso.end2.reference === elem && asso.end1.navigable === true) {
+      if (
+        asso.end2.reference === elem &&
+        asso.end1.navigable !== "notNavigable"
+      ) {
         this.writeMemberVariable(
           codeWriter,
           asso.end1,
@@ -804,12 +811,12 @@ class JavaCodeGenerator {
 
     // Interface methods including all super interfaces
     var _allExtendsSet = new Set();
-    var _allExtends = new Array();
+    var _allExtends = [];
     this.collectExtends(elem, _allExtendsSet, _allExtends);
 
     // collect methods implemented by all extends to _allImplementsSet to be ignored when writeLine
     var _allImplementsSet = new Set();
-    var _allImplements = new Array();
+    var _allImplements = [];
     if (_allExtends.length > 0) {
       for (i = 0, len = _allExtends.length; i < len; i++) {
         this.collectImplements(
@@ -930,7 +937,10 @@ class JavaCodeGenerator {
     });
     for (i = 0, len = associations.length; i < len; i++) {
       var asso = associations[i];
-      if (asso.end1.reference === elem && asso.end2.navigable === true) {
+      if (
+        asso.end1.reference === elem &&
+        asso.end2.navigable !== "notNavigable"
+      ) {
         this.writeMemberVariable(
           codeWriter,
           asso.end2,
@@ -940,7 +950,10 @@ class JavaCodeGenerator {
         );
         codeWriter.writeLine();
       }
-      if (asso.end2.reference === elem && asso.end1.navigable === true) {
+      if (
+        asso.end2.reference === elem &&
+        asso.end1.navigable !== "notNavigable"
+      ) {
         this.writeMemberVariable(
           codeWriter,
           asso.end1,
